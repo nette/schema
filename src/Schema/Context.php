@@ -19,6 +19,9 @@ final class Context
 {
 	use Nette\SmartObject;
 
+	/** @var bool */
+	public $skipDefaults = false;
+
 	/** @var string[] */
 	public $path = [];
 

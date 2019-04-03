@@ -387,3 +387,25 @@ test(function () { // processing
 		(new Processor)->processMultiple($schema, [['b' => ['y' => 'newval']], null])
 	);
 });
+
+
+test(function () { // processing without default values
+	$schema = Expect::structure([
+		'a' => Expect::string(), // implicit default
+		'b' => Expect::string('hello'), // explicit default
+		'c' => Expect::string()->nullable(),
+		'd' => Expect::string()->required(),
+	]);
+
+	$processor = new Processor;
+	$processor->skipDefaults();
+
+	checkValidationErrors(function () use ($schema, $processor) {
+		$processor->process($schema, []);
+	}, ["The mandatory option 'd' is missing."]);
+
+	Assert::equal(
+		(object) ['d' => 'newval'],
+		$processor->process($schema, ['d' => 'newval'])
+	);
+});

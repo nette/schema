@@ -149,9 +149,14 @@ final class Structure implements Schema
 
 		foreach ($items as $itemKey => $itemVal) {
 			$context->path[] = $itemKey;
-			$value[$itemKey] = array_key_exists($itemKey, $value)
-				? $itemVal->complete($value[$itemKey], $context)
-				: $itemVal->completeDefault($context);
+			if (array_key_exists($itemKey, $value)) {
+				$value[$itemKey] = $itemVal->complete($value[$itemKey], $context);
+			} else {
+				$default = $itemVal->completeDefault($context); // checks required item
+				if (!$context->skipDefaults) {
+					$value[$itemKey] = $default;
+				}
+			}
 			array_pop($context->path);
 		}
 

@@ -22,6 +22,15 @@ final class Processor
 	/** @var array */
 	public $onNewContext = [];
 
+	/** @var bool */
+	private $skipDefaults;
+
+
+	public function skipDefaults(bool $value = true)
+	{
+		$this->skipDefaults = $value;
+	}
+
 
 	/**
 	 * Normalizes and validates data. Result is a clean completed data.
@@ -77,6 +86,7 @@ final class Processor
 	private function createContext(): Context
 	{
 		$context = new Context;
+		$context->skipDefaults = $this->skipDefaults;
 		$this->onNewContext($context);
 		return $context;
 	}
