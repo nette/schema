@@ -15,9 +15,12 @@ use Nette;
 /**
  * Schema validator.
  */
-class Processor
+final class Processor
 {
 	use Nette\SmartObject;
+
+	/** @var array */
+	public $onNewContext = [];
 
 
 	/**
@@ -71,9 +74,10 @@ class Processor
 	}
 
 
-	protected function createContext(): Context
+	private function createContext(): Context
 	{
 		$context = new Context;
+		$this->onNewContext($context);
 		return $context;
 	}
 }
