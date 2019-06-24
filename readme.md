@@ -218,7 +218,7 @@ $schema = Expect::string()->min(10)->max(20);
 Ranges of numbers are specified using a combination of `min()` and `max()`:
 
 ```php
-// at least 10, maximum 20 characters
+// integer, between 10 and 20
 $schema = Expect::int()->min(10)->max(20);
 ```
 
