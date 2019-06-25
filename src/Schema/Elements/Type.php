@@ -30,6 +30,9 @@ final class Type implements Schema
 	/** @var array */
 	private $range = [null, null];
 
+	/** @var string|null */
+	private $pattern;
+
 
 	public function __construct(string $type)
 	{
@@ -73,6 +76,13 @@ final class Type implements Schema
 	public function items($type = 'mixed'): self
 	{
 		$this->items = $type instanceof Schema ? $type : new self($type);
+		return $this;
+	}
+
+
+	public function pattern(string $pattern): self
+	{
+		$this->pattern = $pattern;
 		return $this;
 	}
 
@@ -126,6 +136,9 @@ final class Type implements Schema
 		}
 
 		$expected = $this->type . ($this->range === [null, null] ? '' : ':' . implode('..', $this->range));
+		if ($this->pattern !== null) {
+			$expected = $this->type . ':' . $this->pattern;
+		}
 		if (!$this->doValidate($value, $expected, $context)) {
 			return;
 		}

@@ -43,6 +43,14 @@ final class Expect
 	}
 
 
+	public static function pattern(string $pattern): Type
+	{
+		$type = new Type('pattern');
+		$type->pattern($pattern);
+		return $type;
+	}
+
+
 	public static function type(string $type): Type
 	{
 		return new Type($type);
