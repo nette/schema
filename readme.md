@@ -62,7 +62,7 @@ $data = [
     'refundAmount' => 17,
 ];
 
-$normalized = $processor->process($schema, $data); // validates!
+$normalized = $processor->process($schema, $data); // it passes
 ```
 
 If you're validating data passed, you can cast strings and booleans to the expected types defined by your schema:
@@ -78,23 +78,22 @@ $data = [
     'refundAmount' => '17',
 ];
 
-$normalized = $processor->process($schema, $data); // validates!
+$normalized = $processor->process($schema, $data); // it passes
 
 is_bool($normalized->processRefund); // true
 is_int($normalized->refundAmount); // true
 ```
 
-If your schema contains default values, you can have these automatically applied during validation (by default, all properties are optional and have default value `null`):
+By default, all properties are optional and have default value `null`, or `[]` in the case of arrays.
+
+You can change the default value as follows:
 
 ```php
 $schema = Expect::structure([
     'processRefund' => Expect::bool()->default(true), // or Expect::bool(true)
-    'refundAmount' => Expect::int(),
 ]);
 
-$data = [
-    'refundAmount' => 17,
-];
+$data = [];
 
 // validates, and sets defaults for missing properties
 $normalized = $processor->process($schema, $data);
@@ -106,35 +105,35 @@ $normalized = $processor->process($schema, $data);
 Arrays of items
 ---------------
 
-Array where string keys are allowed:
+Array where only string items are allowed:
 
 ```php
 $schema = Expect::arrayOf('string');
 
-$processor->process($schema, ['key1' => 'a', 'key2' => 'b']); // validates
+$processor->process($schema, ['key1' => 'a', 'key2' => 'b']); // it passes
 $processor->process($schema, ['key' => 123]); // error: The option 'key' expects to be string, int 123 given.
 ```
 
-Indexed array with only numeric keys:
+Indexed array (ie. with numeric keys) where only string items are allowed:
 
 ```php
 $schema = Expect::listOf('string');
 
-$processor->process($schema, ['a', 'b']); // validates
+$processor->process($schema, ['a', 'b']); // it passes
 $processor->process($schema, ['key' => 'a']); // error, unexpected 'key'
 ```
 
 Enumerated values and anyOf()
 -----------------------------
 
-The `anyOf()` is used to restrict a value to a fixed set of values or subschemes. It must be an array with at least one element:
+The `anyOf()` is used to restrict a value to a fixed set of variants or subschemes:
 
 ```php
 $schema = Expect::listOf(
 	Expect::anyOf('a', true, null)
 );
 
-$processor->process($schema, ['a', true, null, 'a']); // validates
+$processor->process($schema, ['a', true, null, 'a']); // it passes
 $processor->process($schema, ['a', false]); // error: The option '1' expects to be 'a'|true|null, false given.
 ```
 
@@ -145,7 +144,7 @@ $schema = Expect::listOf(
 	Expect::anyOf(Expect::string(), true, null)
 );
 
-$processor->process($schema, ['foo', true, null, 'bar']); // validates
+$processor->process($schema, ['foo', true, null, 'bar']); // it passes
 $processor->process($schema, [123]); // error: The option '0' expects to be string|true|null, 123 given.
 ```
 
@@ -163,7 +162,7 @@ $schema = Expect::structure([
 ]);
 
 $processor->process($schema, ['optional' => '']); // error: option 'required' is missing
-$processor->process($schema, ['required' => 'foo']); // validates, returns (object) ['required' => 'foo', 'optional' => null]
+$processor->process($schema, ['required' => 'foo']); // it passes, returns (object) ['required' => 'foo', 'optional' => null]
 ```
 
 You can define nullable properties via `nullable()`:
@@ -175,7 +174,7 @@ $schema = Expect::structure([
 ]);
 
 $processor->process($schema, ['optional' => null]); // error: 'optional' expects to be string, null given.
-$processor->process($schema, ['nullable' => null]); // validates, returns (object) ['optional' => null, 'nullable' => null]
+$processor->process($schema, ['nullable' => null]); // it passes, returns (object) ['optional' => null, 'nullable' => null]
 ```
 
 By default, providing additional properties is forbidden:
@@ -195,13 +194,13 @@ $schema = Expect::structure([
 	'key' => Expect::string(),
 ])->otherItems(Expect::int());
 
-$processor->process($schema, ['additional' => 1]); // validates
+$processor->process($schema, ['additional' => 1]); // it passes
 ```
 
 Size and ranges
 ---------------
 
-The number of properties on an object can be restricted using the `min()` and `max()`:
+You can limit the number of elements or properties using the `min()` and `max()`:
 
 ```php
 // array, at least 10 items, maximum 20 items
@@ -289,7 +288,7 @@ Custom normalization
 $schema = Expect::arrayOf('string')
 	->before(function ($v) { return explode(' ', $v); });
 
-$normalized = $processor->process($schema, 'a b c'); // validates and returns ['a', 'b', 'c']
+$normalized = $processor->process($schema, 'a b c'); // it passes and returns ['a', 'b', 'c']
 ```
 
 Custom constraints
@@ -299,6 +298,6 @@ Custom constraints
 $schema = Expect::arrayOf('string')
 	->assert(function ($v) { return count($v) % 2 === 0; }); // count must be even number
 
-$processor->process($schema, ['a', 'b']); // validates, 2 is even number
+$processor->process($schema, ['a', 'b']); // it passes, 2 is even number
 $processor->process($schema, ['a', 'b', 'c']); // error, 3 is not even number
 ```
