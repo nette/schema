@@ -221,6 +221,16 @@ Ranges of numbers are specified using a combination of `min()` and `max()`:
 $schema = Expect::int()->min(10)->max(20);
 ```
 
+Regular expressions
+-------------------
+
+String can be restricted by regular expression using the `pattern()`:
+
+```php
+// just 9 numbers
+$schema = Expect::string()->pattern('\d{9}');
+```
+
 Data mapping to objects
 -----------------------
 
