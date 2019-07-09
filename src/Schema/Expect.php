@@ -24,9 +24,9 @@ use Nette\Schema\Elements\Type;
  * @method static Type float($default = null)
  * @method static Type bool($default = null)
  * @method static Type null()
- * @method static Type array()
- * @method static Type list()
- * @method static Type mixed()
+ * @method static Type array($default = [])
+ * @method static Type list($default = [])
+ * @method static Type mixed($default = null)
  * @method static Type email($default = null)
  */
 final class Expect
