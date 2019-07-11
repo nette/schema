@@ -62,9 +62,13 @@ trait Base
 	}
 
 
-	public function assert(callable $handler): self
+	public function assert(callable $handler, ?string $description = null): self
 	{
-		$this->asserts[] = $handler;
+		if ($description === null) {
+			$this->asserts[] = $handler;
+		} else {
+			$this->asserts[$description] = $handler;
+		}
 		return $this;
 	}
 
@@ -112,7 +116,7 @@ trait Base
 
 		foreach ($this->asserts as $i => $assert) {
 			if (!$assert($value)) {
-				$expected = is_string($assert) ? "$assert()" : "#$i";
+				$expected = !is_numeric($i) ? "\"$i\"" : (is_string($assert) ? "$assert()" : "#$i");
 				$context->addError("Failed assertion $expected for option %path% with value " . static::formatValue($value) . '.');
 				return;
 			}
