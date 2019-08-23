@@ -77,12 +77,21 @@ final class Structure implements Schema
 	public function normalize($value, Context $context)
 	{
 		$value = $this->doNormalize($value, $context);
-		if (is_array($value)) {
-			foreach ($value as $key => $val) {
+		if (is_array($value) || is_object($value)) {
+			// When non-iterable object is received, iterate through its public properties
+			$properties = is_iterable($value) ? $value : get_object_vars($value);
+
+			foreach ($properties as $key => $val) {
 				$itemSchema = $this->items[$key] ?? $this->otherItems;
 				if ($itemSchema) {
 					$context->path[] = $key;
-					$value[$key] = $itemSchema->normalize($val, $context);
+
+					if (is_object($value)) {
+						$value->{$key} = $itemSchema->normalize($val, $context);
+					} else {
+						$value[$key] = $itemSchema->normalize($val, $context);
+					}
+
 					array_pop($context->path);
 				}
 			}
