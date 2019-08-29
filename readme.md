@@ -197,6 +197,19 @@ $schema = Expect::structure([
 $processor->process($schema, ['additional' => 1]); // it passes
 ```
 
+Structures are always normalized to objects:
+
+```php
+$schema = Expect::structure([
+	'key' => Expect::string(),
+]);
+
+$normalized = $processor->process($schema, ['key' => 'test']);
+
+is_array($normalized); // false
+is_object($normalized); // true
+```
+
 Size and ranges
 ---------------
 
