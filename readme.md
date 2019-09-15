@@ -43,7 +43,6 @@ try {
 }
 
 // in case of error it throws Nette\Schema\ValidationException
-
 ```
 
 Defining schema
@@ -153,6 +152,8 @@ Structures
 
 Structures are objects with defined keys. Each of these key => pairs is conventionally referred to as a “property”.
 
+Structures accept arrays and objects and return `stdClass` objects (unless you change it with `castTo('array')` etc).
+
 By default, all properties are optional and have default value `null`. You can define mandatory properties via `required()`:
 
 ```php
@@ -227,7 +228,7 @@ Regular expressions
 String can be restricted by regular expression using the `pattern()`:
 
 ```php
-// just 9 numbers
+// just 9 digits
 $schema = Expect::string()->pattern('\d{9}');
 ```
 
@@ -237,7 +238,8 @@ Data mapping to objects
 Schema can be generated from class:
 
 ```php
-class Config {
+class Config
+{
 	/** @var string */
 	public $dsn;
 
@@ -270,7 +272,8 @@ You can even use PHP 7.4 notation:
 
 
 ```php
-class Config {
+class Config
+{
 	public string $dsn;
 	public ?string $user;
 	public ?string $password;
