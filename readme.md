@@ -153,6 +153,8 @@ Structures
 
 Structures are objects with defined keys. Each of these key => pairs is conventionally referred to as a “property”.
 
+Structures accept arrays and objects and return `stdClass` objects (unless you change it with `castTo('array')` etc).
+
 By default, all properties are optional and have default value `null`. You can define mandatory properties via `required()`:
 
 ```php
