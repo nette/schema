@@ -27,7 +27,7 @@ trait Base
 	/** @var callable|null */
 	private $before;
 
-	/** @var callable[] */
+	/** @var array[] */
 	private $asserts = [];
 
 	/** @var string|null */
@@ -62,9 +62,9 @@ trait Base
 	}
 
 
-	public function assert(callable $handler): self
+	public function assert(callable $handler, string $description = null): self
 	{
-		$this->asserts[] = $handler;
+		$this->asserts[] = [$handler, $description];
 		return $this;
 	}
 
@@ -110,9 +110,9 @@ trait Base
 			}
 		}
 
-		foreach ($this->asserts as $i => $assert) {
-			if (!$assert($value)) {
-				$expected = is_string($assert) ? "$assert()" : "#$i";
+		foreach ($this->asserts as $i => [$handler, $description]) {
+			if (!$handler($value)) {
+				$expected = $description ? ('"' . $description . '"') : (is_string($handler) ? "$handler()" : "#$i");
 				$context->addError("Failed assertion $expected for option %path% with value " . static::formatValue($value) . '.');
 				return;
 			}

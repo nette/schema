@@ -314,3 +314,18 @@ $schema = Expect::arrayOf('string')
 $processor->process($schema, ['a', 'b']); // it passes, 2 is even number
 $processor->process($schema, ['a', 'b', 'c']); // error, 3 is not even number
 ```
+
+Or
+
+```php
+$schema = Expect::string()->assert('is_file'); // file must exist
+```
+
+You can add custom description for every assert. This description will be part of error message.
+
+```php
+$schema = Expect::arrayOf('string')
+	->assert(function ($v) { return count($v) % 2 === 0; }, 'Even items in array');
+
+$processor->process($schema, ['a', 'b', 'c']); // Failed assertion "Even items in array" for option with value array.
+```
