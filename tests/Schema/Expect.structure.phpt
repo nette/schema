@@ -49,6 +49,15 @@ test(function () { // accepts object
 	checkValidationErrors(function () use ($schema) {
 		(new Processor)->process($schema, (object) ['a' => 1]);
 	}, ["The option 'a' expects to be string, int 1 given."]);
+
+	$schema = Expect::structure(['a' => Expect::string()->before('strrev')]);
+
+	Assert::equal((object) ['a' => 'oof'], (new Processor)->process($schema, (object) ['a' => 'foo']));
+
+	Assert::equal(
+		(object) ['a' => 'rab'],
+		(new Processor)->processMultiple($schema, [(object) ['a' => 'foo'], (object) ['a' => 'bar']])
+	);
 });
 
 

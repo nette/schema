@@ -77,6 +77,9 @@ final class Structure implements Schema
 	public function normalize($value, Context $context)
 	{
 		$value = $this->doNormalize($value, $context);
+		if (is_object($value)) {
+			$value = (array) $value;
+		}
 		if (is_array($value)) {
 			foreach ($value as $key => $val) {
 				$itemSchema = $this->items[$key] ?? $this->otherItems;
@@ -124,8 +127,6 @@ final class Structure implements Schema
 	{
 		if ($value === null) {
 			$value = []; // is unable to distinguish null from array in NEON
-		} elseif (is_object($value)) {
-			$value = (array) $value;
 		}
 
 		$expected = 'array' . ($this->range === [null, null] ? '' : ':' . implode('..', $this->range));
