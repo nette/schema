@@ -11,7 +11,7 @@ namespace Nette\Schema\Elements;
 
 use Nette;
 use Nette\Schema\Context;
-
+use Nette\Schema\Schema;
 
 /**
  * @internal
@@ -74,6 +74,9 @@ trait Base
 		if ($this->required) {
 			$context->addError('The mandatory option %path% is missing.');
 			return null;
+		}
+		if ($this->default instanceof Schema) {
+			return $this->default->completeDefault($context);
 		}
 		return $this->default;
 	}
