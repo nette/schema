@@ -161,3 +161,16 @@ test(function () { // processing
 	Assert::same('two', $processor->processMultiple($schema, ['one', 'two']));
 	Assert::same(null, $processor->processMultiple($schema, ['one', null]));
 });
+
+
+test(function () { // Schema as default value
+	$default = Expect::structure([
+		'key2' => Expect::string(),
+	])->castTo('array');
+
+	$schema = Expect::structure([
+		'key1' => Expect::anyOf(false, $default)->default($default),
+	])->castTo('array');
+
+	Assert::same(['key1' => ['key2' => null]], (new Processor)->process($schema, null));
+});

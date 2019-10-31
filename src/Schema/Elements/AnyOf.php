@@ -99,4 +99,17 @@ final class AnyOf implements Schema
 			$context->addError("The option %path% expects to be $hints, " . static::formatValue($value) . ' given.');
 		}
 	}
+
+
+	public function completeDefault(Context $context)
+	{
+		if ($this->required) {
+			$context->addError('The mandatory option %path% is missing.');
+			return null;
+		}
+		if ($this->default instanceof Schema) {
+			return $this->default->completeDefault($context);
+		}
+		return $this->default;
+	}
 }
