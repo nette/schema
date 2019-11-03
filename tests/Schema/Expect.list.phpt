@@ -3,6 +3,7 @@
 declare(strict_types=1);
 
 use Nette\Schema\Expect;
+use Nette\Schema\Helpers;
 use Nette\Schema\Processor;
 use Tester\Assert;
 
@@ -45,6 +46,8 @@ test(function () { // merging
 	Assert::same([1, 2, 3, 'a', 'b', 'c'], (new Processor)->process($schema, ['a', 'b', 'c']));
 
 	Assert::same([1, 2, 3], (new Processor)->process($schema, null));
+
+	Assert::same(['a', 'b', 'c'], (new Processor)->process($schema, ['a', 'b', 'c', Helpers::PREVENT_MERGING => true]));
 });
 
 
@@ -64,6 +67,8 @@ test(function () { // merging & other items validation
 	]);
 
 	Assert::same([1, 2, 3], (new Processor)->process($schema, null));
+
+	Assert::same(['a', 'b', 'c'], (new Processor)->process($schema, ['a', 'b', 'c', Helpers::PREVENT_MERGING => true]));
 });
 
 

@@ -135,8 +135,13 @@ final class Type implements Schema
 			$value = []; // is unable to distinguish null from array in NEON
 		}
 
+		$cleanValue = $value;
+		if (is_array($cleanValue) && isset($cleanValue[Helpers::PREVENT_MERGING])) {
+			unset($cleanValue[Helpers::PREVENT_MERGING]);
+		}
+
 		$expected = $this->type . ($this->range === [null, null] ? '' : ':' . implode('..', $this->range));
-		if (!$this->doValidate($value, $expected, $context)) {
+		if (!$this->doValidate($cleanValue, $expected, $context)) {
 			return;
 		}
 		if ($this->pattern !== null && !preg_match("\x01^(?:$this->pattern)$\x01Du", $value)) {
@@ -150,7 +155,7 @@ final class Type implements Schema
 
 		if ($this->items) {
 			$errCount = count($context->errors);
-			foreach ($value as $key => $val) {
+			foreach ($cleanValue as $key => $val) {
 				$context->path[] = $key;
 				$value[$key] = $this->items->complete($val, $context);
 				array_pop($context->path);
