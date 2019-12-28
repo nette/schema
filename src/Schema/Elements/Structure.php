@@ -140,7 +140,7 @@ final class Structure implements Schema
 			if ($this->otherItems) {
 				$items += array_fill_keys($extraKeys, $this->otherItems);
 			} else {
-				$hint = Nette\Utils\ObjectHelpers::getSuggestion(array_map('strval', array_keys($items)), (string) $extraKeys[0]);
+				$hint = Nette\Utils\Helpers::getSuggestion(array_map('strval', array_keys($items)), (string) $extraKeys[0]);
 				$s = implode("', '", array_map(function ($key) use ($context) {
 					return implode(' › ', array_merge($context->path, [$key]));
 				}, $hint ? [$extraKeys[0]] : $extraKeys));
