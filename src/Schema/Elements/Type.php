@@ -80,7 +80,7 @@ final class Type implements Schema
 	}
 
 
-	public function pattern(string $pattern): self
+	public function pattern(?string $pattern): self
 	{
 		$this->pattern = $pattern;
 		return $this;
