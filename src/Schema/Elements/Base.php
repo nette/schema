@@ -41,9 +41,9 @@ trait Base
 	}
 
 
-	public function required(): self
+	public function required(bool $state = true): self
 	{
-		$this->required = true;
+		$this->required = $state;
 		return $this;
 	}
 

@@ -102,6 +102,32 @@ test(function () { // required
 });
 
 
+test(function () { // required as argument
+	$schema = Expect::structure([
+		'key1' => Expect::anyOf(Expect::string(), Expect::int())->required(),
+		'key1nr' => Expect::anyOf(Expect::string(), Expect::int())->required(false),
+		'key2' => Expect::anyOf(Expect::string('default'), true, Expect::int())->required(),
+		'key2nr' => Expect::anyOf(Expect::string('default'), true, Expect::int())->required(false),
+		'key3' => Expect::anyOf(true, Expect::string('default'), Expect::int())->required(),
+		'key3nr' => Expect::anyOf(true, Expect::string('default'), Expect::int())->required(false),
+		'key4' => Expect::anyOf(Expect::string()->nullable(), Expect::int())->required(),
+		'key4nr' => Expect::anyOf(Expect::string()->nullable(), Expect::int())->required(false),
+		'key5' => Expect::anyOf(true, Expect::string('default'), Expect::int())->required()->nullable(),
+		'key5nr' => Expect::anyOf(true, Expect::string('default'), Expect::int())->required(false)->nullable(),
+	]);
+
+	checkValidationErrors(function () use ($schema) {
+		(new Processor)->process($schema, []);
+	}, [
+		"The mandatory option 'key1' is missing.",
+		"The mandatory option 'key2' is missing.",
+		"The mandatory option 'key3' is missing.",
+		"The mandatory option 'key4' is missing.",
+		"The mandatory option 'key5' is missing.",
+	]);
+});
+
+
 test(function () { // not nullable
 	$schema = Expect::structure([
 		'key1' => Expect::anyOf(Expect::string(), Expect::int()),
