@@ -72,12 +72,8 @@ final class Processor
 
 	private function throwsErrors(Context $context): void
 	{
-		$messages = [];
-		foreach ($context->errors as $error) {
-			$messages[] = $error->toString();
-		}
-		if ($messages) {
-			throw new ValidationException($messages[0], $messages);
+		if ($context->errors) {
+			throw new ValidationException(null, $context->errors);
 		}
 	}
 
