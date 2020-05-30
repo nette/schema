@@ -72,7 +72,10 @@ trait Base
 	public function completeDefault(Context $context)
 	{
 		if ($this->required) {
-			$context->addError('The mandatory option %path% is missing.');
+			$context->addError(
+				'The mandatory option %path% is missing.',
+				__CLASS__ . ':missing'
+			);
 			return null;
 		}
 		return $this->default;
@@ -94,7 +97,11 @@ trait Base
 			Nette\Utils\Validators::assert($value, $expected, 'option %path%');
 			return true;
 		} catch (Nette\Utils\AssertionException $e) {
-			$context->addError($e->getMessage(), $expected);
+			$context->addError(
+				$e->getMessage(),
+				__CLASS__ . ':unexpected',
+				$expected
+			);
 			return false;
 		}
 	}
@@ -113,7 +120,10 @@ trait Base
 		foreach ($this->asserts as $i => [$handler, $description]) {
 			if (!$handler($value)) {
 				$expected = $description ? ('"' . $description . '"') : (is_string($handler) ? "$handler()" : "#$i");
-				$context->addError("Failed assertion $expected for option %path% with value " . static::formatValue($value) . '.');
+				$context->addError(
+					"Failed assertion $expected for option %path% with value " . static::formatValue($value) . '.',
+					__CLASS__ . ':assertion'
+				);
 				return;
 			}
 		}
