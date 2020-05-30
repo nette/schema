@@ -100,7 +100,7 @@ trait Base
 			$context->addError(
 				$e->getMessage(),
 				__CLASS__ . ':unexpected',
-				$expected
+				['expected' => $expected]
 			);
 			return false;
 		}
