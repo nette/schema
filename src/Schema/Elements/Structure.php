@@ -144,7 +144,10 @@ final class Structure implements Schema
 				$s = implode("', '", array_map(function ($key) use ($context) {
 					return implode(' › ', array_merge($context->path, [$key]));
 				}, $hint ? [$extraKeys[0]] : $extraKeys));
-				$context->addError("Unexpected option '$s'" . ($hint ? ", did you mean '$hint'?" : '.'));
+				$context->addError(
+					"Unexpected option '$s'" . ($hint ? ", did you mean '$hint'?" : '.'),
+					Nette\Schema\Message::UNEXPECTED_ITEM
+				);
 			}
 		}
 

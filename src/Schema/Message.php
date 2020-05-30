@@ -16,8 +16,21 @@ final class Message
 {
 	use Nette\SmartObject;
 
+	public const TYPE_MISMATCH = 'schema.typeMismatch';
+
+	public const PATTERN_MISMATCH = 'schema.patternMismatch';
+
+	public const FAILED_ASSERTION = 'schema.failedAssertion';
+
+	public const MISSING_ITEM = 'schema.missingItem';
+
+	public const UNEXPECTED_ITEM = 'schema.unexpectedItem';
+
 	/** @var string */
 	public $message;
+
+	/** @var string */
+	public $code;
 
 	/** @var string[] */
 	public $path;
@@ -26,9 +39,10 @@ final class Message
 	public $variables;
 
 
-	public function __construct(string $message, array $path, array $variables = [])
+	public function __construct(string $message, string $code, array $path, array $variables = [])
 	{
 		$this->message = $message;
+		$this->code = $code;
 		$this->path = $path;
 		$this->variables = $variables;
 	}
