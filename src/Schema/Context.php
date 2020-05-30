@@ -29,8 +29,8 @@ final class Context
 	public $dynamics = [];
 
 
-	public function addError($message, $expected = null): Message
+	public function addError(string $message, string $code, string $expected = null): Message
 	{
-		return $this->errors[] = new Message($message, $this->path, ['expected' => $expected]);
+		return $this->errors[] = new Message($message, $code, $this->path, ['expected' => $expected]);
 	}
 }

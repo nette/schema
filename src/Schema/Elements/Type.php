@@ -141,7 +141,10 @@ final class Type implements Schema
 			return;
 		}
 		if ($value !== null && $this->pattern !== null && !preg_match("\x01^(?:$this->pattern)$\x01Du", $value)) {
-			$context->addError("The option %path% expects to match pattern '$this->pattern', '$value' given.");
+			$context->addError(
+				"The option %path% expects to match pattern '$this->pattern', '$value' given.",
+				Nette\Schema\Message::PATTERN_MISMATCH
+			);
 			return;
 		}
 

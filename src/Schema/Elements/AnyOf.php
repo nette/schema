@@ -96,7 +96,10 @@ final class AnyOf implements Schema
 			$context->errors = array_merge($context->errors, $innerErrors);
 		} else {
 			$expecteds = implode('|', array_unique($expecteds));
-			$context->addError("The option %path% expects to be $expecteds, " . static::formatValue($value) . ' given.');
+			$context->addError(
+				"The option %path% expects to be $expecteds, " . static::formatValue($value) . ' given.',
+				Nette\Schema\Message::UNEXPECTED_VALUE
+			);
 		}
 	}
 
@@ -104,7 +107,10 @@ final class AnyOf implements Schema
 	public function completeDefault(Context $context)
 	{
 		if ($this->required) {
-			$context->addError('The mandatory option %path% is missing.');
+			$context->addError(
+				'The mandatory option %path% is missing.',
+				Nette\Schema\Message::OPTION_MISSING
+			);
 			return null;
 		}
 		if ($this->default instanceof Schema) {
