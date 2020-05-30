@@ -72,13 +72,8 @@ final class Processor
 
 	private function throwsErrors(Context $context): void
 	{
-		$messages = [];
-		foreach ($context->errors as $error) {
-			$pathStr = " '" . implode(' › ', $error->path) . "'";
-			$messages[] = str_replace(' %path%', $error->path ? $pathStr : '', $error->message);
-		}
-		if ($messages) {
-			throw new ValidationException($messages[0], $messages);
+		if ($context->errors) {
+			throw new ValidationException(null, $context->errors);
 		}
 	}
 
