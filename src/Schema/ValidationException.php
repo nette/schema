@@ -55,7 +55,26 @@ class ValidationException extends Nette\InvalidStateException
 
 	private function formatMessage(\stdClass $error): string
 	{
-		$pathStr = " '" . implode(' › ', $error->path) . "'";
-		return str_replace(' %path%', $error->path ? $pathStr : '', $error->message);
+		$error = clone $error;
+		$error->path = $error->path ? "'" . implode(' › ', $error->path) . "'" : null;
+		$error->value = self::formatValue($error->value ?? null);
+		return preg_replace_callback('~( ?)%(\w+)%~', function ($m) use ($error) {
+			[, $space, $prop] = $m;
+			return $error->$prop === null ? '' : $space . $error->$prop;
+		}, $error->message);
+	}
+
+
+	public static function formatValue($value): string
+	{
+		if (is_string($value)) {
+			return "'$value'";
+		} elseif (is_bool($value)) {
+			return $value ? 'true' : 'false';
+		} elseif (is_scalar($value)) {
+			return (string) $value;
+		} else {
+			return strtolower(gettype($value));
+		}
 	}
 }

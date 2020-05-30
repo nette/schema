@@ -88,7 +88,7 @@ final class AnyOf implements Schema
 				if ($item === $value) {
 					return $this->doFinalize($value, $context);
 				}
-				$expecteds[] = static::formatValue($item);
+				$expecteds[] = Nette\Schema\ValidationException::formatValue($item);
 			}
 		}
 
@@ -97,8 +97,9 @@ final class AnyOf implements Schema
 		} else {
 			$expecteds = implode('|', array_unique($expecteds));
 			$context->addError(
-				"The option %path% expects to be $expecteds, " . static::formatValue($value) . ' given.',
-				__CLASS__ . ':unexpected'
+				'The option %path% expects to be %expected%, %value% given.',
+				__CLASS__ . ':unexpected',
+				['value' => $value, 'expected' => $expecteds]
 			);
 		}
 	}
