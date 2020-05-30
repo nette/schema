@@ -49,6 +49,9 @@ try {
 }
 ```
 
+Method `$e->getMessages()` returns array of all message strings and `$e->getMessageObjects()` return all messages as [Nette\Schema\Message](https://api.nette.org/3.1/Nette/Schema/Message.html) objects.
+
+
 Defining Schema
 ---------------
 

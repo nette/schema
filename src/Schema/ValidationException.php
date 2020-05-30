@@ -17,18 +17,37 @@ use Nette;
  */
 class ValidationException extends Nette\InvalidStateException
 {
-	/** @var array */
+	/** @var Message[] */
 	private $messages;
 
 
-	public function __construct(string $message, array $messages = [])
+	/**
+	 * @param  Message[]  $messages
+	 */
+	public function __construct(?string $message, array $messages = [])
 	{
-		parent::__construct($message);
-		$this->messages = $messages ?: [$message];
+		parent::__construct($message ?: $messages[0]->toString());
+		$this->messages = $messages;
 	}
 
 
+	/**
+	 * @return string[]
+	 */
 	public function getMessages(): array
+	{
+		$res = [];
+		foreach ($this->messages as $message) {
+			$res[] = $message->toString();
+		}
+		return $res;
+	}
+
+
+	/**
+	 * @return Message[]
+	 */
+	public function getMessageObjects(): array
 	{
 		return $this->messages;
 	}
