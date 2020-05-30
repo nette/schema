@@ -140,15 +140,15 @@ final class Structure implements Schema
 			if ($this->otherItems) {
 				$items += array_fill_keys($extraKeys, $this->otherItems);
 			} else {
-				$hint = Nette\Utils\Helpers::getSuggestion(array_map('strval', array_keys($items)), (string) $extraKeys[0]);
-				$s = implode("', '", array_map(function ($key) use ($context) {
-					return implode(' › ', array_merge($context->path, [$key]));
-				}, $hint ? [$extraKeys[0]] : $extraKeys));
-				$context->addError(
-					"Unexpected item '$s'" . ($hint ? ", did you mean '$hint'?" : '.'),
-					Nette\Schema\Message::UNEXPECTED_ITEM,
-					['hint' => $hint]
-				);
+				$keys = array_map('strval', array_keys($items));
+				foreach ($extraKeys as $key) {
+					$hint = Nette\Utils\Helpers::getSuggestion($keys, (string) $key);
+					$context->addError(
+						'Unexpected item %path%' . ($hint ? ", did you mean '%hint%'?" : '.'),
+						Nette\Schema\Message::UNEXPECTED_ITEM,
+						['hint' => $hint]
+					)->path[] = $key;
+				}
 			}
 		}
 

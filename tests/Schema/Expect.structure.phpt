@@ -17,7 +17,7 @@ test('without items', function () {
 
 	checkValidationErrors(function () use ($schema) {
 		(new Processor)->process($schema, [1, 2, 3]);
-	}, ["Unexpected item '0', '1', '2'."]);
+	}, ["Unexpected item '0'.", "Unexpected item '1'.", "Unexpected item '2'."]);
 
 	checkValidationErrors(function () use ($schema) {
 		(new Processor)->process($schema, ['key' => 'val']);
@@ -141,7 +141,8 @@ test('with indexed item', function () {
 	checkValidationErrors(function () use ($processor, $schema) {
 		$processor->process($schema, [1, 2, 3]);
 	}, [
-		"Unexpected item '1', '2'.",
+		"Unexpected item '1'.",
+		"Unexpected item '2'.",
 		"The item '0' expects to be string, int 1 given.",
 	]);
 
@@ -227,7 +228,11 @@ test('item with default value', function () {
 
 	checkValidationErrors(function () use ($schema) {
 		(new Processor)->process($schema, [1, 2, 3]);
-	}, ["Unexpected item '0', did you mean 'b'?"]);
+	}, [
+		"Unexpected item '0', did you mean 'b'?",
+		"Unexpected item '1', did you mean 'b'?",
+		"Unexpected item '2', did you mean 'b'?",
+	]);
 
 	Assert::equal((object) ['b' => 123], (new Processor)->process($schema, []));
 
@@ -318,6 +323,8 @@ test('structure items', function () {
 		(new Processor)->process($schema, [1, 2, 3]);
 	}, [
 		"Unexpected item '0', did you mean 'a'?",
+		"Unexpected item '1', did you mean 'a'?",
+		"Unexpected item '2', did you mean 'a'?",
 		"The mandatory item 'b › y' is missing.",
 	]);
 
@@ -354,7 +361,8 @@ test('structure items', function () {
 	checkValidationErrors(function () use ($schema) {
 		(new Processor)->process($schema, ['b' => ['x1' => 'val', 'x2' => 'val']]);
 	}, [
-		"Unexpected item 'b › x1', 'b › x2'.",
+		"Unexpected item 'b › x1'.",
+		"Unexpected item 'b › x2'.",
 		"The mandatory item 'b › y' is missing.",
 	]);
 
