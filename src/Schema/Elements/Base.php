@@ -100,7 +100,7 @@ trait Base
 			$context->addError(
 				$e->getMessage(),
 				Nette\Schema\Message::UNEXPECTED_VALUE,
-				$expected
+				['value' => $value, 'expected' => $expected]
 			);
 			return false;
 		}
@@ -121,27 +121,14 @@ trait Base
 			if (!$handler($value)) {
 				$expected = $description ? ('"' . $description . '"') : (is_string($handler) ? "$handler()" : "#$i");
 				$context->addError(
-					"Failed assertion $expected for option %path% with value " . static::formatValue($value) . '.',
-					Nette\Schema\Message::FAILED_ASSERTION
+					'Failed assertion %assertion% for option %path% with value %value%.',
+					Nette\Schema\Message::FAILED_ASSERTION,
+					['value' => $value, 'assertion' => $expected]
 				);
 				return;
 			}
 		}
 
 		return $value;
-	}
-
-
-	private static function formatValue($value): string
-	{
-		if (is_string($value)) {
-			return "'$value'";
-		} elseif (is_bool($value)) {
-			return $value ? 'true' : 'false';
-		} elseif (is_scalar($value)) {
-			return (string) $value;
-		} else {
-			return strtolower(gettype($value));
-		}
 	}
 }
