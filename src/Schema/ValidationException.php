@@ -17,19 +17,45 @@ use Nette;
  */
 class ValidationException extends Nette\InvalidStateException
 {
-	/** @var array */
-	private $messages;
+	/** @var \stdClass[] */
+	private $errors;
 
 
-	public function __construct(string $message, array $messages = [])
+	/**
+	 * @param  \stdClass[]  $errors
+	 */
+	public function __construct(?string $message, array $errors = [])
 	{
-		parent::__construct($message);
-		$this->messages = $messages ?: [$message];
+		parent::__construct($message ?: self::formatMessage($errors[0]));
+		$this->errors = $errors;
 	}
 
 
+	/**
+	 * @return string[]
+	 */
 	public function getMessages(): array
 	{
-		return $this->messages;
+		$messages = [];
+		foreach ($this->errors as $error) {
+			$messages[] = $this->formatMessage($error);
+		}
+		return $messages;
+	}
+
+
+	/**
+	 * @return \stdClass[]
+	 */
+	public function getErrors(): array
+	{
+		return $this->errors;
+	}
+
+
+	private function formatMessage(\stdClass $error): string
+	{
+		$pathStr = " '" . implode(' › ', $error->path) . "'";
+		return str_replace(' %path%', $error->path ? $pathStr : '', $error->message);
 	}
 }
