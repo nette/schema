@@ -32,13 +32,12 @@ final class Context
 	public $dynamics = [];
 
 
-	public function addError(string $message, string $code, string $hint = null)
+	public function addError(string $message, string $code, array $extra = [])
 	{
-		$this->errors[] = (object) [
+		$this->errors[] = (object) ($extra + [
 			'message' => $message,
 			'path' => $this->path,
 			'code' => $code,
-			'hint' => $hint,
-		];
+		]);
 	}
 }

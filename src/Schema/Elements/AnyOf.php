@@ -68,7 +68,7 @@ final class AnyOf implements Schema
 
 	public function complete($value, Nette\Schema\Context $context)
 	{
-		$hints = $innerErrors = [];
+		$expecteds = $innerErrors = [];
 		foreach ($this->set as $item) {
 			if ($item instanceof Schema) {
 				$dolly = new Context;
@@ -78,26 +78,26 @@ final class AnyOf implements Schema
 					return $this->doFinalize($res, $context);
 				}
 				foreach ($dolly->errors as $error) {
-					if ($error->path !== $context->path || !$error->hint) {
+					if ($error->path !== $context->path || empty($error->expected)) {
 						$innerErrors[] = $error;
 					} else {
-						$hints[] = $error->hint;
+						$expecteds[] = $error->expected;
 					}
 				}
 			} else {
 				if ($item === $value) {
 					return $this->doFinalize($value, $context);
 				}
-				$hints[] = static::formatValue($item);
+				$expecteds[] = static::formatValue($item);
 			}
 		}
 
 		if ($innerErrors) {
 			$context->errors = array_merge($context->errors, $innerErrors);
 		} else {
-			$hints = implode('|', array_unique($hints));
+			$expecteds = implode('|', array_unique($expecteds));
 			$context->addError(
-				"The option %path% expects to be $hints, " . static::formatValue($value) . ' given.',
+				"The option %path% expects to be $expecteds, " . static::formatValue($value) . ' given.',
 				__CLASS__ . ':unexpected'
 			);
 		}
