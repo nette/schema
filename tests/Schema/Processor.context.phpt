@@ -30,8 +30,7 @@ test('', function () {
 			new Nette\Schema\Message(
 				'The mandatory option %path% is missing.',
 				Nette\Schema\Message::OPTION_MISSING,
-				['first', 'r'],
-				['expected' => null]
+				['first', 'r']
 			),
 		],
 		$e->getMessageObjects()
