@@ -145,7 +145,7 @@ final class Structure implements Schema
 					$hint = Nette\Utils\Helpers::getSuggestion($keys, (string) $key);
 					$context->addError(
 						'Unexpected option %path%' . ($hint ? ", did you mean '%hint%'?" : '.'),
-						__CLASS__ . ':unexpected',
+						Nette\Schema\ValidationException::UNEXPECTED_STRUCTURE_KEY,
 						[
 							'path' => array_merge($context->path, [$key]),
 							'hint' => $hint,
