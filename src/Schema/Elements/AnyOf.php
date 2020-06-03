@@ -98,7 +98,7 @@ final class AnyOf implements Schema
 			$expecteds = implode('|', array_unique($expecteds));
 			$context->addError(
 				'The option %path% expects to be %expected%, %value% given.',
-				__CLASS__ . ':unexpected',
+				Nette\Schema\ValidationException::UNEXPECTED_VALUE,
 				['value' => $value, 'expected' => $expecteds]
 			);
 		}
@@ -110,7 +110,7 @@ final class AnyOf implements Schema
 		if ($this->required) {
 			$context->addError(
 				'The mandatory option %path% is missing.',
-				__CLASS__ . ':missing'
+				Nette\Schema\ValidationException::OPTION_MISSING
 			);
 			return null;
 		}

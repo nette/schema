@@ -142,7 +142,7 @@ final class Type implements Schema
 		if ($this->pattern !== null && !preg_match("\x01^(?:$this->pattern)$\x01Du", $value)) {
 			$context->addError(
 				"The option %path% expects to match pattern '%pattern%', %value% given.",
-				__CLASS__ . ':unexpected',
+				Nette\Schema\ValidationException::PATTERN_MISMATCH,
 				['value' => $value, 'pattern' => $this->pattern]
 			);
 			return;
