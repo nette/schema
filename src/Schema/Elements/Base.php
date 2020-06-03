@@ -74,7 +74,7 @@ trait Base
 		if ($this->required) {
 			$context->addError(
 				'The mandatory option %path% is missing.',
-				__CLASS__ . ':missing'
+				Nette\Schema\ValidationException::OPTION_MISSING
 			);
 			return null;
 		}
@@ -99,7 +99,7 @@ trait Base
 		} catch (Nette\Utils\AssertionException $e) {
 			$context->addError(
 				$e->getMessage(),
-				__CLASS__ . ':unexpected',
+				Nette\Schema\ValidationException::UNEXPECTED_VALUE,
 				['value' => $value, 'expected' => $expected]
 			);
 			return false;
@@ -122,7 +122,7 @@ trait Base
 				$expected = $description ? ('"' . $description . '"') : (is_string($handler) ? "$handler()" : "#$i");
 				$context->addError(
 					'Failed assertion %assertion% for option %path% with value %value%.',
-					__CLASS__ . ':assertion',
+					Nette\Schema\ValidationException::FAILED_ASSERTION,
 					['value' => $value, 'assertion' => $expected]
 				);
 				return;
