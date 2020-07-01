@@ -18,26 +18,20 @@ use Nette;
 class ValidationException extends Nette\InvalidStateException
 {
 
-    /**
-     * extra variables: []
-     */
-    public const OPTION_MISSING = 'schema.optionMissing';
-    /**
-     * extra variables: ['value' => string, 'pattern' => string]
-     */
-    public const PATTERN_MISMATCH = 'schema.patternMismatch';
-    /**
-     * extra variables: ['value' => string, 'expected' => string]
-     */
-    public const UNEXPECTED_VALUE = 'schema.unexpectedValue';
-    /**
-     * extra variables: ['value' => string, 'assertion' => string]
-     */
-    public const FAILED_ASSERTION = 'schema.failedAssertion';
-    /**
-     * extra variables: ['value' => string, 'hint' => string]
-     */
-    public const UNEXPECTED_STRUCTURE_KEY = 'schema.structure.unexpectedKey';
+	/** extra variables: [] */
+	public const OPTION_MISSING = 'schema.optionMissing';
+
+	/** extra variables: ['value' => string, 'pattern' => string] */
+	public const PATTERN_MISMATCH = 'schema.patternMismatch';
+
+	/** extra variables: ['value' => string, 'expected' => string] */
+	public const UNEXPECTED_VALUE = 'schema.unexpectedValue';
+
+	/** extra variables: ['value' => string, 'assertion' => string] */
+	public const FAILED_ASSERTION = 'schema.failedAssertion';
+
+	/** extra variables: ['value' => string, 'hint' => string] */
+	public const UNEXPECTED_STRUCTURE_KEY = 'schema.structure.unexpectedKey';
 
 	/** @var \stdClass[] */
 	private $errors;
