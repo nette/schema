@@ -56,16 +56,32 @@ final class Type implements Schema
 	}
 
 
-	public function min(?float $min): self
+	/**
+	 * @param float|int|null $min
+	 * @return self
+	 */
+	public function min($min): self
 	{
-		$this->range[0] = $min;
+		if (is_numeric($min) === false && $min !== null) {
+			throw new \InvalidArgumentException('Min must be numeric, but "' . gettype($min) . '" given.');
+		}
+
+		$this->range[0] = $min === null ? null : (float) $min;
 		return $this;
 	}
 
 
-	public function max(?float $max): self
+	/**
+	 * @param float|int|null $max
+	 * @return self
+	 */
+	public function max($max): self
 	{
-		$this->range[1] = $max;
+		if (is_numeric($max) === false && $max !== null) {
+			throw new \InvalidArgumentException('Max must be numeric, but "' . gettype($max) . '" given.');
+		}
+
+		$this->range[1] = $max === null ? null : (float) $max;
 		return $this;
 	}
 
