@@ -27,7 +27,7 @@ final class Type implements Schema
 	/** @var Schema|null for arrays */
 	private $items;
 
-	/** @var array */
+	/** @var float[]|null[] */
 	private $range = [null, null];
 
 	/** @var string|null */
