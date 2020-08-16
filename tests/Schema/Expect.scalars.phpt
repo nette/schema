@@ -10,7 +10,7 @@ use Tester\Assert;
 require __DIR__ . '/../bootstrap.php';
 
 
-test(function () {
+test('', function () {
 	$schema = Expect::scalar();
 
 	Assert::same('hello', (new Processor)->process($schema, 'hello'));
@@ -27,7 +27,7 @@ test(function () {
 });
 
 
-test(function () {
+test('', function () {
 	$schema = Expect::string();
 
 	Assert::same('hello', (new Processor)->process($schema, 'hello'));
@@ -50,7 +50,7 @@ test(function () {
 });
 
 
-test(function () {
+test('', function () {
 	$schema = Expect::type('string|bool');
 
 	Assert::same('one', (new Processor)->process($schema, 'one'));
@@ -71,7 +71,7 @@ test(function () {
 });
 
 
-test(function () {
+test('', function () {
 	$schema = Expect::type('string')->nullable();
 
 	Assert::same('one', (new Processor)->process($schema, 'one'));

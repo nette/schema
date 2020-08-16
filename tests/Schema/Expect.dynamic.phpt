@@ -23,7 +23,7 @@ class DynamicParameter implements Nette\Schema\DynamicParameter
 }
 
 
-test(function () {
+test('', function () {
 	$schema = Expect::structure([
 		'a' => Expect::string()->dynamic(),
 		'b' => Expect::string('def')->dynamic(),

@@ -39,7 +39,7 @@ class MySchema implements Schema
 }
 
 
-test(function () {
+test('', function () {
 	$schema = Expect::arrayOf(new MySchema);
 	$processor = new Processor;
 
@@ -49,7 +49,7 @@ test(function () {
 });
 
 
-test(function () {
+test('', function () {
 	$schema = Expect::arrayOf(new MySchema);
 	$processor = new Processor;
 
