@@ -10,14 +10,14 @@ use Tester\Assert;
 require __DIR__ . '/../bootstrap.php';
 
 
-test(function () {
+test('', function () {
 	$schema = Expect::string()->pattern('\d{9}');
 
 	Assert::same('123456789', (new Processor)->process($schema, '123456789'));
 });
 
 
-test(function () {
+test('', function () {
 	$schema = Expect::string()->pattern('\d{9}');
 
 	checkValidationErrors(function () use ($schema) {

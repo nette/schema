@@ -18,7 +18,7 @@ Tester\Environment::setup();
 date_default_timezone_set('Europe/Prague');
 
 
-function test(\Closure $function): void
+function test(string $title, Closure $function): void
 {
 	$function();
 }

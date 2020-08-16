@@ -10,7 +10,7 @@ use Tester\Assert;
 require __DIR__ . '/../bootstrap.php';
 
 
-test(function () { // int & min
+test('int & min', function () {
 	$schema = Expect::int()->min(10);
 
 	Assert::same(10, (new Processor)->process($schema, 10));
@@ -21,7 +21,7 @@ test(function () { // int & min
 });
 
 
-test(function () { // int & max
+test('int & max', function () {
 	$schema = Expect::int()->max(20);
 
 	Assert::same(20, (new Processor)->process($schema, 20));
@@ -32,7 +32,7 @@ test(function () { // int & max
 });
 
 
-test(function () { // int & min & max
+test('int & min & max', function () {
 	$schema = Expect::int()->min(10)->max(20);
 
 	Assert::same(10, (new Processor)->process($schema, 10));
@@ -48,7 +48,7 @@ test(function () { // int & min & max
 });
 
 
-test(function () { // string
+test('string', function () {
 	$schema = Expect::string()->min(1)->max(5);
 
 	Assert::same('hello', (new Processor)->process($schema, 'hello'));
@@ -64,7 +64,7 @@ test(function () { // string
 });
 
 
-test(function () { // array
+test('array', function () {
 	$schema = Expect::array()->min(1)->max(3);
 
 	Assert::same([1], (new Processor)->process($schema, [1]));
@@ -80,7 +80,7 @@ test(function () { // array
 });
 
 
-test(function () { // structure
+test('structure', function () {
 	$schema = Expect::structure([])->otherItems('int')->min(1)->max(3);
 
 	Assert::equal((object) [1], (new Processor)->process($schema, [1]));

@@ -10,7 +10,7 @@ use Nette\Schema\Processor;
 require __DIR__ . '/../bootstrap.php';
 
 
-test(function () {
+test('', function () {
 	$schema = Expect::structure([
 		'r' => Expect::string()->required(),
 	]);

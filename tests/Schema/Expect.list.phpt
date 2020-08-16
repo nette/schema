@@ -10,7 +10,7 @@ use Tester\Assert;
 require __DIR__ . '/../bootstrap.php';
 
 
-test(function () { // without default value
+test('without default value', function () {
 	$schema = Expect::list();
 
 	Assert::same([], (new Processor)->process($schema, []));
@@ -37,7 +37,7 @@ test(function () { // without default value
 });
 
 
-test(function () { // merging
+test('merging', function () {
 	$schema = Expect::list([1, 2, 3]);
 
 	Assert::same([1, 2, 3], (new Processor)->process($schema, []));
@@ -48,7 +48,7 @@ test(function () { // merging
 });
 
 
-test(function () { // merging & other items validation
+test('merging & other items validation', function () {
 	$schema = Expect::list([1, 2, 3])->items('string');
 
 	Assert::same([1, 2, 3], (new Processor)->process($schema, []));
@@ -67,7 +67,7 @@ test(function () { // merging & other items validation
 });
 
 
-test(function () { // listOf() & scalar
+test('listOf() & scalar', function () {
 	$schema = Expect::listOf('string');
 
 	Assert::same([], (new Processor)->process($schema, []));
@@ -88,7 +88,7 @@ test(function () { // listOf() & scalar
 });
 
 
-test(function () { // listOf() & error
+test('listOf() & error', function () {
 	Assert::exception(function () {
 		Expect::listOf(['a' => Expect::string()]);
 	}, TypeError::class);
