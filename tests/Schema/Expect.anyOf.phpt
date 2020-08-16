@@ -10,7 +10,7 @@ use Tester\Assert;
 require __DIR__ . '/../bootstrap.php';
 
 
-test(function () { // with scalars
+test('with scalars', function () {
 	$schema = Expect::anyOf('one', true, Expect::int());
 
 	Assert::same('one', (new Processor)->process($schema, 'one'));
@@ -37,7 +37,7 @@ test(function () { // with scalars
 });
 
 
-test(function () { // with complex structure
+test('with complex structure', function () {
 	$schema = Expect::anyOf(Expect::listOf('string'), true, Expect::int());
 
 	checkValidationErrors(function () use ($schema) {
@@ -52,7 +52,7 @@ test(function () { // with complex structure
 });
 
 
-test(function () { // with asserts
+test('with asserts', function () {
 	$schema = Expect::anyOf(Expect::string()->assert('strlen'), true);
 
 	checkValidationErrors(function () use ($schema) {
@@ -67,7 +67,7 @@ test(function () { // with asserts
 });
 
 
-test(function () { // no default value
+test('no default value', function () {
 	$schema = Expect::structure([
 		'key1' => Expect::anyOf(Expect::string(), Expect::int()),
 		'key2' => Expect::anyOf(Expect::string('default'), true, Expect::int()),
@@ -81,7 +81,7 @@ test(function () { // no default value
 });
 
 
-test(function () { // required
+test('required', function () {
 	$schema = Expect::structure([
 		'key1' => Expect::anyOf(Expect::string(), Expect::int())->required(),
 		'key2' => Expect::anyOf(Expect::string('default'), true, Expect::int())->required(),
@@ -102,7 +102,7 @@ test(function () { // required
 });
 
 
-test(function () { // required as argument
+test('required as argument', function () {
 	$schema = Expect::structure([
 		'key1' => Expect::anyOf(Expect::string(), Expect::int())->required(),
 		'key1nr' => Expect::anyOf(Expect::string(), Expect::int())->required(false),
@@ -128,7 +128,7 @@ test(function () { // required as argument
 });
 
 
-test(function () { // not nullable
+test('not nullable', function () {
 	$schema = Expect::structure([
 		'key1' => Expect::anyOf(Expect::string(), Expect::int()),
 		'key2' => Expect::anyOf(Expect::string('default'), true, Expect::int()),
@@ -145,7 +145,7 @@ test(function () { // not nullable
 });
 
 
-test(function () { // required & nullable
+test('required & nullable', function () {
 	$schema = Expect::structure([
 		'key1' => Expect::anyOf(Expect::string()->nullable(), Expect::int())->required(),
 		'key2' => Expect::anyOf(Expect::string('default'), true, Expect::int(), null)->required(),
@@ -159,7 +159,7 @@ test(function () { // required & nullable
 });
 
 
-test(function () { // nullable anyOf
+test('nullable anyOf', function () {
 	$schema = Expect::anyOf(Expect::string(), true)->nullable();
 
 	Assert::same('one', (new Processor)->process($schema, 'one'));
@@ -172,7 +172,7 @@ test(function () { // nullable anyOf
 });
 
 
-test(function () { // processing
+test('processing', function () {
 	$schema = Expect::anyOf(Expect::string(), true)->nullable();
 	$processor = new Processor;
 
@@ -189,7 +189,7 @@ test(function () { // processing
 });
 
 
-test(function () { // Schema as default value
+test('Schema as default value', function () {
 	$default = Expect::structure([
 		'key2' => Expect::string(),
 	])->castTo('array');
