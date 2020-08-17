@@ -426,3 +426,25 @@ test('processing without default values', function () {
 		$processor->process($schema, ['d' => 'newval'])
 	);
 });
+
+
+test('processing without default values skipped on structure', function () {
+	$schema = Expect::structure([
+		'foo1' => Expect::structure([
+			'bar' => Expect::string()->default('baz'),
+		])->skipDefaults()->castTo('array'),
+		'foo2' => Expect::structure([
+			'bar' => Expect::string()->default('baz'),
+		])->castTo('array'),
+	])->castTo('array');
+
+	$processor = new Processor;
+
+	Assert::equal(
+		[
+			'foo1' => [],
+			'foo2' => ['bar' => 'baz'],
+		],
+		$processor->process($schema, [])
+	);
+});
