@@ -479,3 +479,25 @@ test('deprecated other items', function () {
 	Assert::equal((object) ['key' => null, 'other' => 'foo'], $processor->process($schema, ['other' => 'foo']));
 	Assert::same(["The item 'other' is deprecated."], $processor->getWarnings());
 });
+
+
+test('processing without default values skipped on structure', function () {
+	$schema = Expect::structure([
+		'foo1' => Expect::structure([
+			'bar' => Expect::string()->default('baz'),
+		])->skipDefaults()->castTo('array'),
+		'foo2' => Expect::structure([
+			'bar' => Expect::string()->default('baz'),
+		])->castTo('array'),
+	])->castTo('array');
+
+	$processor = new Processor;
+
+	Assert::equal(
+		[
+			'foo1' => [],
+			'foo2' => ['bar' => 'baz'],
+		],
+		$processor->process($schema, [])
+	);
+});

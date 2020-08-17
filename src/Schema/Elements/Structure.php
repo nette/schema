@@ -29,6 +29,9 @@ final class Structure implements Schema
 	/** @var array{?int, ?int} */
 	private $range = [null, null];
 
+	/** @var bool */
+	private $skipDefaults = false;
+
 
 	/**
 	 * @param  Schema[]  $items
@@ -68,6 +71,13 @@ final class Structure implements Schema
 	public function otherItems($type = 'mixed'): self
 	{
 		$this->otherItems = $type instanceof Schema ? $type : new Type($type);
+		return $this;
+	}
+
+
+	public function skipDefaults(bool $state = true): self
+	{
+		$this->skipDefaults = $state;
 		return $this;
 	}
 
@@ -170,7 +180,7 @@ final class Structure implements Schema
 				$value[$itemKey] = $itemVal->complete($value[$itemKey], $context);
 			} else {
 				$default = $itemVal->completeDefault($context); // checks required item
-				if (!$context->skipDefaults) {
+				if (!$context->skipDefaults && !$this->skipDefaults) {
 					$value[$itemKey] = $default;
 				}
 			}
