@@ -73,6 +73,7 @@ final class AnyOf implements Schema
 			if ($item instanceof Schema) {
 				$dolly = new Context;
 				$dolly->path = $context->path;
+				$value = $item->normalize($value, $dolly);
 				$res = $item->complete($value, $dolly);
 				if (!$dolly->errors) {
 					return $this->doFinalize($res, $context);

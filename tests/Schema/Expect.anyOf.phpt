@@ -200,3 +200,26 @@ test('Schema as default value', function () {
 
 	Assert::same(['key1' => ['key2' => null]], (new Processor)->process($schema, null));
 });
+
+
+test('normalizing', function () {
+	$schema = Expect::anyOf(
+		false,
+		Expect::array()
+			->before(function ($val) {
+				if (!is_string($val)) {
+					return $val;
+				}
+				return explode(',', $val);
+			})
+	);
+
+	$processor = new Processor;
+
+	Assert::same(false, $processor->process($schema, false));
+	Assert::same(['1', '2', '3'], $processor->process($schema, '1,2,3'));
+
+	checkValidationErrors(function () use ($schema) {
+		(new Processor)->process($schema, 1);
+	}, ['The option expects to be false|array, 1 given.']);
+});
