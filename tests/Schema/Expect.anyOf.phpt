@@ -200,3 +200,11 @@ test('Schema as default value', function () {
 
 	Assert::same(['key1' => ['key2' => null]], (new Processor)->process($schema, null));
 });
+
+
+test('normalization', function () {
+	$schema = Expect::anyOf(
+		Expect::string()->before(function ($v) { return (string) $v; })
+	);
+	Assert::same('1', (new Processor)->process($schema, 1));
+});
