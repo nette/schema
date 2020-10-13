@@ -74,8 +74,7 @@ final class Processor
 	{
 		$messages = [];
 		foreach ($context->errors as $error) {
-			$pathStr = " '" . implode(' › ', $error->path) . "'";
-			$messages[] = str_replace(' %path%', $error->path ? $pathStr : '', $error->message);
+			$messages[] = $error->toString();
 		}
 		if ($messages) {
 			throw new ValidationException($messages[0], $messages);

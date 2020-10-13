@@ -78,10 +78,10 @@ final class AnyOf implements Schema
 					return $this->doFinalize($res, $context);
 				}
 				foreach ($dolly->errors as $error) {
-					if ($error->path !== $context->path || !$error->expected) {
+					if ($error->path !== $context->path || !$error->variables['expected']) {
 						$innerErrors[] = $error;
 					} else {
-						$expecteds[] = $error->expected;
+						$expecteds[] = $error->variables['expected'];
 					}
 				}
 			} else {

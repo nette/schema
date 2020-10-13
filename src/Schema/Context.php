@@ -22,15 +22,15 @@ final class Context
 	/** @var string[] */
 	public $path = [];
 
-	/** @var \stdClass[] */
+	/** @var Message[] */
 	public $errors = [];
 
 	/** @var array[] */
 	public $dynamics = [];
 
 
-	public function addError($message, $expected = null)
+	public function addError($message, $expected = null): Message
 	{
-		$this->errors[] = (object) ['message' => $message, 'path' => $this->path, 'expected' => $expected];
+		return $this->errors[] = new Message($message, $this->path, ['expected' => $expected]);
 	}
 }
