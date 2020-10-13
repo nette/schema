@@ -28,6 +28,9 @@ final class Context
 	/** @var Message[] */
 	public $errors = [];
 
+	/** @var Message[] */
+	public $warnings = [];
+
 	/** @var array[] */
 	public $dynamics = [];
 
@@ -35,5 +38,11 @@ final class Context
 	public function addError(string $message, string $code, array $variables = []): Message
 	{
 		return $this->errors[] = new Message($message, $code, $this->path, $variables);
+	}
+
+
+	public function addWarning(string $message, string $code, array $variables = []): Message
+	{
+		return $this->warnings[] = new Message($message, $code, $this->path, $variables);
 	}
 }
