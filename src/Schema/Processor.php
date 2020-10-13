@@ -22,6 +22,9 @@ final class Processor
 	/** @var array */
 	public $onNewContext = [];
 
+	/** @var Context|null */
+	private $context;
+
 	/** @var bool */
 	private $skipDefaults;
 
@@ -39,11 +42,11 @@ final class Processor
 	 */
 	public function process(Schema $schema, $data)
 	{
-		$context = $this->createContext();
-		$data = $schema->normalize($data, $context);
-		$this->throwsErrors($context);
-		$data = $schema->complete($data, $context);
-		$this->throwsErrors($context);
+		$this->createContext();
+		$data = $schema->normalize($data, $this->context);
+		$this->throwsErrors();
+		$data = $schema->complete($data, $this->context);
+		$this->throwsErrors();
 		return $data;
 	}
 
@@ -55,34 +58,33 @@ final class Processor
 	 */
 	public function processMultiple(Schema $schema, array $dataset)
 	{
-		$context = $this->createContext();
+		$this->createContext();
 		$flatten = null;
 		$first = true;
 		foreach ($dataset as $data) {
-			$data = $schema->normalize($data, $context);
-			$this->throwsErrors($context);
+			$data = $schema->normalize($data, $this->context);
+			$this->throwsErrors();
 			$flatten = $first ? $data : $schema->merge($data, $flatten);
 			$first = false;
 		}
-		$data = $schema->complete($flatten, $context);
-		$this->throwsErrors($context);
+		$data = $schema->complete($flatten, $this->context);
+		$this->throwsErrors();
 		return $data;
 	}
 
 
-	private function throwsErrors(Context $context): void
+	private function throwsErrors(): void
 	{
-		if ($context->errors) {
-			throw new ValidationException(null, $context->errors);
+		if ($this->context->errors) {
+			throw new ValidationException(null, $this->context->errors);
 		}
 	}
 
 
-	private function createContext(): Context
+	private function createContext()
 	{
-		$context = new Context;
-		$context->skipDefaults = $this->skipDefaults;
-		$this->onNewContext($context);
-		return $context;
+		$this->context = new Context;
+		$this->context->skipDefaults = $this->skipDefaults;
+		$this->onNewContext($this->context);
 	}
 }
