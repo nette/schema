@@ -75,6 +75,7 @@ final class AnyOf implements Schema
 				$dolly->path = $context->path;
 				$res = $item->complete($item->normalize($value, $dolly), $dolly);
 				if (!$dolly->errors) {
+					$context->warnings = array_merge($context->warnings, $dolly->warnings);
 					return $this->doFinalize($res, $context);
 				}
 				foreach ($dolly->errors as $error) {

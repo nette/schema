@@ -73,6 +73,19 @@ final class Processor
 	}
 
 
+	/**
+	 * @return string[]
+	 */
+	public function getWarnings(): array
+	{
+		$res = [];
+		foreach ($this->context->warnings as $message) {
+			$res[] = $message->toString();
+		}
+		return $res;
+	}
+
+
 	private function throwsErrors(): void
 	{
 		if ($this->context->errors) {
