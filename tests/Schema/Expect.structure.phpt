@@ -426,3 +426,31 @@ test('processing without default values', function () {
 		$processor->process($schema, ['d' => 'newval'])
 	);
 });
+
+
+test('deprecated item', function () {
+	$schema = Expect::structure([
+		'b' => Expect::string()->deprecated('depr %path%'),
+	]);
+
+	$processor = new Processor;
+	Assert::equal(
+		(object) ['b' => 'val'],
+		$processor->process($schema, ['b' => 'val'])
+	);
+	Assert::same(["depr 'b'"], $processor->getWarnings());
+});
+
+
+test('deprecated other items', function () {
+	$schema = Expect::structure([
+		'key' => Expect::string(),
+	])->otherItems(Expect::string()->deprecated());
+
+	$processor = new Processor;
+	Assert::equal((object) ['key' => null], $processor->process($schema, []));
+	Assert::same([], $processor->getWarnings());
+
+	Assert::equal((object) ['key' => null, 'other' => 'foo'], $processor->process($schema, ['other' => 'foo']));
+	Assert::same(["The item 'other' is deprecated."], $processor->getWarnings());
+});

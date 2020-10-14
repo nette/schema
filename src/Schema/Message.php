@@ -31,6 +31,9 @@ final class Message
 	/** variables: {hint: string} */
 	public const UNEXPECTED_ITEM = 'schema.unexpectedItem';
 
+	/** no variables */
+	public const DEPRECATED = 'schema.deprecated';
+
 	/** @var string */
 	public $message;
 

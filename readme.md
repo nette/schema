@@ -257,6 +257,20 @@ $processor->process($schema, ['additional' => 1]); // OK
 $processor->process($schema, ['additional' => true]); // ERROR
 ```
 
+Deprecations
+------------
+
+You can deprecate property using the `deprecated([string $message])` method. Deprecation notices are returned by `$processor->getWarnings()` (since v1.1):
+
+```php
+$schema = Expect::structure([
+	'old' => Expect::int()->deprecated('The item %path% is deprecated'),
+]);
+
+$processor->process($schema, ['old' => 1]); // OK
+$processor->getWarnings(); // ["The item 'old' is deprecated"]
+```
+
 Ranges: min() max()
 -------------------
 

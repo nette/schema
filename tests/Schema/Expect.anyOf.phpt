@@ -159,6 +159,21 @@ test('required & nullable', function () {
 });
 
 
+test('deprecated item', function () {
+	$schema = Expect::anyOf('one', true, Expect::int()->deprecated());
+
+	$processor = new Processor;
+	Assert::same('one', $processor->process($schema, 'one'));
+	Assert::same([], $processor->getWarnings());
+
+	Assert::same(true, $processor->process($schema, true));
+	Assert::same([], $processor->getWarnings());
+
+	Assert::same(123, $processor->process($schema, 123));
+	Assert::same(['The item is deprecated.'], $processor->getWarnings());
+});
+
+
 test('nullable anyOf', function () {
 	$schema = Expect::anyOf(Expect::string(), true)->nullable();
 

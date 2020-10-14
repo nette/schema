@@ -129,6 +129,8 @@ final class Structure implements Schema
 			$value = []; // is unable to distinguish null from array in NEON
 		}
 
+		$this->doDeprecation($context);
+
 		$expected = 'array' . ($this->range === [null, null] ? '' : ':' . implode('..', $this->range));
 		if (!$this->doValidate($value, $expected, $context)) {
 			return;
