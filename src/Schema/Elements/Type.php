@@ -136,6 +136,8 @@ final class Type implements Schema
 			$value = []; // is unable to distinguish null from array in NEON
 		}
 
+		$this->doDeprecation($context);
+
 		$expected = $this->type . ($this->range === [null, null] ? '' : ':' . implode('..', $this->range));
 		if (!$this->doValidate($value, $expected, $context)) {
 			return;
