@@ -33,6 +33,9 @@ trait Base
 	/** @var string|null */
 	private $castTo;
 
+	/** @var string|null */
+	private $deprecated;
+
 
 	public function default($value): self
 	{
@@ -69,6 +72,14 @@ trait Base
 	}
 
 
+	/** Marks option as deprecated */
+	public function deprecated(string $message = 'Option %path% is deprecated.'): self
+	{
+		$this->deprecated = $message;
+		return $this;
+	}
+
+
 	public function completeDefault(Context $context)
 	{
 		if ($this->required) {
@@ -95,7 +106,6 @@ trait Base
 	{
 		try {
 			Nette\Utils\Validators::assert($value, $expected, 'option %path%');
-			return true;
 		} catch (Nette\Utils\AssertionException $e) {
 			$context->addError(
 				$e->getMessage(),
@@ -104,6 +114,14 @@ trait Base
 			);
 			return false;
 		}
+
+		if ($this->deprecated !== null) {
+			$context->addWarning(
+				$this->deprecated,
+				Nette\Schema\Message::DEPRECATED
+			);
+		}
+		return true;
 	}
 
 
