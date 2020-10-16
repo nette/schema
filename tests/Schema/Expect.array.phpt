@@ -231,6 +231,21 @@ test('arrayOf() & scalar', function () {
 });
 
 
+test('arrayOf() with defaults', function () {
+	$schema = Expect::arrayOf('string|int')->default(['foo', 42]);
+
+	Assert::same(['foo', 42], (new Processor)->process($schema, null));
+	Assert::same(['foo', 42], (new Processor)->process($schema, []));
+	Assert::same(['foo', 42, 'bar'], (new Processor)->process($schema, ['bar']));
+
+	$schema->preventMergingDefaults();
+
+	Assert::same(['foo', 42], (new Processor)->process($schema, null));
+	Assert::same(['foo', 42], (new Processor)->process($schema, []));
+	Assert::same(['bar'], (new Processor)->process($schema, ['bar']));
+});
+
+
 test('arrayOf() error', function () {
 	Assert::exception(function () {
 		Expect::arrayOf(['a' => Expect::string()]);

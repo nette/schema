@@ -88,6 +88,21 @@ test('listOf() & scalar', function () {
 });
 
 
+test('listOf() with defaults', function () {
+	$schema = Expect::listOf('string|int')->default(['foo', 42]);
+
+	Assert::same(['foo', 42], (new Processor)->process($schema, null));
+	Assert::same(['foo', 42], (new Processor)->process($schema, []));
+	Assert::same(['foo', 42, 'bar'], (new Processor)->process($schema, ['bar']));
+
+	$schema->preventMergingDefaults();
+
+	Assert::same(['foo', 42], (new Processor)->process($schema, null));
+	Assert::same(['foo', 42], (new Processor)->process($schema, []));
+	Assert::same(['bar'], (new Processor)->process($schema, ['bar']));
+});
+
+
 test('listOf() & error', function () {
 	Assert::exception(function () {
 		Expect::listOf(['a' => Expect::string()]);

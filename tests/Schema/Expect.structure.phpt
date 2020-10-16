@@ -247,6 +247,49 @@ test('item with default value', function () {
 	Assert::equal((object) ['b' => 'val'], (new Processor)->process($schema, ['b' => 'val']));
 });
 
+test('list with default value', function () {
+	$schema = Expect::structure([
+		'b' => Expect::listOf('int')->default([1, 2, 3]),
+	]);
+
+	Assert::equal((object) ['b' => [1, 2, 3]], (new Processor)->process($schema, null));
+	Assert::equal((object) ['b' => [1, 2, 3]], (new Processor)->process($schema, []));
+	Assert::equal((object) ['b' => [1, 2, 3]], (new Processor)->process($schema, ['b' => null]));
+	Assert::equal((object) ['b' => [1, 2, 3]], (new Processor)->process($schema, ['b' => []]));
+	Assert::equal((object) ['b' => [1, 2, 3, 4]], (new Processor)->process($schema, ['b' => [4]]));
+
+	$schema = Expect::structure([
+		'b' => Expect::listOf('int')->default([1, 2, 3])->preventMergingDefaults(),
+	]);
+
+	Assert::equal((object) ['b' => [1, 2, 3]], (new Processor)->process($schema, null));
+	Assert::equal((object) ['b' => [1, 2, 3]], (new Processor)->process($schema, []));
+	Assert::equal((object) ['b' => [1, 2, 3]], (new Processor)->process($schema, ['b' => null]));
+	Assert::equal((object) ['b' => [1, 2, 3]], (new Processor)->process($schema, ['b' => []]));
+	Assert::equal((object) ['b' => [4]], (new Processor)->process($schema, ['b' => [4]]));
+});
+
+test('array with default value', function () {
+	$schema = Expect::structure([
+		'b' => Expect::arrayOf('int')->default(['x' => 1]),
+	]);
+
+	Assert::equal((object) ['b' => ['x' => 1]], (new Processor)->process($schema, null));
+	Assert::equal((object) ['b' => ['x' => 1]], (new Processor)->process($schema, []));
+	Assert::equal((object) ['b' => ['x' => 1]], (new Processor)->process($schema, ['b' => null]));
+	Assert::equal((object) ['b' => ['x' => 1]], (new Processor)->process($schema, ['b' => []]));
+	Assert::equal((object) ['b' => ['x' => 1, 'y' => 2]], (new Processor)->process($schema, ['b' => ['y' => 2]]));
+
+	$schema = Expect::structure([
+		'b' => Expect::arrayOf('int')->default(['x' => 1])->preventMergingDefaults(),
+	]);
+
+	Assert::equal((object) ['b' => ['x' => 1]], (new Processor)->process($schema, null));
+	Assert::equal((object) ['b' => ['x' => 1]], (new Processor)->process($schema, []));
+	Assert::equal((object) ['b' => ['x' => 1]], (new Processor)->process($schema, ['b' => null]));
+	Assert::equal((object) ['b' => ['x' => 1]], (new Processor)->process($schema, ['b' => []]));
+	Assert::equal((object) ['b' => ['y' => 2]], (new Processor)->process($schema, ['b' => ['y' => 2]]));
+});
 
 test('item without default value', function () {
 	$schema = Expect::structure([

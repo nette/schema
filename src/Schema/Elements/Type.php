@@ -33,6 +33,9 @@ final class Type implements Schema
 	/** @var string|null */
 	private $pattern;
 
+	/** @var bool */
+	private $preventMergingDefaults = false;
+
 
 	public function __construct(string $type)
 	{
@@ -84,6 +87,13 @@ final class Type implements Schema
 	public function pattern(?string $pattern): self
 	{
 		$this->pattern = $pattern;
+		return $this;
+	}
+
+
+	public function preventMergingDefaults(bool $prevent = true): self
+	{
+		$this->preventMergingDefaults = $prevent;
 		return $this;
 	}
 
@@ -163,6 +173,10 @@ final class Type implements Schema
 			if (count($context->errors) > $errCount) {
 				return null;
 			}
+		}
+
+		if ($this->preventMergingDefaults && is_array($value) && count($value) > 0) {
+			$value[Helpers::PREVENT_MERGING] = true;
 		}
 
 		$value = Helpers::merge($value, $this->default);
