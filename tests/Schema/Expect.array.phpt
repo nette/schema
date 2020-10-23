@@ -51,22 +51,13 @@ test('merging', function () {
 	], (new Processor)->process($schema, []));
 
 	Assert::same([
-			'key1' => 'val1',
-			'key2' => 'val2',
-			'val3',
-			'arr' => ['item'],
-			1, 2, 3,
-		],
-		(new Processor)->process($schema, [1, 2, 3])
-	);
+		1, 2, 3,
+	], (new Processor)->process($schema, [1, 2, 3]));
 
 	Assert::same([
 			'key1' => 'newval',
-			'key2' => 'val2',
-			'val3',
-			'arr' => ['item', 'newitem'],
 			'key3' => 'newval',
-			'newval3',
+			'newval3', 'arr' => ['newitem'],
 		],
 		(new Processor)->process($schema, [
 			'key1' => 'newval',
@@ -100,8 +91,6 @@ test('merging & other items validation', function () {
 
 	Assert::same([
 			'key1' => 'newval',
-			'key2' => 'val2',
-			'val3',
 			'key3' => 'newval',
 			'newval3',
 		],
@@ -176,7 +165,7 @@ test('items() & scalar', function () {
 		(new Processor)->process($schema, ['b' => null]);
 	}, ["The option 'b' expects to be string, null given."]);
 
-	Assert::same(['a' => 'defval', 'b' => 'val'], (new Processor)->process($schema, ['b' => 'val']));
+	Assert::same(['b' => 'val'], (new Processor)->process($schema, ['b' => 'val']));
 });
 
 
@@ -208,7 +197,7 @@ test('items() & structure', function () {
 	}, ["Unexpected option 'b › a', did you mean 'k'?"]);
 
 	Assert::equal(
-		['a' => 'defval', 'b' => (object) ['k' => 'val']],
+		['b' => (object) ['k' => 'val']],
 		(new Processor)->process($schema, ['b' => ['k' => 'val']])
 	);
 });

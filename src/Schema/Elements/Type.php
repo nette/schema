@@ -165,7 +165,10 @@ final class Type implements Schema
 			}
 		}
 
-		$value = Helpers::merge($value, $this->default);
+		if (!is_array($value) || $value === []) {
+			$value = Helpers::merge($value, $this->default);
+		}
+
 		return $this->doFinalize($value, $context);
 	}
 }

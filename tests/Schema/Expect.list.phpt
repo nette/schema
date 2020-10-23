@@ -42,7 +42,7 @@ test('merging', function () {
 
 	Assert::same([1, 2, 3], (new Processor)->process($schema, []));
 
-	Assert::same([1, 2, 3, 'a', 'b', 'c'], (new Processor)->process($schema, ['a', 'b', 'c']));
+	Assert::same(['a', 'b', 'c'], (new Processor)->process($schema, ['a', 'b', 'c']));
 
 	Assert::same([1, 2, 3], (new Processor)->process($schema, null));
 });
@@ -53,7 +53,7 @@ test('merging & other items validation', function () {
 
 	Assert::same([1, 2, 3], (new Processor)->process($schema, []));
 
-	Assert::same([1, 2, 3, 'a', 'b', 'c'], (new Processor)->process($schema, ['a', 'b', 'c']));
+	Assert::same(['a', 'b', 'c'], (new Processor)->process($schema, ['a', 'b', 'c']));
 
 	checkValidationErrors(function () use ($schema) {
 		(new Processor)->process($schema, [1, 2, 3]);
