@@ -1,2 +1,0 @@
-includes:
-	- ../vendor/phpstan/phpstan-nette/extension.neon
