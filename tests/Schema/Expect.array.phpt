@@ -50,7 +50,8 @@ test('merging', function () {
 		'arr' => ['item'],
 	], (new Processor)->process($schema, []));
 
-	Assert::same([
+	Assert::same(
+		[
 			'key1' => 'val1',
 			'key2' => 'val2',
 			'val3',
@@ -60,7 +61,8 @@ test('merging', function () {
 		(new Processor)->process($schema, [1, 2, 3])
 	);
 
-	Assert::same([
+	Assert::same(
+		[
 			'key1' => 'newval',
 			'key2' => 'val2',
 			'val3',
@@ -98,7 +100,8 @@ test('merging & other items validation', function () {
 		"The option '2' expects to be string, int 3 given.",
 	]);
 
-	Assert::same([
+	Assert::same(
+		[
 			'key1' => 'newval',
 			'key2' => 'val2',
 			'val3',
@@ -127,7 +130,8 @@ test('merging & other items validation', function () {
 		'val3',
 	], null));
 
-	Assert::same([
+	Assert::same(
+		[
 			'key1' => 'newval',
 			'key2' => 'val2',
 			'val3',

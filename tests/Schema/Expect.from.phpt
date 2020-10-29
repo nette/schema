@@ -23,17 +23,23 @@ Assert::with(Structure::class, function () {
 	$schema = Expect::from(new class {
 		/** @var string */
 		public $dsn = 'mysql';
+
 		/** @var string|null */
 		public $user;
+
 		/** @var ?string */
 		public $password;
+
 		/** @var string[] */
 		public $options = [1];
+
 		/** @var bool */
 		public $debugger = true;
 		public $mixed;
+
 		/** @var array|null */
 		public $arr;
+
 		/** @var string */
 		public $required;
 	});
@@ -65,6 +71,7 @@ Assert::with(Structure::class, function () { // overwritten item
 	$schema = Expect::from(new class {
 		/** @var string */
 		public $dsn = 'mysql';
+
 		/** @var string|null */
 		public $user;
 	}, ['dsn' => Expect::int(123)]);

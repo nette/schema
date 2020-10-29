@@ -112,7 +112,9 @@ trait Base
 
 		foreach ($this->asserts as $i => [$handler, $description]) {
 			if (!$handler($value)) {
-				$expected = $description ? ('"' . $description . '"') : (is_string($handler) ? "$handler()" : "#$i");
+				$expected = $description
+					? ('"' . $description . '"')
+					: (is_string($handler) ? "$handler()" : "#$i");
 				$context->addError("Failed assertion $expected for option %path% with value " . static::formatValue($value) . '.');
 				return;
 			}
