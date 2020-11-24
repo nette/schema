@@ -1,7 +1,7 @@
 <?php
 
 /**
- * @phpversion 7.4
+ * @phpversion 8.0
  */
 
 declare(strict_types=1);
@@ -19,9 +19,9 @@ Assert::with(Structure::class, function () {
 		public string $dsn = 'mysql';
 		public ?string $user;
 		public ?string $password = null;
-		public array $options = [];
+		public array|int $options = [];
 		public bool $debugger = true;
-		public $mixed;
+		public mixed $mixed;
 		public array $arr = [1];
 	});
 
@@ -30,9 +30,9 @@ Assert::with(Structure::class, function () {
 		'dsn' => Expect::string('mysql'),
 		'user' => Expect::type('string|null')->required(),
 		'password' => Expect::type('string|null'),
-		'options' => Expect::array(),
+		'options' => Expect::type('array|int')->default([]),
 		'debugger' => Expect::bool(true),
-		'mixed' => Expect::mixed(),
+		'mixed' => Expect::mixed()->required(),
 		'arr' => Expect::type('array')->default([1]),
 	], $schema->items);
 	Assert::type('string', $schema->castTo);

@@ -28,6 +28,7 @@ jobs:
 
 
         -   name: Nette Code Checker
+            php: 8.0snapshot
             install:
                 - travis_retry composer create-project nette/code-checker temp/code-checker ^3 --no-progress
             script:

@@ -57,8 +57,8 @@ final class Helpers
 
 	public static function getPropertyType(\ReflectionProperty $prop): ?string
 	{
-		if ($type = Reflection::getPropertyType($prop)) {
-			return ($prop->getType()->allowsNull() ? '?' : '') . $type;
+		if ($types = Reflection::getPropertyTypes($prop)) {
+			return implode('|', $types);
 		} elseif ($type = preg_replace('#\s.*#', '', (string) self::parseAnnotation($prop, 'var'))) {
 			$class = Reflection::getPropertyDeclaringClass($prop);
 			return preg_replace_callback('#[\w\\\\]+#', function ($m) use ($class) {
