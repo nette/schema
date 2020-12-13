@@ -140,7 +140,7 @@ final class Type implements Schema
 		if (!$this->doValidate($value, $expected, $context)) {
 			return;
 		}
-		if ($this->pattern !== null && !preg_match("\x01^(?:$this->pattern)$\x01Du", $value)) {
+		if ($value !== null && $this->pattern !== null && !preg_match("\x01^(?:$this->pattern)$\x01Du", $value)) {
 			$context->addError("The option %path% expects to match pattern '$this->pattern', '$value' given.");
 			return;
 		}

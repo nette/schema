@@ -24,3 +24,10 @@ test('', function () {
 		(new Processor)->process($schema, '123');
 	}, ["The option expects to match pattern '\\d{9}', '123' given."]);
 });
+
+
+test('', function () {
+	$schema = Expect::string()->nullable()->pattern('\d{9}');
+
+	Assert::same(null, (new Processor)->process($schema, null));
+});
