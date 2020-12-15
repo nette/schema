@@ -17,7 +17,7 @@ test('int & min', function () {
 
 	checkValidationErrors(function () use ($schema) {
 		(new Processor)->process($schema, 9);
-	}, ['The item expects to be int in range 10.., int 9 given.']);
+	}, ['The item expects to be int in range 10.., 9 given.']);
 });
 
 
@@ -28,7 +28,7 @@ test('int & max', function () {
 
 	checkValidationErrors(function () use ($schema) {
 		(new Processor)->process($schema, 21);
-	}, ['The item expects to be int in range ..20, int 21 given.']);
+	}, ['The item expects to be int in range ..20, 21 given.']);
 });
 
 
@@ -40,11 +40,11 @@ test('int & min & max', function () {
 
 	checkValidationErrors(function () use ($schema) {
 		(new Processor)->process($schema, 9);
-	}, ['The item expects to be int in range 10..20, int 9 given.']);
+	}, ['The item expects to be int in range 10..20, 9 given.']);
 
 	checkValidationErrors(function () use ($schema) {
 		(new Processor)->process($schema, 21);
-	}, ['The item expects to be int in range 10..20, int 21 given.']);
+	}, ['The item expects to be int in range 10..20, 21 given.']);
 });
 
 
@@ -56,7 +56,7 @@ test('nullable int & min & max', function () {
 
 	checkValidationErrors(function () use ($schema) {
 		(new Processor)->process($schema, 9);
-	}, ['The item expects to be null or int in range 10..20, int 9 given.']);
+	}, ['The item expects to be null or int in range 10..20, 9 given.']);
 });
 
 
@@ -68,11 +68,11 @@ test('string', function () {
 
 	checkValidationErrors(function () use ($schema) {
 		(new Processor)->process($schema, '');
-	}, ["The item expects to be string in range 1..5, string '' given."]);
+	}, ["The item expects to be string in range 1..5, '' given."]);
 
 	checkValidationErrors(function () use ($schema) {
 		(new Processor)->process($schema, 'foobar');
-	}, ["The item expects to be string in range 1..5, string 'foobar' given."]);
+	}, ["The item expects to be string in range 1..5, 'foobar' given."]);
 });
 
 
@@ -84,11 +84,11 @@ test('unicode', function () {
 
 	checkValidationErrors(function () use ($schema) {
 		(new Processor)->process($schema, 'ž');
-	}, ["The item expects to be unicode in range 2..4, string 'ž' given."]);
+	}, ["The item expects to be unicode in range 2..4, 'ž' given."]);
 
 	checkValidationErrors(function () use ($schema) {
 		(new Processor)->process($schema, 'žšáéx');
-	}, ["The item expects to be unicode in range 2..4, string 'žšáéx' given."]);
+	}, ["The item expects to be unicode in range 2..4, 'žšáéx' given."]);
 });
 
 

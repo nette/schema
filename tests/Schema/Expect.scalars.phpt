@@ -34,7 +34,7 @@ test('', function () {
 
 	checkValidationErrors(function () use ($schema) {
 		(new Processor)->process($schema, 123);
-	}, ['The item expects to be string, int 123 given.']);
+	}, ['The item expects to be string, 123 given.']);
 
 	checkValidationErrors(function () use ($schema) {
 		(new Processor)->process($schema, null);
@@ -42,7 +42,7 @@ test('', function () {
 
 	checkValidationErrors(function () use ($schema) {
 		(new Processor)->process($schema, false);
-	}, ['The item expects to be string, bool given.']);
+	}, ['The item expects to be string, false given.']);
 
 	checkValidationErrors(function () use ($schema) {
 		(new Processor)->process($schema, []);
@@ -59,7 +59,7 @@ test('', function () {
 
 	checkValidationErrors(function () use ($schema) {
 		(new Processor)->process($schema, 123);
-	}, ['The item expects to be string or bool, int 123 given.']);
+	}, ['The item expects to be string or bool, 123 given.']);
 
 	checkValidationErrors(function () use ($schema) {
 		(new Processor)->process($schema, null);
@@ -78,7 +78,7 @@ test('', function () {
 
 	checkValidationErrors(function () use ($schema) {
 		(new Processor)->process($schema, 123);
-	}, ['The item expects to be null or string, int 123 given.']);
+	}, ['The item expects to be null or string, 123 given.']);
 
 	Assert::same(null, (new Processor)->process($schema, null));
 });

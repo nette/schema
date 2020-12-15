@@ -115,17 +115,16 @@ trait Base
 
 	private function doValidate($value, string $expected, Context $context): bool
 	{
-		try {
-			Nette\Utils\Validators::assert($value, $expected, 'item %path%');
-			return true;
-		} catch (Nette\Utils\AssertionException $e) {
+		if (!Nette\Utils\Validators::is($value, $expected)) {
+			$expected = str_replace(['|', ':'], [' or ', ' in range '], $expected);
 			$context->addError(
-				$e->getMessage(),
+				'The item %path% expects to be %expected%, %value% given.',
 				Nette\Schema\Message::TYPE_MISMATCH,
 				['value' => $value, 'expected' => $expected]
 			);
 			return false;
 		}
+		return true;
 	}
 
 

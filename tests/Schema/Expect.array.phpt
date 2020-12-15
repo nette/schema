@@ -21,15 +21,15 @@ test('without default value', function () {
 
 	checkValidationErrors(function () use ($schema) {
 		(new Processor)->process($schema, 'one');
-	}, ["The item expects to be array, string 'one' given."]);
+	}, ["The item expects to be array, 'one' given."]);
 
 	checkValidationErrors(function () use ($schema) {
 		(new Processor)->process($schema, true);
-	}, ['The item expects to be array, bool given.']);
+	}, ['The item expects to be array, true given.']);
 
 	checkValidationErrors(function () use ($schema) {
 		(new Processor)->process($schema, 123);
-	}, ['The item expects to be array, int 123 given.']);
+	}, ['The item expects to be array, 123 given.']);
 
 	Assert::same([], (new Processor)->process($schema, null));
 });
@@ -95,9 +95,9 @@ test('merging & other items validation', function () {
 	checkValidationErrors(function () use ($schema) {
 		(new Processor)->process($schema, [1, 2, 3]);
 	}, [
-		"The item '0' expects to be string, int 1 given.",
-		"The item '1' expects to be string, int 2 given.",
-		"The item '2' expects to be string, int 3 given.",
+		"The item '0' expects to be string, 1 given.",
+		"The item '1' expects to be string, 2 given.",
+		"The item '2' expects to be string, 3 given.",
 	]);
 
 	Assert::same(
@@ -161,9 +161,9 @@ test('items() & scalar', function () {
 	checkValidationErrors(function () use ($schema) {
 		(new Processor)->process($schema, [1, 2, 3]);
 	}, [
-		"The item '0' expects to be string, int 1 given.",
-		"The item '1' expects to be string, int 2 given.",
-		"The item '2' expects to be string, int 3 given.",
+		"The item '0' expects to be string, 1 given.",
+		"The item '1' expects to be string, 2 given.",
+		"The item '2' expects to be string, 3 given.",
 	]);
 
 	Assert::same(['a' => 'val'], (new Processor)->process($schema, ['a' => 'val']));
@@ -174,7 +174,7 @@ test('items() & scalar', function () {
 
 	checkValidationErrors(function () use ($schema) {
 		(new Processor)->process($schema, ['b' => 123]);
-	}, ["The item 'b' expects to be string, int 123 given."]);
+	}, ["The item 'b' expects to be string, 123 given."]);
 
 	checkValidationErrors(function () use ($schema) {
 		(new Processor)->process($schema, ['b' => null]);
@@ -193,19 +193,19 @@ test('items() & structure', function () {
 
 	checkValidationErrors(function () use ($schema) {
 		(new Processor)->process($schema, ['a' => 'val']);
-	}, ["The item 'a' expects to be array, string 'val' given."]);
+	}, ["The item 'a' expects to be array, 'val' given."]);
 
 	checkValidationErrors(function () use ($schema) {
 		(new Processor)->process($schema, [1, 2, 3]);
 	}, [
-		"The item '0' expects to be array, int 1 given.",
-		"The item '1' expects to be array, int 2 given.",
-		"The item '2' expects to be array, int 3 given.",
+		"The item '0' expects to be array, 1 given.",
+		"The item '1' expects to be array, 2 given.",
+		"The item '2' expects to be array, 3 given.",
 	]);
 
 	checkValidationErrors(function () use ($schema) {
 		(new Processor)->process($schema, ['b' => 'val']);
-	}, ["The item 'b' expects to be array, string 'val' given."]);
+	}, ["The item 'b' expects to be array, 'val' given."]);
 
 	checkValidationErrors(function () use ($schema) {
 		(new Processor)->process($schema, ['b' => ['a' => 'val']]);
@@ -229,7 +229,7 @@ test('arrayOf() & scalar', function () {
 
 	checkValidationErrors(function () use ($schema) {
 		(new Processor)->process($schema, [1, 2, false]);
-	}, ["The item '2' expects to be string or int, bool given."]);
+	}, ["The item '2' expects to be string or int, false given."]);
 
 	Assert::same(['key' => 'val'], (new Processor)->process($schema, ['key' => 'val']));
 });
