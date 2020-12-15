@@ -42,6 +42,9 @@ final class Type implements Schema
 		static $defaults = ['list' => [], 'array' => []];
 		$this->type = $type;
 		$this->default = strpos($type, '[]') ? [] : $defaults[$type] ?? null;
+		if (strpos($type, ':') !== false) {
+			trigger_error("Parameters in '$type' are deprecated, use min()->max()", E_USER_DEPRECATED);
+		}
 	}
 
 
