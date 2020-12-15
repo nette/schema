@@ -38,6 +38,7 @@ final class Structure implements Schema
 		(function (Schema ...$items) {})(...array_values($items));
 		$this->items = $items;
 		$this->castTo = 'object';
+		$this->required = true;
 	}
 
 
@@ -178,6 +179,8 @@ final class Structure implements Schema
 
 	public function completeDefault(Context $context)
 	{
-		return $this->complete([], $context);
+		return $this->required
+			? $this->complete([], $context)
+			: null;
 	}
 }

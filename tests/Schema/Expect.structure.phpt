@@ -428,6 +428,31 @@ test('processing without default values', function () {
 });
 
 
+test('optional structure', function () {
+	$schema = Expect::structure([
+		'req' => Expect::string()->required(),
+		'optional' => Expect::structure([
+			'req' => Expect::string()->required(),
+			'foo' => Expect::string(),
+		])->required(false),
+	]);
+
+	$processor = new Processor;
+
+	Assert::equal(
+		(object) [
+			'req' => 'hello',
+			'optional' => null,
+		],
+		$processor->process($schema, ['req' => 'hello'])
+	);
+
+	checkValidationErrors(function () use ($schema, $processor) {
+		$processor->process($schema, ['req' => 'hello', 'optional' => ['foo' => 'Foo']]);
+	}, ["The mandatory item 'optional › req' is missing."]);
+});
+
+
 test('deprecated item', function () {
 	$schema = Expect::structure([
 		'b' => Expect::string()->deprecated('depr %path%'),
