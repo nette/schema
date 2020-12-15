@@ -26,7 +26,7 @@ final class Structure implements Schema
 	/** @var Schema|null  for array|list */
 	private $otherItems;
 
-	/** @var array */
+	/** @var array{?int, ?int} */
 	private $range = [null, null];
 
 
@@ -47,14 +47,14 @@ final class Structure implements Schema
 	}
 
 
-	public function min(?float $min): self
+	public function min(?int $min): self
 	{
 		$this->range[0] = $min;
 		return $this;
 	}
 
 
-	public function max(?float $max): self
+	public function max(?int $max): self
 	{
 		$this->range[1] = $max;
 		return $this;
