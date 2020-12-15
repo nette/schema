@@ -25,6 +25,12 @@ final class Message
 	/** variables: {value: mixed, expected: string} */
 	public const UNEXPECTED_VALUE = 'schema.unexpectedValue';
 
+	/** variables: {value: mixed, expected: string} */
+	public const OUT_OF_RANGE = 'schema.outOfRange';
+
+	/** variables: {value: mixed, length: int, expected: string} */
+	public const LENGTH_OUT_OF_RANGE = 'schema.lengthOutOfRange';
+
 	/** variables: {value: mixed, assertion: string} */
 	public const FAILED_ASSERTION = 'schema.failedAssertion';
 
