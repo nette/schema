@@ -46,7 +46,7 @@ test('with complex structure', function () {
 
 	checkValidationErrors(function () use ($schema) {
 		(new Processor)->process($schema, [123]);
-	}, ["The option '0' expects to be string, int 123 given."]);
+	}, ["The option '0' expects to be string, 123 given."]);
 
 	Assert::same(['foo'], (new Processor)->process($schema, ['foo']));
 });

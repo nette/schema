@@ -23,15 +23,15 @@ test('without default value', function () {
 
 	checkValidationErrors(function () use ($schema) {
 		(new Processor)->process($schema, 'one');
-	}, ["The option expects to be list, string 'one' given."]);
+	}, ["The option expects to be list, 'one' given."]);
 
 	checkValidationErrors(function () use ($schema) {
 		(new Processor)->process($schema, true);
-	}, ['The option expects to be list, bool given.']);
+	}, ['The option expects to be list, true given.']);
 
 	checkValidationErrors(function () use ($schema) {
 		(new Processor)->process($schema, 123);
-	}, ['The option expects to be list, int 123 given.']);
+	}, ['The option expects to be list, 123 given.']);
 
 	Assert::same([], (new Processor)->process($schema, null));
 });
@@ -58,9 +58,9 @@ test('merging & other items validation', function () {
 	checkValidationErrors(function () use ($schema) {
 		(new Processor)->process($schema, [1, 2, 3]);
 	}, [
-		"The option '0' expects to be string, int 1 given.",
-		"The option '1' expects to be string, int 2 given.",
-		"The option '2' expects to be string, int 3 given.",
+		"The option '0' expects to be string, 1 given.",
+		"The option '1' expects to be string, 2 given.",
+		"The option '2' expects to be string, 3 given.",
 	]);
 
 	Assert::same([1, 2, 3], (new Processor)->process($schema, null));
@@ -75,9 +75,9 @@ test('listOf() & scalar', function () {
 	checkValidationErrors(function () use ($schema) {
 		(new Processor)->process($schema, [1, 2, 3]);
 	}, [
-		"The option '0' expects to be string, int 1 given.",
-		"The option '1' expects to be string, int 2 given.",
-		"The option '2' expects to be string, int 3 given.",
+		"The option '0' expects to be string, 1 given.",
+		"The option '1' expects to be string, 2 given.",
+		"The option '2' expects to be string, 3 given.",
 	]);
 
 	Assert::same(['val', 'val'], (new Processor)->process($schema, ['val', 'val']));

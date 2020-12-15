@@ -25,15 +25,15 @@ test('without items', function () {
 
 	checkValidationErrors(function () use ($schema) {
 		(new Processor)->process($schema, 'one');
-	}, ["The option expects to be array, string 'one' given."]);
+	}, ["The option expects to be array, 'one' given."]);
 
 	checkValidationErrors(function () use ($schema) {
 		(new Processor)->process($schema, true);
-	}, ['The option expects to be array, bool given.']);
+	}, ['The option expects to be array, true given.']);
 
 	checkValidationErrors(function () use ($schema) {
 		(new Processor)->process($schema, 123);
-	}, ['The option expects to be array, int 123 given.']);
+	}, ['The option expects to be array, 123 given.']);
 
 	Assert::equal((object) [], (new Processor)->process($schema, null));
 });
@@ -48,7 +48,7 @@ test('accepts object', function () {
 
 	checkValidationErrors(function () use ($schema) {
 		(new Processor)->process($schema, (object) ['a' => 1]);
-	}, ["The option 'a' expects to be string, int 1 given."]);
+	}, ["The option 'a' expects to be string, 1 given."]);
 
 	$schema = Expect::structure(['a' => Expect::string()->before('strrev')]);
 
@@ -143,7 +143,7 @@ test('with indexed item', function () {
 	}, [
 		"Unexpected option '1'.",
 		"Unexpected option '2'.",
-		"The option '0' expects to be string, int 1 given.",
+		"The option '0' expects to be string, 1 given.",
 	]);
 
 	Assert::equal(
@@ -194,7 +194,7 @@ test('with indexed item & otherItems', function () {
 
 	checkValidationErrors(function () use ($processor, $schema) {
 		$processor->process($schema, [1, 2, 3]);
-	}, ["The option '0' expects to be string, int 1 given."]);
+	}, ["The option '0' expects to be string, 1 given."]);
 
 	Assert::equal(
 		(object) [
@@ -238,7 +238,7 @@ test('item with default value', function () {
 
 	checkValidationErrors(function () use ($schema) {
 		(new Processor)->process($schema, ['b' => 123]);
-	}, ["The option 'b' expects to be string, int 123 given."]);
+	}, ["The option 'b' expects to be string, 123 given."]);
 
 	checkValidationErrors(function () use ($schema) {
 		(new Processor)->process($schema, ['b' => null]);
@@ -257,7 +257,7 @@ test('item without default value', function () {
 
 	checkValidationErrors(function () use ($schema) {
 		(new Processor)->process($schema, ['b' => 123]);
-	}, ["The option 'b' expects to be string, int 123 given."]);
+	}, ["The option 'b' expects to be string, 123 given."]);
 
 	checkValidationErrors(function () use ($schema) {
 		(new Processor)->process($schema, ['b' => null]);
@@ -301,7 +301,7 @@ test('other items', function () {
 
 	checkValidationErrors(function () use ($schema) {
 		(new Processor)->process($schema, ['other' => 123]);
-	}, ["The option 'other' expects to be string, int 123 given."]);
+	}, ["The option 'other' expects to be string, 123 given."]);
 });
 
 
@@ -331,7 +331,7 @@ test('structure items', function () {
 	checkValidationErrors(function () use ($schema) {
 		(new Processor)->process($schema, ['a' => 'val']);
 	}, [
-		"The option 'a' expects to be array, string 'val' given.",
+		"The option 'a' expects to be array, 'val' given.",
 		"The mandatory option 'b › y' is missing.",
 	]);
 
@@ -341,7 +341,7 @@ test('structure items', function () {
 
 	checkValidationErrors(function () use ($schema) {
 		(new Processor)->process($schema, ['b' => 123]);
-	}, ["The option 'b' expects to be array, int 123 given."]);
+	}, ["The option 'b' expects to be array, 123 given."]);
 
 	checkValidationErrors(function () use ($schema) {
 		(new Processor)->process($schema, ['b' => null]);
@@ -349,7 +349,7 @@ test('structure items', function () {
 
 	checkValidationErrors(function () use ($schema) {
 		(new Processor)->process($schema, ['b' => 'val']);
-	}, ["The option 'b' expects to be array, string 'val' given."]);
+	}, ["The option 'b' expects to be array, 'val' given."]);
 
 	checkValidationErrors(function () use ($schema) {
 		(new Processor)->process($schema, ['b' => ['x' => 'val']]);
@@ -368,7 +368,7 @@ test('structure items', function () {
 
 	checkValidationErrors(function () use ($schema) {
 		(new Processor)->process($schema, ['b' => ['y' => 123]]);
-	}, ["The option 'b › y' expects to be string, int 123 given."]);
+	}, ["The option 'b › y' expects to be string, 123 given."]);
 
 	Assert::equal(
 		(object) ['a' => (object) ['x' => 'defval'], 'b' => (object) ['y' => 'val']],
