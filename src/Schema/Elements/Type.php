@@ -44,14 +44,14 @@ final class Type implements Schema
 
 	public function nullable(): self
 	{
-		$this->type .= '|null';
+		$this->type = 'null|' . $this->type;
 		return $this;
 	}
 
 
 	public function dynamic(): self
 	{
-		$this->type .= '|' . DynamicParameter::class;
+		$this->type = DynamicParameter::class . '|' . $this->type;
 		return $this;
 	}
 
@@ -146,7 +146,7 @@ final class Type implements Schema
 		}
 
 		if ($value instanceof DynamicParameter) {
-			$context->dynamics[] = [$value, str_replace('|' . DynamicParameter::class, '', $expected)];
+			$context->dynamics[] = [$value, str_replace(DynamicParameter::class . '|', '', $expected)];
 		}
 
 		if ($this->items) {

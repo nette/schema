@@ -48,6 +48,18 @@ test('int & min & max', function () {
 });
 
 
+test('nullable int & min & max', function () {
+	$schema = Expect::int()->min(10)->max(20)->nullable();
+
+	Assert::same(null, (new Processor)->process($schema, null));
+	Assert::same(15, (new Processor)->process($schema, 15));
+
+	checkValidationErrors(function () use ($schema) {
+		(new Processor)->process($schema, 9);
+	}, ['The option expects to be null or int in range 10..20, int 9 given.']);
+});
+
+
 test('string', function () {
 	$schema = Expect::string()->min(1)->max(5);
 

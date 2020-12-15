@@ -28,6 +28,7 @@ test('', function () {
 		'a' => Expect::string()->dynamic(),
 		'b' => Expect::string('def')->dynamic(),
 		'c' => Expect::int()->dynamic(),
+		'd' => Expect::int()->min(10)->max(20)->dynamic(),
 		'arr' => Expect::arrayOf(Expect::int()->dynamic()),
 		'anyOf' => Expect::anyOf(Expect::int(), Expect::string())->dynamic(),
 	]);
@@ -38,6 +39,7 @@ test('', function () {
 			'a' => new DynamicParameter("\$this->parameters['foo']"),
 			'b' => new DynamicParameter("\$this->parameters['bar']"),
 			'c' => 123,
+			'd' => new DynamicParameter("\$this->parameters['int']"),
 			'arr' => ['x' => new DynamicParameter("\$this->parameters['baz']")],
 			'anyOf' => new DynamicParameter("\$this->parameters['anyOf']"),
 		],
@@ -45,6 +47,7 @@ test('', function () {
 			'a' => new DynamicParameter("\$this->parameters['foo']"),
 			'b' => new DynamicParameter("\$this->parameters['bar']"),
 			'c' => 123,
+			'd' => new DynamicParameter("\$this->parameters['int']"),
 			'arr' => ['x' => new DynamicParameter("\$this->parameters['baz']")],
 			'anyOf' => new DynamicParameter("\$this->parameters['anyOf']"),
 		], $context)
@@ -59,6 +62,10 @@ test('', function () {
 			[
 				new DynamicParameter("\$this->parameters['bar']"),
 				'string',
+			],
+			[
+				new DynamicParameter("\$this->parameters['int']"),
+				'int:10..20',
 			],
 			[
 				new DynamicParameter("\$this->parameters['baz']"),
