@@ -12,9 +12,6 @@ namespace Nette\Schema;
 use Nette;
 
 
-/**
- * @internal
- */
 final class Context
 {
 	use Nette\SmartObject;
