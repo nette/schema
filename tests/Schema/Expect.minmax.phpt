@@ -76,6 +76,22 @@ test('string', function () {
 });
 
 
+test('unicode', function () {
+	$schema = Expect::unicode()->min(2)->max(4);
+
+	Assert::same('žšáé', (new Processor)->process($schema, 'žšáé'));
+	Assert::same('žš', (new Processor)->process($schema, 'žš'));
+
+	checkValidationErrors(function () use ($schema) {
+		(new Processor)->process($schema, 'ž');
+	}, ["The option expects to be unicode in range 2..4, string 'ž' given."]);
+
+	checkValidationErrors(function () use ($schema) {
+		(new Processor)->process($schema, 'žšáéx');
+	}, ["The option expects to be unicode in range 2..4, string 'žšáéx' given."]);
+});
+
+
 test('array', function () {
 	$schema = Expect::array()->min(1)->max(3);
 
