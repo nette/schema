@@ -142,6 +142,12 @@ final class Type implements Schema
 
 	public function complete($value, Context $context)
 	{
+		$merge = $this->merge;
+		if (is_array($value) && isset($value[Helpers::PREVENT_MERGING])) {
+			unset($value[Helpers::PREVENT_MERGING]);
+			$merge = false;
+		}
+
 		if ($value === null && is_array($this->default)) {
 			$value = []; // is unable to distinguish null from array in NEON
 		}
@@ -180,7 +186,7 @@ final class Type implements Schema
 			}
 		}
 
-		if ($this->merge) {
+		if ($merge) {
 			$value = Helpers::merge($value, $this->default);
 		}
 		return $this->doFinalize($value, $context);
