@@ -77,10 +77,15 @@ final class Structure implements Schema
 
 	public function normalize($value, Context $context)
 	{
+		if ($prevent = (is_array($value) && isset($value[Helpers::PREVENT_MERGING]))) {
+			unset($value[Helpers::PREVENT_MERGING]);
+		}
+
 		$value = $this->doNormalize($value, $context);
 		if (is_object($value)) {
 			$value = (array) $value;
 		}
+
 		if (is_array($value)) {
 			foreach ($value as $key => $val) {
 				$itemSchema = $this->items[$key] ?? $this->otherItems;
@@ -89,6 +94,9 @@ final class Structure implements Schema
 					$value[$key] = $itemSchema->normalize($val, $context);
 					array_pop($context->path);
 				}
+			}
+			if ($prevent) {
+				$value[Helpers::PREVENT_MERGING] = true;
 			}
 		}
 		return $value;

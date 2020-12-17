@@ -103,6 +103,10 @@ final class Type implements Schema
 
 	public function normalize($value, Context $context)
 	{
+		if ($prevent = (is_array($value) && isset($value[Helpers::PREVENT_MERGING]))) {
+			unset($value[Helpers::PREVENT_MERGING]);
+		}
+
 		$value = $this->doNormalize($value, $context);
 		if (is_array($value) && $this->items) {
 			foreach ($value as $key => $val) {
@@ -110,6 +114,9 @@ final class Type implements Schema
 				$value[$key] = $this->items->normalize($val, $context);
 				array_pop($context->path);
 			}
+		}
+		if ($prevent && is_array($value)) {
+			$value[Helpers::PREVENT_MERGING] = true;
 		}
 		return $value;
 	}
@@ -142,6 +149,12 @@ final class Type implements Schema
 
 	public function complete($value, Context $context)
 	{
+		$merge = $this->merge;
+		if (is_array($value) && isset($value[Helpers::PREVENT_MERGING])) {
+			unset($value[Helpers::PREVENT_MERGING]);
+			$merge = false;
+		}
+
 		if ($value === null && is_array($this->default)) {
 			$value = []; // is unable to distinguish null from array in NEON
 		}
@@ -180,7 +193,7 @@ final class Type implements Schema
 			}
 		}
 
-		if ($this->merge) {
+		if ($merge) {
 			$value = Helpers::merge($value, $this->default);
 		}
 		return $this->doFinalize($value, $context);
