@@ -37,6 +37,17 @@ test('without default value', function () {
 });
 
 
+test('not merging', function () {
+	$schema = Expect::list([1, 2, 3])->mergeDefaults(false);
+
+	Assert::same([], (new Processor)->process($schema, []));
+
+	Assert::same(['a', 'b', 'c'], (new Processor)->process($schema, ['a', 'b', 'c']));
+
+	Assert::same([], (new Processor)->process($schema, null));
+});
+
+
 test('merging', function () {
 	$schema = Expect::list([1, 2, 3]);
 

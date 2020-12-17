@@ -33,6 +33,9 @@ final class Type implements Schema
 	/** @var string|null */
 	private $pattern;
 
+	/** @var bool */
+	private $merge = true;
+
 
 	public function __construct(string $type)
 	{
@@ -45,6 +48,13 @@ final class Type implements Schema
 	public function nullable(): self
 	{
 		$this->type = 'null|' . $this->type;
+		return $this;
+	}
+
+
+	public function mergeDefaults(bool $state = true): self
+	{
+		$this->merge = $state;
 		return $this;
 	}
 
@@ -170,7 +180,9 @@ final class Type implements Schema
 			}
 		}
 
-		$value = Helpers::merge($value, $this->default);
+		if ($this->merge) {
+			$value = Helpers::merge($value, $this->default);
+		}
 		return $this->doFinalize($value, $context);
 	}
 }

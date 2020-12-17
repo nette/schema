@@ -35,6 +35,23 @@ test('without default value', function () {
 });
 
 
+test('not merging', function () {
+	$schema = Expect::array([
+		'key1' => 'val1',
+		'key2' => 'val2',
+		'val3',
+		'arr' => ['item'],
+	])->mergeDefaults(false);
+
+	Assert::same([], (new Processor)->process($schema, []));
+
+	Assert::same(
+		[1, 2, 3],
+		(new Processor)->process($schema, [1, 2, 3])
+	);
+});
+
+
 test('merging', function () {
 	$schema = Expect::array([
 		'key1' => 'val1',

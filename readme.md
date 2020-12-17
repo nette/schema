@@ -195,7 +195,7 @@ $processor->process($schema, ['foo', true, null, 'bar']); // OK
 $processor->process($schema, [123]); // ERROR
 ```
 
-The default value is `null`.
+The default value is `null`. If you specify an array as default value, it merges it with the data. This can be disabled using `mergeDefaults(false)`.
 
 
 Structures
