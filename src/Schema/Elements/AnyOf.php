@@ -66,7 +66,7 @@ final class AnyOf implements Schema
 	}
 
 
-	public function complete($value, Nette\Schema\Context $context)
+	public function complete($value, Context $context)
 	{
 		$hints = $innerErrors = [];
 		foreach ($this->set as $item) {

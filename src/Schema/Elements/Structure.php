@@ -123,7 +123,7 @@ final class Structure implements Schema
 	}
 
 
-	public function complete($value, Nette\Schema\Context $context)
+	public function complete($value, Context $context)
 	{
 		if ($value === null) {
 			$value = []; // is unable to distinguish null from array in NEON
