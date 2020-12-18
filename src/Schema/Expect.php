@@ -27,6 +27,7 @@ use Nette\Schema\Elements\Type;
  * @method static Type array($default = [])
  * @method static Type list($default = [])
  * @method static Type mixed($default = null)
+ * @method static Type email($default = null)
  * @method static Type unicode($default = null)
  */
 final class Expect
