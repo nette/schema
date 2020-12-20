@@ -176,7 +176,7 @@ The parameter can also be a schema, so we can write:
 Expect::arrayOf(Expect::bool())
 ```
 
-The default value is an empty array. If you specify a default value, it will be merged with the passed data. This can be disabled using `mergeDefaults(false)`.
+The default value is an empty array. If you specify a default value and call `mergeDefaults()`, it will be merged with the passed data.
 
 
 Enumeration: anyOf()
