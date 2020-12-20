@@ -37,8 +37,8 @@ test('without default value', function () {
 });
 
 
-test('not merging', function () {
-	$schema = Expect::list([1, 2, 3])->mergeDefaults(false);
+test('not merging default value', function () {
+	$schema = Expect::list([1, 2, 3]);
 
 	Assert::same([], (new Processor)->process($schema, []));
 
@@ -48,8 +48,8 @@ test('not merging', function () {
 });
 
 
-test('merging', function () {
-	$schema = Expect::list([1, 2, 3]);
+test('merging default value', function () {
+	$schema = @Expect::list([1, 2, 3])->mergeDefaults(true); // mergeDefaults() is deprecated
 
 	Assert::same([1, 2, 3], (new Processor)->process($schema, []));
 
@@ -59,8 +59,8 @@ test('merging', function () {
 });
 
 
-test('merging & other items validation', function () {
-	$schema = Expect::list([1, 2, 3])->items('string');
+test('merging default value & other items validation', function () {
+	$schema = @Expect::list([1, 2, 3])->mergeDefaults(true)->items('string'); // mergeDefaults() is deprecated
 
 	Assert::same([1, 2, 3], (new Processor)->process($schema, []));
 
