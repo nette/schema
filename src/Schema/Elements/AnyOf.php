@@ -78,7 +78,7 @@ final class AnyOf implements Schema
 					return $this->doFinalize($res, $context);
 				}
 				foreach ($dolly->errors as $error) {
-					if ($error->path !== $context->path || !$error->variables['expected']) {
+					if ($error->path !== $context->path || empty($error->variables['expected'])) {
 						$innerErrors[] = $error;
 					} else {
 						$expecteds[] = $error->variables['expected'];
@@ -88,17 +88,20 @@ final class AnyOf implements Schema
 				if ($item === $value) {
 					return $this->doFinalize($value, $context);
 				}
-				$expecteds[] = static::formatValue($item);
+				$expecteds[] = Nette\Schema\Helpers::formatValue($item);
 			}
 		}
 
 		if ($innerErrors) {
 			$context->errors = array_merge($context->errors, $innerErrors);
 		} else {
-			$expecteds = implode('|', array_unique($expecteds));
 			$context->addError(
-				"The option %path% expects to be $expecteds, " . static::formatValue($value) . ' given.',
-				Nette\Schema\Message::TYPE_MISMATCH
+				'The option %path% expects to be %expected%, %value% given.',
+				Nette\Schema\Message::TYPE_MISMATCH,
+				[
+					'value' => $value,
+					'expected' => implode('|', array_unique($expecteds)),
+				]
 			);
 		}
 	}

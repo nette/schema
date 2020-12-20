@@ -146,7 +146,8 @@ final class Structure implements Schema
 				}, $hint ? [$extraKeys[0]] : $extraKeys));
 				$context->addError(
 					"Unexpected option '$s'" . ($hint ? ", did you mean '$hint'?" : '.'),
-					Nette\Schema\Message::UNEXPECTED_ITEM
+					Nette\Schema\Message::UNEXPECTED_ITEM,
+					['hint' => $hint]
 				);
 			}
 		}

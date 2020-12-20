@@ -16,14 +16,19 @@ final class Message
 {
 	use Nette\SmartObject;
 
+	/** variables: {value: mixed, expected: string} */
 	public const TYPE_MISMATCH = 'schema.typeMismatch';
 
+	/** variables: {value: string, pattern: string} */
 	public const PATTERN_MISMATCH = 'schema.patternMismatch';
 
+	/** variables: {value: mixed, assertion: string} */
 	public const FAILED_ASSERTION = 'schema.failedAssertion';
 
+	/** no variables */
 	public const MISSING_ITEM = 'schema.missingItem';
 
+	/** variables: {hint: string} */
 	public const UNEXPECTED_ITEM = 'schema.unexpectedItem';
 
 	/** @var string */
@@ -50,7 +55,13 @@ final class Message
 
 	public function toString(): string
 	{
-		$pathStr = " '" . implode(' › ', $this->path) . "'";
-		return str_replace(' %path%', $this->path ? $pathStr : '', $this->message);
+		$vars = $this->variables;
+		$vars['path'] = $this->path ? "'" . implode(' › ', $this->path) . "'" : null;
+		$vars['value'] = Helpers::formatValue($vars['value'] ?? null);
+
+		return preg_replace_callback('~( ?)%(\w+)%~', function ($m) use ($vars) {
+			[, $space, $key] = $m;
+			return $vars[$key] === null ? '' : $space . $vars[$key];
+		}, $this->message);
 	}
 }
