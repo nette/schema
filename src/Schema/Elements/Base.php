@@ -128,6 +128,43 @@ trait Base
 	}
 
 
+	private function doValidateRange($value, array $range, Context $context, string $types = ''): bool
+	{
+		if (is_array($value) || is_string($value)) {
+			[$length, $label] = is_array($value)
+				? [count($value), 'items']
+				: (in_array('unicode', explode('|', $types), true)
+					? [Nette\Utils\Strings::length($value), 'characters']
+					: [strlen($value), 'bytes']);
+
+			if (!self::isInRange($length, $range)) {
+				$context->addError(
+					"The length of item %path% expects to be in range %expected%, %length% $label given.",
+					Nette\Schema\Message::LENGTH_OUT_OF_RANGE,
+					['value' => $value, 'length' => $length, 'expected' => implode('..', $range)]
+				);
+				return false;
+			}
+
+		} elseif ((is_int($value) || is_float($value)) && !self::isInRange($value, $range)) {
+			$context->addError(
+				'The item %path% expects to be in range %expected%, %value% given.',
+				Nette\Schema\Message::VALUE_OUT_OF_RANGE,
+				['value' => $value, 'expected' => implode('..', $range)]
+			);
+			return false;
+		}
+		return true;
+	}
+
+
+	private function isInRange($value, array $range): bool
+	{
+		return ($range[0] === null || $value >= $range[0])
+			&& ($range[1] === null || $value <= $range[1]);
+	}
+
+
 	private function doFinalize($value, Context $context)
 	{
 		if ($this->castTo) {

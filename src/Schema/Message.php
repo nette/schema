@@ -19,6 +19,12 @@ final class Message
 	/** variables: {value: mixed, expected: string} */
 	public const TYPE_MISMATCH = 'schema.typeMismatch';
 
+	/** variables: {value: mixed, expected: string} */
+	public const VALUE_OUT_OF_RANGE = 'schema.valueOutOfRange';
+
+	/** variables: {value: mixed, length: int, expected: string} */
+	public const LENGTH_OUT_OF_RANGE = 'schema.lengthOutOfRange';
+
 	/** variables: {value: string, pattern: string} */
 	public const PATTERN_MISMATCH = 'schema.patternMismatch';
 

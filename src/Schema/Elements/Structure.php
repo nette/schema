@@ -131,8 +131,9 @@ final class Structure implements Schema
 
 		$this->doDeprecation($context);
 
-		$expected = 'array' . ($this->range === [null, null] ? '' : ':' . implode('..', $this->range));
-		if (!$this->doValidate($value, $expected, $context)) {
+		if (!$this->doValidate($value, 'array', $context)
+			|| !$this->doValidateRange($value, $this->range, $context)
+		) {
 			return;
 		}
 

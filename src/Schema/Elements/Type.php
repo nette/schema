@@ -138,10 +138,12 @@ final class Type implements Schema
 
 		$this->doDeprecation($context);
 
-		$expected = $this->type . ($this->range === [null, null] ? '' : ':' . implode('..', $this->range));
-		if (!$this->doValidate($value, $expected, $context)) {
+		if (!$this->doValidate($value, $this->type, $context)
+			|| !$this->doValidateRange($value, $this->range, $context, $this->type)
+		) {
 			return;
 		}
+
 		if ($value !== null && $this->pattern !== null && !preg_match("\x01^(?:$this->pattern)$\x01Du", $value)) {
 			$context->addError(
 				"The item %path% expects to match pattern '%pattern%', %value% given.",
@@ -152,6 +154,7 @@ final class Type implements Schema
 		}
 
 		if ($value instanceof DynamicParameter) {
+			$expected = $this->type . ($this->range === [null, null] ? '' : ':' . implode('..', $this->range));
 			$context->dynamics[] = [$value, str_replace(DynamicParameter::class . '|', '', $expected)];
 		}
 
