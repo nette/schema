@@ -19,11 +19,11 @@ test('', function () {
 
 	checkValidationErrors(function () use ($schema) {
 		(new Processor)->process($schema, null);
-	}, ['The option expects to be scalar, null given.']);
+	}, ['The item expects to be scalar, null given.']);
 
 	checkValidationErrors(function () use ($schema) {
 		(new Processor)->process($schema, []);
-	}, ['The option expects to be scalar, array given.']);
+	}, ['The item expects to be scalar, array given.']);
 });
 
 
@@ -34,19 +34,19 @@ test('', function () {
 
 	checkValidationErrors(function () use ($schema) {
 		(new Processor)->process($schema, 123);
-	}, ['The option expects to be string, int 123 given.']);
+	}, ['The item expects to be string, int 123 given.']);
 
 	checkValidationErrors(function () use ($schema) {
 		(new Processor)->process($schema, null);
-	}, ['The option expects to be string, null given.']);
+	}, ['The item expects to be string, null given.']);
 
 	checkValidationErrors(function () use ($schema) {
 		(new Processor)->process($schema, false);
-	}, ['The option expects to be string, bool given.']);
+	}, ['The item expects to be string, bool given.']);
 
 	checkValidationErrors(function () use ($schema) {
 		(new Processor)->process($schema, []);
-	}, ['The option expects to be string, array given.']);
+	}, ['The item expects to be string, array given.']);
 });
 
 
@@ -59,15 +59,15 @@ test('', function () {
 
 	checkValidationErrors(function () use ($schema) {
 		(new Processor)->process($schema, 123);
-	}, ['The option expects to be string or bool, int 123 given.']);
+	}, ['The item expects to be string or bool, int 123 given.']);
 
 	checkValidationErrors(function () use ($schema) {
 		(new Processor)->process($schema, null);
-	}, ['The option expects to be string or bool, null given.']);
+	}, ['The item expects to be string or bool, null given.']);
 
 	checkValidationErrors(function () use ($schema) {
 		(new Processor)->process($schema, []);
-	}, ['The option expects to be string or bool, array given.']);
+	}, ['The item expects to be string or bool, array given.']);
 });
 
 
@@ -78,7 +78,7 @@ test('', function () {
 
 	checkValidationErrors(function () use ($schema) {
 		(new Processor)->process($schema, 123);
-	}, ['The option expects to be null or string, int 123 given.']);
+	}, ['The item expects to be null or string, int 123 given.']);
 
 	Assert::same(null, (new Processor)->process($schema, null));
 });

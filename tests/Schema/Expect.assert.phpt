@@ -15,7 +15,7 @@ test('single assertion', function () {
 
 	checkValidationErrors(function () use ($schema) {
 		(new Processor)->process($schema, 'hello');
-	}, ["Failed assertion is_file() for option with value 'hello'."]);
+	}, ["Failed assertion is_file() for item with value 'hello'."]);
 
 	Assert::same(__FILE__, (new Processor)->process($schema, __FILE__));
 });
@@ -26,11 +26,11 @@ test('multiple assertions', function () {
 
 	checkValidationErrors(function () use ($schema) {
 		(new Processor)->process($schema, '');
-	}, ["Failed assertion ctype_digit() for option with value ''."]);
+	}, ["Failed assertion ctype_digit() for item with value ''."]);
 
 	checkValidationErrors(function () use ($schema) {
 		(new Processor)->process($schema, '1');
-	}, ["Failed assertion #1 for option with value '1'."]);
+	}, ["Failed assertion #1 for item with value '1'."]);
 
 	Assert::same('123', (new Processor)->process($schema, '123'));
 });
@@ -43,11 +43,11 @@ test('multiple assertions with custom descriptions', function () {
 
 	checkValidationErrors(function () use ($schema) {
 		(new Processor)->process($schema, '');
-	}, ["Failed assertion 'Is number' for option with value ''."]);
+	}, ["Failed assertion 'Is number' for item with value ''."]);
 
 	checkValidationErrors(function () use ($schema) {
 		(new Processor)->process($schema, '1');
-	}, ["Failed assertion 'Minimal lenght' for option with value '1'."]);
+	}, ["Failed assertion 'Minimal lenght' for item with value '1'."]);
 
 	Assert::same('123', (new Processor)->process($schema, '123'));
 });

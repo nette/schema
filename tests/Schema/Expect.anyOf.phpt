@@ -21,19 +21,19 @@ test('with scalars', function () {
 
 	checkValidationErrors(function () use ($schema) {
 		(new Processor)->process($schema, false);
-	}, ["The option expects to be 'one'|true|int, false given."]);
+	}, ["The item expects to be 'one'|true|int, false given."]);
 
 	checkValidationErrors(function () use ($schema) {
 		(new Processor)->process($schema, 'two');
-	}, ["The option expects to be 'one'|true|int, 'two' given."]);
+	}, ["The item expects to be 'one'|true|int, 'two' given."]);
 
 	checkValidationErrors(function () use ($schema) {
 		(new Processor)->process($schema, null);
-	}, ["The option expects to be 'one'|true|int, null given."]);
+	}, ["The item expects to be 'one'|true|int, null given."]);
 
 	checkValidationErrors(function () use ($schema) {
 		(new Processor)->process($schema, []);
-	}, ["The option expects to be 'one'|true|int, array given."]);
+	}, ["The item expects to be 'one'|true|int, array given."]);
 });
 
 
@@ -42,11 +42,11 @@ test('with complex structure', function () {
 
 	checkValidationErrors(function () use ($schema) {
 		(new Processor)->process($schema, false);
-	}, ['The option expects to be list|true|int, false given.']);
+	}, ['The item expects to be list|true|int, false given.']);
 
 	checkValidationErrors(function () use ($schema) {
 		(new Processor)->process($schema, [123]);
-	}, ["The option '0' expects to be string, int 123 given."]);
+	}, ["The item '0' expects to be string, int 123 given."]);
 
 	Assert::same(['foo'], (new Processor)->process($schema, ['foo']));
 });
@@ -57,11 +57,11 @@ test('with asserts', function () {
 
 	checkValidationErrors(function () use ($schema) {
 		(new Processor)->process($schema, '');
-	}, ["Failed assertion strlen() for option with value ''."]);
+	}, ["Failed assertion strlen() for item with value ''."]);
 
 	checkValidationErrors(function () use ($schema) {
 		(new Processor)->process($schema, 123);
-	}, ['The option expects to be string|true, 123 given.']);
+	}, ['The item expects to be string|true, 123 given.']);
 
 	Assert::same('foo', (new Processor)->process($schema, 'foo'));
 });
@@ -93,11 +93,11 @@ test('required', function () {
 	checkValidationErrors(function () use ($schema) {
 		(new Processor)->process($schema, []);
 	}, [
-		"The mandatory option 'key1' is missing.",
-		"The mandatory option 'key2' is missing.",
-		"The mandatory option 'key3' is missing.",
-		"The mandatory option 'key4' is missing.",
-		"The mandatory option 'key5' is missing.",
+		"The mandatory item 'key1' is missing.",
+		"The mandatory item 'key2' is missing.",
+		"The mandatory item 'key3' is missing.",
+		"The mandatory item 'key4' is missing.",
+		"The mandatory item 'key5' is missing.",
 	]);
 });
 
@@ -119,11 +119,11 @@ test('required as argument', function () {
 	checkValidationErrors(function () use ($schema) {
 		(new Processor)->process($schema, []);
 	}, [
-		"The mandatory option 'key1' is missing.",
-		"The mandatory option 'key2' is missing.",
-		"The mandatory option 'key3' is missing.",
-		"The mandatory option 'key4' is missing.",
-		"The mandatory option 'key5' is missing.",
+		"The mandatory item 'key1' is missing.",
+		"The mandatory item 'key2' is missing.",
+		"The mandatory item 'key3' is missing.",
+		"The mandatory item 'key4' is missing.",
+		"The mandatory item 'key5' is missing.",
 	]);
 });
 
@@ -138,9 +138,9 @@ test('not nullable', function () {
 	checkValidationErrors(function () use ($schema) {
 		(new Processor)->process($schema, ['key1' => null, 'key2' => null, 'key3' => null]);
 	}, [
-		"The option 'key1' expects to be string|int, null given.",
-		"The option 'key2' expects to be string|true|int, null given.",
-		"The option 'key3' expects to be true|string|int, null given.",
+		"The item 'key1' expects to be string|int, null given.",
+		"The item 'key2' expects to be string|true|int, null given.",
+		"The item 'key3' expects to be true|string|int, null given.",
 	]);
 });
 
@@ -168,7 +168,7 @@ test('nullable anyOf', function () {
 
 	checkValidationErrors(function () use ($schema) {
 		(new Processor)->process($schema, false);
-	}, ['The option expects to be string|true|null, false given.']);
+	}, ['The item expects to be string|true|null, false given.']);
 });
 
 
@@ -181,7 +181,7 @@ test('processing', function () {
 
 	checkValidationErrors(function () use ($schema, $processor) {
 		$processor->process($schema, false);
-	}, ['The option expects to be string|true|null, false given.']);
+	}, ['The item expects to be string|true|null, false given.']);
 
 
 	Assert::same('two', $processor->processMultiple($schema, ['one', 'two']));

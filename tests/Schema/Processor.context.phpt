@@ -23,12 +23,12 @@ test('', function () {
 
 	$e = checkValidationErrors(function () use ($schema, $processor) {
 		$processor->process($schema, []);
-	}, ["The mandatory option 'first › r' is missing."]);
+	}, ["The mandatory item 'first › r' is missing."]);
 
 	Assert::equal(
 		[
 			new Nette\Schema\Message(
-				'The mandatory option %path% is missing.',
+				'The mandatory item %path% is missing.',
 				Nette\Schema\Message::MISSING_ITEM,
 				['first', 'r']
 			),

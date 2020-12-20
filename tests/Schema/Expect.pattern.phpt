@@ -22,7 +22,7 @@ test('', function () {
 
 	checkValidationErrors(function () use ($schema) {
 		(new Processor)->process($schema, '123');
-	}, ["The option expects to match pattern '\\d{9}', '123' given."]);
+	}, ["The item expects to match pattern '\\d{9}', '123' given."]);
 });
 
 

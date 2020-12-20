@@ -17,7 +17,7 @@ test('int & min', function () {
 
 	checkValidationErrors(function () use ($schema) {
 		(new Processor)->process($schema, 9);
-	}, ['The option expects to be int in range 10.., int 9 given.']);
+	}, ['The item expects to be int in range 10.., int 9 given.']);
 });
 
 
@@ -28,7 +28,7 @@ test('int & max', function () {
 
 	checkValidationErrors(function () use ($schema) {
 		(new Processor)->process($schema, 21);
-	}, ['The option expects to be int in range ..20, int 21 given.']);
+	}, ['The item expects to be int in range ..20, int 21 given.']);
 });
 
 
@@ -40,11 +40,11 @@ test('int & min & max', function () {
 
 	checkValidationErrors(function () use ($schema) {
 		(new Processor)->process($schema, 9);
-	}, ['The option expects to be int in range 10..20, int 9 given.']);
+	}, ['The item expects to be int in range 10..20, int 9 given.']);
 
 	checkValidationErrors(function () use ($schema) {
 		(new Processor)->process($schema, 21);
-	}, ['The option expects to be int in range 10..20, int 21 given.']);
+	}, ['The item expects to be int in range 10..20, int 21 given.']);
 });
 
 
@@ -56,7 +56,7 @@ test('nullable int & min & max', function () {
 
 	checkValidationErrors(function () use ($schema) {
 		(new Processor)->process($schema, 9);
-	}, ['The option expects to be null or int in range 10..20, int 9 given.']);
+	}, ['The item expects to be null or int in range 10..20, int 9 given.']);
 });
 
 
@@ -68,11 +68,11 @@ test('string', function () {
 
 	checkValidationErrors(function () use ($schema) {
 		(new Processor)->process($schema, '');
-	}, ["The option expects to be string in range 1..5, string '' given."]);
+	}, ["The item expects to be string in range 1..5, string '' given."]);
 
 	checkValidationErrors(function () use ($schema) {
 		(new Processor)->process($schema, 'foobar');
-	}, ["The option expects to be string in range 1..5, string 'foobar' given."]);
+	}, ["The item expects to be string in range 1..5, string 'foobar' given."]);
 });
 
 
@@ -84,11 +84,11 @@ test('unicode', function () {
 
 	checkValidationErrors(function () use ($schema) {
 		(new Processor)->process($schema, 'ž');
-	}, ["The option expects to be unicode in range 2..4, string 'ž' given."]);
+	}, ["The item expects to be unicode in range 2..4, string 'ž' given."]);
 
 	checkValidationErrors(function () use ($schema) {
 		(new Processor)->process($schema, 'žšáéx');
-	}, ["The option expects to be unicode in range 2..4, string 'žšáéx' given."]);
+	}, ["The item expects to be unicode in range 2..4, string 'žšáéx' given."]);
 });
 
 
@@ -100,11 +100,11 @@ test('array', function () {
 
 	checkValidationErrors(function () use ($schema) {
 		(new Processor)->process($schema, []);
-	}, ['The option expects to be array in range 1..3, array given.']);
+	}, ['The item expects to be array in range 1..3, array given.']);
 
 	checkValidationErrors(function () use ($schema) {
 		(new Processor)->process($schema, [1, 2, 3, 4]);
-	}, ['The option expects to be array in range 1..3, array given.']);
+	}, ['The item expects to be array in range 1..3, array given.']);
 });
 
 
@@ -116,9 +116,9 @@ test('structure', function () {
 
 	checkValidationErrors(function () use ($schema) {
 		(new Processor)->process($schema, []);
-	}, ['The option expects to be array in range 1..3, array given.']);
+	}, ['The item expects to be array in range 1..3, array given.']);
 
 	checkValidationErrors(function () use ($schema) {
 		(new Processor)->process($schema, [1, 2, 3, 4]);
-	}, ['The option expects to be array in range 1..3, array given.']);
+	}, ['The item expects to be array in range 1..3, array given.']);
 });

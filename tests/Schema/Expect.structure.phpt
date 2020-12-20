@@ -17,23 +17,23 @@ test('without items', function () {
 
 	checkValidationErrors(function () use ($schema) {
 		(new Processor)->process($schema, [1, 2, 3]);
-	}, ["Unexpected option '0', '1', '2'."]);
+	}, ["Unexpected item '0', '1', '2'."]);
 
 	checkValidationErrors(function () use ($schema) {
 		(new Processor)->process($schema, ['key' => 'val']);
-	}, ["Unexpected option 'key'."]);
+	}, ["Unexpected item 'key'."]);
 
 	checkValidationErrors(function () use ($schema) {
 		(new Processor)->process($schema, 'one');
-	}, ["The option expects to be array, string 'one' given."]);
+	}, ["The item expects to be array, string 'one' given."]);
 
 	checkValidationErrors(function () use ($schema) {
 		(new Processor)->process($schema, true);
-	}, ['The option expects to be array, bool given.']);
+	}, ['The item expects to be array, bool given.']);
 
 	checkValidationErrors(function () use ($schema) {
 		(new Processor)->process($schema, 123);
-	}, ['The option expects to be array, int 123 given.']);
+	}, ['The item expects to be array, int 123 given.']);
 
 	Assert::equal((object) [], (new Processor)->process($schema, null));
 });
@@ -48,7 +48,7 @@ test('accepts object', function () {
 
 	checkValidationErrors(function () use ($schema) {
 		(new Processor)->process($schema, (object) ['a' => 1]);
-	}, ["The option 'a' expects to be string, int 1 given."]);
+	}, ["The item 'a' expects to be string, int 1 given."]);
 
 	$schema = Expect::structure(['a' => Expect::string()->before('strrev')]);
 
@@ -141,8 +141,8 @@ test('with indexed item', function () {
 	checkValidationErrors(function () use ($processor, $schema) {
 		$processor->process($schema, [1, 2, 3]);
 	}, [
-		"Unexpected option '1', '2'.",
-		"The option '0' expects to be string, int 1 given.",
+		"Unexpected item '1', '2'.",
+		"The item '0' expects to be string, int 1 given.",
 	]);
 
 	Assert::equal(
@@ -157,7 +157,7 @@ test('with indexed item', function () {
 
 	checkValidationErrors(function () use ($processor, $schema) {
 		$processor->processMultiple($schema, [['key1' => 'newval', 'newval3'], ['key2' => 'newval', 'newval4']]);
-	}, ["Unexpected option '1'."]);
+	}, ["Unexpected item '1'."]);
 });
 
 
@@ -193,7 +193,7 @@ test('with indexed item & otherItems', function () {
 
 	checkValidationErrors(function () use ($processor, $schema) {
 		$processor->process($schema, [1, 2, 3]);
-	}, ["The option '0' expects to be string, int 1 given."]);
+	}, ["The item '0' expects to be string, int 1 given."]);
 
 	Assert::equal(
 		(object) [
@@ -227,17 +227,17 @@ test('item with default value', function () {
 
 	checkValidationErrors(function () use ($schema) {
 		(new Processor)->process($schema, [1, 2, 3]);
-	}, ["Unexpected option '0', did you mean 'b'?"]);
+	}, ["Unexpected item '0', did you mean 'b'?"]);
 
 	Assert::equal((object) ['b' => 123], (new Processor)->process($schema, []));
 
 	checkValidationErrors(function () use ($schema) {
 		(new Processor)->process($schema, ['b' => 123]);
-	}, ["The option 'b' expects to be string, int 123 given."]);
+	}, ["The item 'b' expects to be string, int 123 given."]);
 
 	checkValidationErrors(function () use ($schema) {
 		(new Processor)->process($schema, ['b' => null]);
-	}, ["The option 'b' expects to be string, null given."]);
+	}, ["The item 'b' expects to be string, null given."]);
 
 	Assert::equal((object) ['b' => 'val'], (new Processor)->process($schema, ['b' => 'val']));
 });
@@ -252,11 +252,11 @@ test('item without default value', function () {
 
 	checkValidationErrors(function () use ($schema) {
 		(new Processor)->process($schema, ['b' => 123]);
-	}, ["The option 'b' expects to be string, int 123 given."]);
+	}, ["The item 'b' expects to be string, int 123 given."]);
 
 	checkValidationErrors(function () use ($schema) {
 		(new Processor)->process($schema, ['b' => null]);
-	}, ["The option 'b' expects to be string, null given."]);
+	}, ["The item 'b' expects to be string, null given."]);
 
 	Assert::equal((object) ['b' => 'val'], (new Processor)->process($schema, ['b' => 'val']));
 });
@@ -271,13 +271,13 @@ test('required item', function () {
 	checkValidationErrors(function () use ($schema) {
 		(new Processor)->process($schema, []);
 	}, [
-		"The mandatory option 'b' is missing.",
-		"The mandatory option 'c' is missing.",
+		"The mandatory item 'b' is missing.",
+		"The mandatory item 'c' is missing.",
 	]);
 
 	checkValidationErrors(function () use ($schema) {
 		(new Processor)->process($schema, ['b' => 'val']);
-	}, ["The mandatory option 'c' is missing."]);
+	}, ["The mandatory item 'c' is missing."]);
 
 	Assert::equal(
 		(object) ['b' => 'val', 'c' => [1, 2, 3]],
@@ -296,7 +296,7 @@ test('other items', function () {
 
 	checkValidationErrors(function () use ($schema) {
 		(new Processor)->process($schema, ['other' => 123]);
-	}, ["The option 'other' expects to be string, int 123 given."]);
+	}, ["The item 'other' expects to be string, int 123 given."]);
 });
 
 
@@ -312,55 +312,55 @@ test('structure items', function () {
 
 	checkValidationErrors(function () use ($schema) {
 		(new Processor)->process($schema, []);
-	}, ["The mandatory option 'b › y' is missing."]);
+	}, ["The mandatory item 'b › y' is missing."]);
 
 	checkValidationErrors(function () use ($schema) {
 		(new Processor)->process($schema, [1, 2, 3]);
 	}, [
-		"Unexpected option '0', did you mean 'a'?",
-		"The mandatory option 'b › y' is missing.",
+		"Unexpected item '0', did you mean 'a'?",
+		"The mandatory item 'b › y' is missing.",
 	]);
 
 	checkValidationErrors(function () use ($schema) {
 		(new Processor)->process($schema, ['a' => 'val']);
 	}, [
-		"The option 'a' expects to be array, string 'val' given.",
-		"The mandatory option 'b › y' is missing.",
+		"The item 'a' expects to be array, string 'val' given.",
+		"The mandatory item 'b › y' is missing.",
 	]);
 
 	checkValidationErrors(function () use ($schema) {
 		(new Processor)->process($schema, ['a' => null]);
-	}, ["The mandatory option 'b › y' is missing."]);
+	}, ["The mandatory item 'b › y' is missing."]);
 
 	checkValidationErrors(function () use ($schema) {
 		(new Processor)->process($schema, ['b' => 123]);
-	}, ["The option 'b' expects to be array, int 123 given."]);
+	}, ["The item 'b' expects to be array, int 123 given."]);
 
 	checkValidationErrors(function () use ($schema) {
 		(new Processor)->process($schema, ['b' => null]);
-	}, ["The mandatory option 'b › y' is missing."]);
+	}, ["The mandatory item 'b › y' is missing."]);
 
 	checkValidationErrors(function () use ($schema) {
 		(new Processor)->process($schema, ['b' => 'val']);
-	}, ["The option 'b' expects to be array, string 'val' given."]);
+	}, ["The item 'b' expects to be array, string 'val' given."]);
 
 	checkValidationErrors(function () use ($schema) {
 		(new Processor)->process($schema, ['b' => ['x' => 'val']]);
 	}, [
-		"Unexpected option 'b › x', did you mean 'y'?",
-		"The mandatory option 'b › y' is missing.",
+		"Unexpected item 'b › x', did you mean 'y'?",
+		"The mandatory item 'b › y' is missing.",
 	]);
 
 	checkValidationErrors(function () use ($schema) {
 		(new Processor)->process($schema, ['b' => ['x1' => 'val', 'x2' => 'val']]);
 	}, [
-		"Unexpected option 'b › x1', 'b › x2'.",
-		"The mandatory option 'b › y' is missing.",
+		"Unexpected item 'b › x1', 'b › x2'.",
+		"The mandatory item 'b › y' is missing.",
 	]);
 
 	checkValidationErrors(function () use ($schema) {
 		(new Processor)->process($schema, ['b' => ['y' => 123]]);
-	}, ["The option 'b › y' expects to be string, int 123 given."]);
+	}, ["The item 'b › y' expects to be string, int 123 given."]);
 
 	Assert::equal(
 		(object) ['a' => (object) ['x' => 'defval'], 'b' => (object) ['y' => 'val']],
@@ -411,7 +411,7 @@ test('processing without default values', function () {
 
 	checkValidationErrors(function () use ($schema, $processor) {
 		$processor->process($schema, []);
-	}, ["The mandatory option 'd' is missing."]);
+	}, ["The mandatory item 'd' is missing."]);
 
 	Assert::equal(
 		(object) ['d' => 'newval'],

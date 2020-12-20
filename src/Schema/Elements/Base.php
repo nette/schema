@@ -73,7 +73,7 @@ trait Base
 	{
 		if ($this->required) {
 			$context->addError(
-				'The mandatory option %path% is missing.',
+				'The mandatory item %path% is missing.',
 				Nette\Schema\Message::MISSING_ITEM
 			);
 			return null;
@@ -94,7 +94,7 @@ trait Base
 	private function doValidate($value, string $expected, Context $context): bool
 	{
 		try {
-			Nette\Utils\Validators::assert($value, $expected, 'option %path%');
+			Nette\Utils\Validators::assert($value, $expected, 'item %path%');
 			return true;
 		} catch (Nette\Utils\AssertionException $e) {
 			$context->addError(
@@ -121,7 +121,7 @@ trait Base
 			if (!$handler($value)) {
 				$expected = $description ?: (is_string($handler) ? "$handler()" : "#$i");
 				$context->addError(
-					'Failed assertion ' . ($description ? "'%assertion%'" : '%assertion%') . ' for option %path% with value %value%.',
+					'Failed assertion ' . ($description ? "'%assertion%'" : '%assertion%') . ' for item %path% with value %value%.',
 					Nette\Schema\Message::FAILED_ASSERTION,
 					['value' => $value, 'assertion' => $expected]
 				);

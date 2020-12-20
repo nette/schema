@@ -96,7 +96,7 @@ final class AnyOf implements Schema
 			$context->errors = array_merge($context->errors, $innerErrors);
 		} else {
 			$context->addError(
-				'The option %path% expects to be %expected%, %value% given.',
+				'The item %path% expects to be %expected%, %value% given.',
 				Nette\Schema\Message::TYPE_MISMATCH,
 				[
 					'value' => $value,
@@ -111,7 +111,7 @@ final class AnyOf implements Schema
 	{
 		if ($this->required) {
 			$context->addError(
-				'The mandatory option %path% is missing.',
+				'The mandatory item %path% is missing.',
 				Nette\Schema\Message::MISSING_ITEM
 			);
 			return null;

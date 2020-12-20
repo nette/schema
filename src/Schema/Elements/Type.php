@@ -142,7 +142,7 @@ final class Type implements Schema
 		}
 		if ($value !== null && $this->pattern !== null && !preg_match("\x01^(?:$this->pattern)$\x01Du", $value)) {
 			$context->addError(
-				"The option %path% expects to match pattern '%pattern%', %value% given.",
+				"The item %path% expects to match pattern '%pattern%', %value% given.",
 				Nette\Schema\Message::PATTERN_MISMATCH,
 				['value' => $value, 'pattern' => $this->pattern]
 			);

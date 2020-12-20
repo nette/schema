@@ -214,7 +214,7 @@ $schema = Expect::structure([
 ]);
 
 $processor->process($schema, ['optional' => '']);
-// ERROR: option 'required' is missing
+// ERROR: item 'required' is missing
 
 $processor->process($schema, ['required' => 'foo']);
 // OK, returns {'required' => 'foo', 'optional' => null}
@@ -243,7 +243,7 @@ $schema = Expect::structure([
 ]);
 
 $processor->process($schema, ['additional' => 1]);
-// ERROR: Unexpected option 'additional'
+// ERROR: Unexpected item 'additional'
 ```
 
 Which we can change with `otherItems()`. As a parameter, we will specify the schema for each extra element:
@@ -328,7 +328,7 @@ $schema = Expect::arrayOf('string')
 	->assert($countIsEven, 'Even items in array');
 
 $processor->process($schema, ['a', 'b', 'c']);
-// Failed assertion "Even items in array" for option with value array.
+// Failed assertion "Even items in array" for item with value array.
 ```
 
 The method can be called repeatedly to add more assertions.
