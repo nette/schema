@@ -97,7 +97,7 @@ final class AnyOf implements Schema
 			$context->errors = array_merge($context->errors, $innerErrors);
 		} else {
 			$context->addError(
-				'The item %path% expects to be %expected%, %value% given.',
+				'The %label% %path% expects to be %expected%, %value% given.',
 				Nette\Schema\Message::TYPE_MISMATCH,
 				[
 					'value' => $value,

@@ -22,6 +22,9 @@ final class Context
 	/** @var string[] */
 	public $path = [];
 
+	/** @var bool */
+	public $isKey = false;
+
 	/** @var Message[] */
 	public $errors = [];
 
@@ -34,6 +37,7 @@ final class Context
 
 	public function addError(string $message, string $code, array $variables = []): Message
 	{
+		$variables['isKey'] = $this->isKey;
 		return $this->errors[] = new Message($message, $code, $this->path, $variables);
 	}
 

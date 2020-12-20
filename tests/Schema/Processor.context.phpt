@@ -30,7 +30,8 @@ test('', function () {
 			new Nette\Schema\Message(
 				'The mandatory item %path% is missing.',
 				Nette\Schema\Message::MISSING_ITEM,
-				['first', 'r']
+				['first', 'r'],
+				['isKey' => false]
 			),
 		],
 		$e->getMessageObjects()

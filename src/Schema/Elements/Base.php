@@ -118,7 +118,7 @@ trait Base
 		if (!Nette\Utils\Validators::is($value, $expected)) {
 			$expected = str_replace(['|', ':'], [' or ', ' in range '], $expected);
 			$context->addError(
-				'The item %path% expects to be %expected%, %value% given.',
+				'The %label% %path% expects to be %expected%, %value% given.',
 				Nette\Schema\Message::TYPE_MISMATCH,
 				['value' => $value, 'expected' => $expected]
 			);
@@ -139,7 +139,7 @@ trait Base
 
 			if (!self::isInRange($length, $range)) {
 				$context->addError(
-					"The length of item %path% expects to be in range %expected%, %length% $label given.",
+					"The length of %label% %path% expects to be in range %expected%, %length% $label given.",
 					Nette\Schema\Message::LENGTH_OUT_OF_RANGE,
 					['value' => $value, 'length' => $length, 'expected' => implode('..', $range)]
 				);
@@ -148,7 +148,7 @@ trait Base
 
 		} elseif ((is_int($value) || is_float($value)) && !self::isInRange($value, $range)) {
 			$context->addError(
-				'The item %path% expects to be in range %expected%, %value% given.',
+				'The %label% %path% expects to be in range %expected%, %value% given.',
 				Nette\Schema\Message::VALUE_OUT_OF_RANGE,
 				['value' => $value, 'expected' => implode('..', $range)]
 			);
@@ -179,7 +179,7 @@ trait Base
 			if (!$handler($value)) {
 				$expected = $description ?: (is_string($handler) ? "$handler()" : "#$i");
 				$context->addError(
-					'Failed assertion ' . ($description ? "'%assertion%'" : '%assertion%') . ' for item %path% with value %value%.',
+					'Failed assertion ' . ($description ? "'%assertion%'" : '%assertion%') . ' for %label% %path% with value %value%.',
 					Nette\Schema\Message::FAILED_ASSERTION,
 					['value' => $value, 'assertion' => $expected]
 				);

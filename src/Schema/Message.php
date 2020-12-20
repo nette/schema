@@ -65,6 +65,7 @@ final class Message
 	public function toString(): string
 	{
 		$vars = $this->variables;
+		$vars['label'] = empty($vars['isKey']) ? 'item' : 'key of item';
 		$vars['path'] = $this->path ? "'" . implode(' › ', $this->path) . "'" : null;
 		$vars['value'] = Helpers::formatValue($vars['value'] ?? null);
 

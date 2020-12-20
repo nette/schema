@@ -100,9 +100,9 @@ final class Expect
 	/**
 	 * @param  string|Schema  $type
 	 */
-	public static function arrayOf($type): Type
+	public static function arrayOf($valueType, $keyType = null): Type
 	{
-		return (new Type('array'))->items($type);
+		return (new Type('array'))->items($valueType, $keyType);
 	}
 
 

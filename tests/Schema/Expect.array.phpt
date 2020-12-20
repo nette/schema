@@ -287,6 +287,29 @@ test('arrayOf() & scalar', function () {
 });
 
 
+test('arrayOf() & keys', function () {
+	$schema = Expect::arrayOf('string|int', Expect::string()->pattern('\w+'));
+
+	Assert::same([], (new Processor)->process($schema, []));
+
+	checkValidationErrors(function () use ($schema) {
+		(new Processor)->process($schema, [1, '#' => 2]);
+	}, [
+		"The key of item '0' expects to be string, 0 given.",
+		"The key of item '#' expects to match pattern '\\w+', '#' given.",
+	]);
+
+	Assert::same(['key' => 'val'], (new Processor)->process($schema, ['key' => 'val']));
+});
+
+
+test('arrayOf() & keys II.', function () {
+	$schema = Expect::arrayOf('string|int', Expect::string()->before('strrev'));
+
+	Assert::same(['yek' => 'val'], (new Processor)->process($schema, ['key' => 'val']));
+});
+
+
 test('arrayOf() error', function () {
 	Assert::exception(function () {
 		Expect::arrayOf(['a' => Expect::string()]);

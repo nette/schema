@@ -25,7 +25,10 @@ final class Type implements Schema
 	private $type;
 
 	/** @var Schema|null for arrays */
-	private $items;
+	private $itemsValue;
+
+	/** @var Schema|null for arrays */
+	private $itemsKey;
 
 	/** @var array{?float, ?float} */
 	private $range = [null, null];
@@ -84,9 +87,14 @@ final class Type implements Schema
 	 * @param  string|Schema  $type
 	 * @internal  use arrayOf() or listOf()
 	 */
-	public function items($type = 'mixed'): self
+	public function items($valueType = 'mixed', $keyType = null): self
 	{
-		$this->items = $type instanceof Schema ? $type : new self($type);
+		$this->itemsValue = $valueType instanceof Schema
+			? $valueType
+			: new self($valueType);
+		$this->itemsKey = $keyType instanceof Schema || $keyType === null
+			? $keyType
+			: new self($keyType);
 		return $this;
 	}
 
@@ -108,12 +116,19 @@ final class Type implements Schema
 		}
 
 		$value = $this->doNormalize($value, $context);
-		if (is_array($value) && $this->items) {
+		if (is_array($value) && $this->itemsValue) {
+			$res = [];
 			foreach ($value as $key => $val) {
 				$context->path[] = $key;
-				$value[$key] = $this->items->normalize($val, $context);
+				$context->isKey = true;
+				$key = $this->itemsKey
+					? $this->itemsKey->normalize($key, $context)
+					: $key;
+				$context->isKey = false;
+				$res[$key] = $this->itemsValue->normalize($val, $context);
 				array_pop($context->path);
 			}
+			$value = $res;
 		}
 		if ($prevent && is_array($value)) {
 			$value[Helpers::PREVENT_MERGING] = true;
@@ -128,7 +143,7 @@ final class Type implements Schema
 			unset($value[Helpers::PREVENT_MERGING]);
 			return $value;
 		}
-		if (is_array($value) && is_array($base) && $this->items) {
+		if (is_array($value) && is_array($base) && $this->itemsValue) {
 			$index = 0;
 			foreach ($value as $key => $val) {
 				if ($key === $index) {
@@ -136,7 +151,7 @@ final class Type implements Schema
 					$index++;
 				} else {
 					$base[$key] = array_key_exists($key, $base)
-						? $this->items->merge($val, $base[$key])
+						? $this->itemsValue->merge($val, $base[$key])
 						: $val;
 				}
 			}
@@ -169,7 +184,7 @@ final class Type implements Schema
 
 		if ($value !== null && $this->pattern !== null && !preg_match("\x01^(?:$this->pattern)$\x01Du", $value)) {
 			$context->addError(
-				"The item %path% expects to match pattern '%pattern%', %value% given.",
+				"The %label% %path% expects to match pattern '%pattern%', %value% given.",
 				Nette\Schema\Message::PATTERN_MISMATCH,
 				['value' => $value, 'pattern' => $this->pattern]
 			);
@@ -181,16 +196,21 @@ final class Type implements Schema
 			$context->dynamics[] = [$value, str_replace(DynamicParameter::class . '|', '', $expected)];
 		}
 
-		if ($this->items) {
+		if ($this->itemsValue) {
 			$errCount = count($context->errors);
+			$res = [];
 			foreach ($value as $key => $val) {
 				$context->path[] = $key;
-				$value[$key] = $this->items->complete($val, $context);
+				$context->isKey = true;
+				$key = $this->itemsKey ? $this->itemsKey->complete($key, $context) : $key;
+				$context->isKey = false;
+				$res[$key] = $this->itemsValue->complete($val, $context);
 				array_pop($context->path);
 			}
 			if (count($context->errors) > $errCount) {
 				return null;
 			}
+			$value = $res;
 		}
 
 		if ($merge) {
