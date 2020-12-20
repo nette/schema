@@ -37,7 +37,7 @@ final class Type implements Schema
 	private $pattern;
 
 	/** @var bool */
-	private $merge = true;
+	private $merge = false;
 
 
 	public function __construct(string $type)
