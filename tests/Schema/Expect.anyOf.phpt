@@ -229,6 +229,13 @@ test('First is default', function () {
 });
 
 
+test('Empty set', function () {
+	Assert::exception(function () {
+		Expect::anyOf();
+	}, Nette\InvalidStateException::class, 'The enumeration must not be empty.');
+});
+
+
 test('normalization', function () {
 	$schema = Expect::anyOf(
 		Expect::string()->before(function ($v) { return (string) $v; })

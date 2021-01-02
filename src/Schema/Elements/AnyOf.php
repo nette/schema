@@ -29,6 +29,9 @@ final class AnyOf implements Schema
 	 */
 	public function __construct(...$set)
 	{
+		if (!$set) {
+			throw new Nette\InvalidStateException('The enumeration must not be empty.');
+		}
 		$this->set = $set;
 	}
 
