@@ -33,6 +33,13 @@ final class AnyOf implements Schema
 	}
 
 
+	public function firstIsDefault(): self
+	{
+		$this->default = $this->set[0];
+		return $this;
+	}
+
+
 	public function nullable(): self
 	{
 		$this->set[] = null;

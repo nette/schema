@@ -217,6 +217,18 @@ test('Schema as default value', function () {
 });
 
 
+test('First is default', function () {
+	$schema = Expect::structure([
+		'key' => Expect::anyOf(
+			Expect::string('def'),
+			false
+		)->firstIsDefault(),
+	])->castTo('array');
+
+	Assert::same(['key' => 'def'], (new Processor)->process($schema, null));
+});
+
+
 test('normalization', function () {
 	$schema = Expect::anyOf(
 		Expect::string()->before(function ($v) { return (string) $v; })
