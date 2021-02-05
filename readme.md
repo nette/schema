@@ -13,7 +13,7 @@ Introduction
 
 A practical library for validation and normalization of data structures against a given schema with a smart & easy-to-understand API.
 
-Documentation can be found on the [website](https://doc.nette.org/schema). If you like it, **[please make a donation now](https://github.com/sponsors/dg)**. Thank you!
+Documentation can be found on the [website](https://doc.nette.org/schema).
 
 Installation:
 
@@ -24,12 +24,14 @@ composer require nette/schema
 It requires PHP version 7.1 and supports PHP up to 8.0.
 
 
-Support Project
----------------
+[Support Me](https://github.com/sponsors/dg)
+--------------------------------------------
 
-Do you like Schema? Are you looking forward to the new features?
+Do you like Nette DI? Are you looking forward to the new features?
 
-[![Donate](https://files.nette.org/icons/donation-1.svg?)](https://nette.org/make-donation?to=schema)
+[![Buy me a coffee](https://files.nette.org/icons/donation-3.svg)](https://github.com/sponsors/dg)
+
+Thank you!
 
 
 Basic Usage
