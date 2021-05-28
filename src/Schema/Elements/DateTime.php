@@ -79,6 +79,12 @@ class DateTime implements Schema
             return null;
         }
 
+        if($normalized->format($this->format) !== $value)
+        {
+            $context->addError("The option %path% expects Date to be valid Date format. Input Date is the same as formatted date. Format:'$this->format' Input: '$value', Formatted: '{$normalized->format($this->format)}", Message::PATTERN_MISMATCH);
+            return null;
+        }
+
         //We should not format DateTime object when we aer called from Date
         if($this->output_format !== null && get_class($this) === __CLASS__) {
             return $normalized->format($this->output_format);
