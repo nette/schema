@@ -77,3 +77,9 @@ checkValidationErrors(function () {
 
 	(new Processor)->process($schema, 'the quick brown fox jumped over the lazy dog');
 }, ["The option expects Date to match pattern 'Y-m-d H:i:s', 'the quick brown fox jumped over the lazy dog' given."]);
+
+checkValidationErrors(function () {
+	$schema = Expect::DateTime('Y-m-d H:i:s')->nullable(false);
+
+	(new Nette\Schema\Processor())->process($schema, '2021-31-01 25:00:00');
+}, ["The option expects Date to be valid Date format. Input Date is not the same as formatted date. Format:'Y-m-d H:i:s' Input: '2021-31-01 25:00:00', Formatted: '2023-07-02 01:00:00'."]);

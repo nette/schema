@@ -81,7 +81,7 @@ class DateTime implements Schema
 
         if($normalized->format($this->format) !== $value)
         {
-            $context->addError("The option %path% expects Date to be valid Date format. Input Date is the same as formatted date. Format:'$this->format' Input: '$value', Formatted: '{$normalized->format($this->format)}", Message::PATTERN_MISMATCH);
+            $context->addError("The option %path% expects Date to be valid Date format. Input Date is not the same as formatted date. Format:'$this->format' Input: '$value', Formatted: '{$normalized->format($this->format)}'.", Message::PATTERN_MISMATCH);
             return null;
         }
 
