@@ -259,6 +259,28 @@ $processor->process($schema, ['additional' => 1]); // OK
 $processor->process($schema, ['additional' => true]); // ERROR
 ```
 
+DateTime/Date
+-------------
+Parameters for DateTime and Date are the same.
+
+Returning DateTime Object
+```php
+$schema = Expect::DateTime('Y-m-d H:i:s');
+$processor->process($schema, '2021-01-01 00:00:00');
+
+DateTimeImmutable Object
+(
+    [date] => 2021-01-01 00:00:00.000000
+    [timezone_type] => 3
+    [timezone] => Europe/Helsinki
+)
+```
+Returning DateTime formatted string
+```php
+$schema = Expect::DateTime('Y-m-d H:i:s')->format('H:i:s m.d.Y');
+$processor->process($schema, '2021-01-01 00:00:00'); //00:00:00 01.01.2021
+```
+
 Deprecations
 ------------
 
