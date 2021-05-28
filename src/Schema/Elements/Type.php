@@ -9,6 +9,7 @@ declare(strict_types=1);
 
 namespace Nette\Schema\Elements;
 
+use DateTimeZone;
 use Nette;
 use Nette\Schema\Context;
 use Nette\Schema\DynamicParameter;
@@ -104,7 +105,6 @@ final class Type implements Schema
 		$this->pattern = $pattern;
 		return $this;
 	}
-
 
 	/********************* processing ****************d*g**/
 

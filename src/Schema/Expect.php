@@ -67,6 +67,15 @@ final class Expect
 		return new Structure($items);
 	}
 
+    public static function date($format = 'Y-m-d', ?\DateTimeZone $timeZone = null): Nette\Schema\Elements\Date
+    {
+        return new Nette\Schema\Elements\Date($format, $timeZone);
+    }
+
+    public static function dateTime($format = 'Y-m-d H:i:s', ?\DateTimeZone $timeZone = null): Nette\Schema\Elements\DateTime
+    {
+        return new Nette\Schema\Elements\DateTime($format, $timeZone);
+    }
 
 	/**
 	 * @param  object  $object
