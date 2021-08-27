@@ -422,10 +422,43 @@ Successfully validated data can be cast:
 Expect::scalar()->castTo('string');
 ```
 
-In addition to native PHP types, you can also cast to classes:
+In addition to native PHP types, you can also cast to classes. It distinguishes whether it is a simple class without a constructor or a class with a constructor. If the class has no constructor, an instance of it is created and all elements of the structure are written to its properties:
 
 ```php
-Expect::scalar()->castTo('AddressEntity');
+class Info
+{
+	public bool $processRefund;
+	public int $refundAmount;
+}
+
+Expect::structure([
+	'processRefund' => Expect::bool(),
+	'refundAmount' => Expect::int(),
+])->castTo(Info::class);
+
+// creates '$obj = new Info' and writes to $obj->processRefund and $obj->refundAmount
+```
+
+If the class has a constructor, the elements of the structure are passed as named parameters to the constructor (requires PHP 8):
+
+```php
+class Info
+{
+	public function __construct(
+		public bool $processRefund,
+		public int $refundAmount,
+	) {
+	}
+}
+
+// creates $obj = new Info(processRefund: ..., refundAmount: ...)
+```
+
+Casting combined with a scalar parameter creates an object and passes the value as the sole parameter to the constructor:
+
+```php
+Expect::string()->castTo(DateTime::class);
+// creates new DateTime(...)
 ```
 
 

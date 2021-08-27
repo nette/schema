@@ -176,6 +176,15 @@ final class Helpers
 				settype($value, $type);
 				return $value;
 			};
+		} elseif (method_exists($type, '__construct')) {
+			return static function ($value) use ($type) {
+				if (PHP_VERSION_ID < 80000 && is_array($value)) {
+					throw new Nette\NotSupportedException("Creating $type objects is supported since PHP 8.0");
+				}
+				return is_array($value)
+					? new $type(...$value)
+					: new $type($value);
+			};
 		} else {
 			return static function ($value) use ($type) {
 				$object = new $type;
