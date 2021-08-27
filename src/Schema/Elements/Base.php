@@ -166,8 +166,12 @@ trait Base
 		if ($this->castTo) {
 			if (Nette\Utils\Validators::isBuiltinType($this->castTo)) {
 				settype($value, $this->castTo);
-			} else {
+			} elseif (strcasecmp($this->castTo, \stdClass::class) === 0) {
 				$value = Nette\Utils\Arrays::toObject($value, new $this->castTo);
+			} else {
+				$value = is_array($value)
+					? new ($this->castTo)(...$value)
+					: new ($this->castTo)($value);
 			}
 		}
 
