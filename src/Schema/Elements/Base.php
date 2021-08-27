@@ -169,6 +169,8 @@ trait Base
 		if ($this->castTo) {
 			if (Nette\Utils\Reflection::isBuiltinType($this->castTo)) {
 				settype($value, $this->castTo);
+			} elseif (in_array($this->castTo, [\DateTime::class, \DateTimeImmutable::class], true)) {
+				$value = new ($this->castTo)($value);
 			} else {
 				$value = Nette\Utils\Arrays::toObject($value, new $this->castTo);
 			}

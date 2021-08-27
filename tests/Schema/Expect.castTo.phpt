@@ -29,3 +29,20 @@ test('', function () {
 
 	Assert::equal((object) ['a' => 1, 'b' => 2], (new Processor)->process($schema, ['a' => 1, 'b' => 2]));
 });
+
+
+// wip
+class Foo
+{
+	public DateTime $bar;
+}
+
+$processor = new Nette\Schema\Processor;
+$processor->process(
+	Nette\Schema\Expect::structure([
+		'bar' => Nette\Schema\Expect::string()->castTo('DateTime'),
+	])->castTo(Foo::class),
+	[
+		'bar' => '2021-01-01',
+	],
+);
