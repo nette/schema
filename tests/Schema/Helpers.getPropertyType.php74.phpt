@@ -21,11 +21,11 @@ Assert::same('string', Helpers::getPropertyType(new \ReflectionProperty(NS\A::cl
 
 Assert::same('NS\A', Helpers::getPropertyType(new \ReflectionProperty(NS\A::class, 'selfType')));
 
-Assert::same('Test\B|null', Helpers::getPropertyType(new \ReflectionProperty(NS\A::class, 'nullableClassType')));
+Assert::same('?Test\B', Helpers::getPropertyType(new \ReflectionProperty(NS\A::class, 'nullableClassType')));
 
-Assert::same('string|null', Helpers::getPropertyType(new \ReflectionProperty(NS\A::class, 'nullableNativeType')));
+Assert::same('?string', Helpers::getPropertyType(new \ReflectionProperty(NS\A::class, 'nullableNativeType')));
 
-Assert::same('NS\A|null', Helpers::getPropertyType(new \ReflectionProperty(NS\A::class, 'nullableSelfType')));
+Assert::same('?NS\A', Helpers::getPropertyType(new \ReflectionProperty(NS\A::class, 'nullableSelfType')));
 
 Assert::same('Test\B', Helpers::getPropertyType(new \ReflectionProperty(NS\A::class, 'annotationClassType')));
 
