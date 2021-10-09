@@ -12,11 +12,11 @@ require __DIR__ . '/../bootstrap.php';
 
 test('', function () {
 	$schema = Expect::array()
-		->before(function ($val) { return explode(',', $val); });
+		->before(fn($val) => explode(',', $val));
 
 	Assert::same(
 		['1', '2', '3'],
-		$schema->normalize('1,2,3', new Context)
+		$schema->normalize('1,2,3', new Context),
 	);
 });
 
@@ -28,7 +28,7 @@ test('structure property', function () {
 
 	Assert::same(
 		['key' => '3,2,1'],
-		$schema->normalize(['key' => '1,2,3'], new Context)
+		$schema->normalize(['key' => '1,2,3'], new Context),
 	);
 });
 

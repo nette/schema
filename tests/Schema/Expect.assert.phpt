@@ -22,7 +22,7 @@ test('single assertion', function () {
 
 
 test('multiple assertions', function () {
-	$schema = Expect::string()->assert('ctype_digit')->assert(function ($s) { return strlen($s) >= 3; });
+	$schema = Expect::string()->assert('ctype_digit')->assert(fn($s) => strlen($s) >= 3);
 
 	checkValidationErrors(function () use ($schema) {
 		(new Processor)->process($schema, '');
@@ -39,7 +39,7 @@ test('multiple assertions', function () {
 test('multiple assertions with custom descriptions', function () {
 	$schema = Expect::string()
 		->assert('ctype_digit', 'Is number')
-		->assert(function ($s) { return strlen($s) >= 3; }, 'Minimal lenght');
+		->assert(fn($s) => strlen($s) >= 3, 'Minimal lenght');
 
 	checkValidationErrors(function () use ($schema) {
 		(new Processor)->process($schema, '');

@@ -85,7 +85,7 @@ trait Base
 		if ($this->required) {
 			$context->addError(
 				'The mandatory item %path% is missing.',
-				Nette\Schema\Message::MISSING_ITEM
+				Nette\Schema\Message::MISSING_ITEM,
 			);
 			return null;
 		}
@@ -109,7 +109,7 @@ trait Base
 		if ($this->deprecated !== null) {
 			$context->addWarning(
 				$this->deprecated,
-				Nette\Schema\Message::DEPRECATED
+				Nette\Schema\Message::DEPRECATED,
 			);
 		}
 	}
@@ -122,7 +122,7 @@ trait Base
 			$context->addError(
 				'The %label% %path% expects to be %expected%, %value% given.',
 				Nette\Schema\Message::TYPE_MISMATCH,
-				['value' => $value, 'expected' => $expected]
+				['value' => $value, 'expected' => $expected],
 			);
 			return false;
 		}
@@ -144,7 +144,7 @@ trait Base
 				$context->addError(
 					"The length of %label% %path% expects to be in range %expected%, %length% $label given.",
 					Nette\Schema\Message::LENGTH_OUT_OF_RANGE,
-					['value' => $value, 'length' => $length, 'expected' => implode('..', $range)]
+					['value' => $value, 'length' => $length, 'expected' => implode('..', $range)],
 				);
 				return false;
 			}
@@ -152,7 +152,7 @@ trait Base
 			$context->addError(
 				'The %label% %path% expects to be in range %expected%, %value% given.',
 				Nette\Schema\Message::VALUE_OUT_OF_RANGE,
-				['value' => $value, 'expected' => implode('..', $range)]
+				['value' => $value, 'expected' => implode('..', $range)],
 			);
 			return false;
 		}
@@ -184,7 +184,7 @@ trait Base
 				$context->addError(
 					'Failed assertion ' . ($description ? "'%assertion%'" : '%assertion%') . ' for %label% %path% with value %value%.',
 					Nette\Schema\Message::FAILED_ASSERTION,
-					['value' => $value, 'assertion' => $expected]
+					['value' => $value, 'assertion' => $expected],
 				);
 				return;
 			}
