@@ -10,7 +10,6 @@ declare(strict_types=1);
 namespace Nette\Schema;
 
 use Nette;
-use Nette\Utils\Reflection;
 
 
 /**
@@ -53,40 +52,6 @@ final class Helpers
 		} else {
 			return $value;
 		}
-	}
-
-
-	public static function getPropertyType(\ReflectionProperty $prop): ?string
-	{
-		if ($type = Nette\Utils\Type::fromReflection($prop)) {
-			return (string) $type;
-		} elseif ($type = preg_replace('#\s.*#', '', (string) self::parseAnnotation($prop, 'var'))) {
-			$class = Reflection::getPropertyDeclaringClass($prop);
-			return preg_replace_callback('#[\w\\\\]+#', function ($m) use ($class) {
-				return Reflection::expandClassName($m[0], $class);
-			}, $type);
-		}
-
-		return null;
-	}
-
-
-	/**
-	 * Returns an annotation value.
-	 * @param  \ReflectionProperty  $ref
-	 */
-	public static function parseAnnotation(\Reflector $ref, string $name): ?string
-	{
-		if (!Reflection::areCommentsAvailable()) {
-			throw new Nette\InvalidStateException('You have to enable phpDoc comments in opcode cache.');
-		}
-
-		$re = '#[\s*]@' . preg_quote($name, '#') . '(?=\s|$)(?:[ \t]+([^@\s]\S*))?#';
-		if ($ref->getDocComment() && preg_match($re, trim($ref->getDocComment(), '/*'), $m)) {
-			return $m[1] ?? '';
-		}
-
-		return null;
 	}
 
 
