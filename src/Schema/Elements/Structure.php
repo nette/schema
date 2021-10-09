@@ -63,10 +63,7 @@ final class Structure implements Schema
 	}
 
 
-	/**
-	 * @param  string|Schema  $type
-	 */
-	public function otherItems($type = 'mixed'): self
+	public function otherItems(string|Schema $type = 'mixed'): self
 	{
 		$this->otherItems = $type instanceof Schema ? $type : new Type($type);
 		return $this;
@@ -83,7 +80,7 @@ final class Structure implements Schema
 	/********************* processing ****************d*g**/
 
 
-	public function normalize($value, Context $context)
+	public function normalize(mixed $value, Context $context): mixed
 	{
 		if ($prevent = (is_array($value) && isset($value[Helpers::PreventMerging]))) {
 			unset($value[Helpers::PreventMerging]);
@@ -113,7 +110,7 @@ final class Structure implements Schema
 	}
 
 
-	public function merge($value, $base)
+	public function merge(mixed $value, $base): mixed
 	{
 		if (is_array($value) && isset($value[Helpers::PreventMerging])) {
 			unset($value[Helpers::PreventMerging]);
@@ -143,7 +140,7 @@ final class Structure implements Schema
 	}
 
 
-	public function complete($value, Context $context)
+	public function complete(mixed $value, Context $context): mixed
 	{
 		if ($value === null) {
 			$value = []; // is unable to distinguish null from array in NEON
@@ -154,7 +151,7 @@ final class Structure implements Schema
 		if (!$this->doValidate($value, 'array', $context)
 			|| !$this->doValidateRange($value, $this->range, $context)
 		) {
-			return;
+			return null;
 		}
 
 		$errCount = count($context->errors);
@@ -190,14 +187,14 @@ final class Structure implements Schema
 		}
 
 		if (count($context->errors) > $errCount) {
-			return;
+			return null;
 		}
 
 		return $this->doFinalize($value, $context);
 	}
 
 
-	public function completeDefault(Context $context)
+	public function completeDefault(Context $context): mixed
 	{
 		return $this->required
 			? $this->complete([], $context)

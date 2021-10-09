@@ -75,11 +75,9 @@ final class Type implements Schema
 
 
 	/**
-	 * @param  string|Schema  $valueType
-	 * @param  string|Schema|null  $keyType
 	 * @internal  use arrayOf() or listOf()
 	 */
-	public function items($valueType = 'mixed', $keyType = null): self
+	public function items(string|Schema $valueType = 'mixed', string|Schema $keyType = null): self
 	{
 		$this->itemsValue = $valueType instanceof Schema
 			? $valueType
@@ -101,7 +99,7 @@ final class Type implements Schema
 	/********************* processing ****************d*g**/
 
 
-	public function normalize($value, Context $context)
+	public function normalize(mixed $value, Context $context): mixed
 	{
 		if ($prevent = (is_array($value) && isset($value[Helpers::PreventMerging]))) {
 			unset($value[Helpers::PreventMerging]);
@@ -132,7 +130,7 @@ final class Type implements Schema
 	}
 
 
-	public function merge($value, $base)
+	public function merge(mixed $value, $base): mixed
 	{
 		if (is_array($value) && isset($value[Helpers::PreventMerging])) {
 			unset($value[Helpers::PreventMerging]);
@@ -159,7 +157,7 @@ final class Type implements Schema
 	}
 
 
-	public function complete($value, Context $context)
+	public function complete(mixed $value, Context $context): mixed
 	{
 		$merge = $this->merge;
 		if (is_array($value) && isset($value[Helpers::PreventMerging])) {
@@ -176,7 +174,7 @@ final class Type implements Schema
 		if (!$this->doValidate($value, $this->type, $context)
 			|| !$this->doValidateRange($value, $this->range, $context, $this->type)
 		) {
-			return;
+			return null;
 		}
 
 		if ($value !== null && $this->pattern !== null && !preg_match("\x01^(?:$this->pattern)$\x01Du", $value)) {
@@ -185,7 +183,7 @@ final class Type implements Schema
 				Nette\Schema\Message::PatternMismatch,
 				['value' => $value, 'pattern' => $this->pattern],
 			);
-			return;
+			return null;
 		}
 
 		if ($value instanceof DynamicParameter) {

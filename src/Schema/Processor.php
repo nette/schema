@@ -32,10 +32,9 @@ final class Processor
 
 	/**
 	 * Normalizes and validates data. Result is a clean completed data.
-	 * @return mixed
 	 * @throws ValidationException
 	 */
-	public function process(Schema $schema, $data)
+	public function process(Schema $schema, $data): mixed
 	{
 		$this->createContext();
 		$data = $schema->normalize($data, $this->context);
@@ -48,10 +47,9 @@ final class Processor
 
 	/**
 	 * Normalizes and validates and merges multiple data. Result is a clean completed data.
-	 * @return mixed
 	 * @throws ValidationException
 	 */
-	public function processMultiple(Schema $schema, array $dataset)
+	public function processMultiple(Schema $schema, array $dataset): mixed
 	{
 		$this->createContext();
 		$flatten = null;
@@ -91,7 +89,7 @@ final class Processor
 	}
 
 
-	private function createContext()
+	private function createContext(): void
 	{
 		$this->context = new Context;
 		$this->context->skipDefaults = $this->skipDefaults;

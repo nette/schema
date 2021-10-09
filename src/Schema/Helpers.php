@@ -25,9 +25,8 @@ final class Helpers
 
 	/**
 	 * Merges dataset. Left has higher priority than right one.
-	 * @return array|string
 	 */
-	public static function merge($value, $base)
+	public static function merge(mixed $value, mixed $base): mixed
 	{
 		if (is_array($value) && isset($value[self::PreventMerging])) {
 			unset($value[self::PreventMerging]);
@@ -56,10 +55,7 @@ final class Helpers
 	}
 
 
-	/**
-	 * @param  mixed  $value
-	 */
-	public static function formatValue($value): string
+	public static function formatValue(mixed $value): string
 	{
 		if (is_object($value)) {
 			return 'object ' . $value::class;

@@ -73,7 +73,7 @@ trait Base
 	}
 
 
-	public function completeDefault(Context $context)
+	public function completeDefault(Context $context): mixed
 	{
 		if ($this->required) {
 			$context->addError(
@@ -87,7 +87,7 @@ trait Base
 	}
 
 
-	public function doNormalize($value, Context $context)
+	public function doNormalize(mixed $value, Context $context): mixed
 	{
 		if ($this->before) {
 			$value = ($this->before)($value);
@@ -108,7 +108,7 @@ trait Base
 	}
 
 
-	private function doValidate($value, string $expected, Context $context): bool
+	private function doValidate(mixed $value, string $expected, Context $context): bool
 	{
 		if (!Nette\Utils\Validators::is($value, $expected)) {
 			$expected = str_replace(['|', ':'], [' or ', ' in range '], $expected);
@@ -124,7 +124,7 @@ trait Base
 	}
 
 
-	private function doValidateRange($value, array $range, Context $context, string $types = ''): bool
+	private function doValidateRange(mixed $value, array $range, Context $context, string $types = ''): bool
 	{
 		if (is_array($value) || is_string($value)) {
 			[$length, $label] = is_array($value)
@@ -154,14 +154,14 @@ trait Base
 	}
 
 
-	private function isInRange($value, array $range): bool
+	private function isInRange(mixed $value, array $range): bool
 	{
 		return ($range[0] === null || $value >= $range[0])
 			&& ($range[1] === null || $value <= $range[1]);
 	}
 
 
-	private function doFinalize($value, Context $context)
+	private function doFinalize(mixed $value, Context $context)
 	{
 		if ($this->castTo) {
 			if (Nette\Utils\Validators::isBuiltinType($this->castTo)) {
