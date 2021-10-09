@@ -8,6 +8,9 @@ use Tester\Assert;
 require __DIR__ . '/../bootstrap.php';
 require __DIR__ . '/fixtures/Helpers.getPropertyType.php';
 
+if (!class_exists(Nette\Utils\Type::class)) {
+	Tester\Environment::skip('Expect::from() requires nette/utils 3.x');
+}
 
 Assert::null(Helpers::getPropertyType(new \ReflectionProperty(NS\A::class, 'noType')));
 

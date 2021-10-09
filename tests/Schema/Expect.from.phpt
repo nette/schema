@@ -9,6 +9,10 @@ use Tester\Assert;
 
 require __DIR__ . '/../bootstrap.php';
 
+if (!class_exists(Nette\Utils\Type::class)) {
+	Tester\Environment::skip('Expect::from() requires nette/utils 3.x');
+}
+
 
 Assert::with(Structure::class, function () {
 	$schema = Expect::from(new stdClass);

@@ -57,7 +57,9 @@ final class Helpers
 
 	public static function getPropertyType(\ReflectionProperty $prop): ?string
 	{
-		if ($type = Nette\Utils\Type::fromReflection($prop)) {
+		if (!class_exists(Nette\Utils\Type::class)) {
+			throw new Nette\NotSupportedException('Expect::from() requires nette/utils 3.x');
+		} elseif ($type = Nette\Utils\Type::fromReflection($prop)) {
 			return (string) $type;
 		} elseif ($type = preg_replace('#\s.*#', '', (string) self::parseAnnotation($prop, 'var'))) {
 			$class = Reflection::getPropertyDeclaringClass($prop);
