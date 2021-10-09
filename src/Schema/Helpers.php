@@ -55,10 +55,7 @@ final class Helpers
 	}
 
 
-	/**
-	 * @param  mixed  $value
-	 */
-	public static function formatValue($value): string
+	public static function formatValue(mixed $value): string
 	{
 		if (is_object($value)) {
 			return 'object ' . $value::class;

@@ -23,10 +23,7 @@ final class AnyOf implements Schema
 	private array $set;
 
 
-	/**
-	 * @param  mixed|Schema  ...$set
-	 */
-	public function __construct(...$set)
+	public function __construct(mixed ...$set)
 	{
 		if (!$set) {
 			throw new Nette\InvalidStateException('The enumeration must not be empty.');

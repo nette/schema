@@ -81,11 +81,9 @@ final class Type implements Schema
 
 
 	/**
-	 * @param  string|Schema  $valueType
-	 * @param  string|Schema|null  $keyType
 	 * @internal  use arrayOf() or listOf()
 	 */
-	public function items($valueType = 'mixed', $keyType = null): self
+	public function items(string|Schema $valueType = 'mixed', string|Schema $keyType = null): self
 	{
 		$this->itemsValue = $valueType instanceof Schema
 			? $valueType
