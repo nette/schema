@@ -51,10 +51,7 @@ final class Expect
 	}
 
 
-	/**
-	 * @param  mixed|Schema  ...$set
-	 */
-	public static function anyOf(...$set): AnyOf
+	public static function anyOf(mixed ...$set): AnyOf
 	{
 		return new AnyOf(...$set);
 	}
@@ -69,10 +66,7 @@ final class Expect
 	}
 
 
-	/**
-	 * @param  object  $object
-	 */
-	public static function from($object, array $items = []): Structure
+	public static function from(object $object, array $items = []): Structure
 	{
 		$ro = new \ReflectionObject($object);
 		$props = $ro->hasMethod('__construct')
@@ -103,20 +97,13 @@ final class Expect
 	}
 
 
-	/**
-	 * @param  string|Schema  $valueType
-	 * @param  string|Schema|null  $keyType
-	 */
-	public static function arrayOf($valueType, $keyType = null): Type
+	public static function arrayOf(string|Schema $valueType, string|Schema $keyType = null): Type
 	{
 		return (new Type('array'))->items($valueType, $keyType);
 	}
 
 
-	/**
-	 * @param  string|Schema  $type
-	 */
-	public static function listOf($type): Type
+	public static function listOf(string|Schema $type): Type
 	{
 		return (new Type('list'))->items($type);
 	}

@@ -26,9 +26,8 @@ final class Helpers
 
 	/**
 	 * Merges dataset. Left has higher priority than right one.
-	 * @return array|string
 	 */
-	public static function merge($value, $base)
+	public static function merge(mixed $value, mixed $base): mixed
 	{
 		if (is_array($value) && isset($value[self::PreventMerging])) {
 			unset($value[self::PreventMerging]);
@@ -57,7 +56,7 @@ final class Helpers
 	}
 
 
-	public static function getPropertyType($prop): ?string
+	public static function getPropertyType(\ReflectionProperty|\ReflectionParameter $prop): ?string
 	{
 		if ($type = Nette\Utils\Type::fromReflection($prop)) {
 			return (string) $type;
@@ -92,10 +91,7 @@ final class Helpers
 	}
 
 
-	/**
-	 * @param  mixed  $value
-	 */
-	public static function formatValue($value): string
+	public static function formatValue(mixed $value): string
 	{
 		if ($value instanceof DynamicParameter) {
 			return 'dynamic';
@@ -111,7 +107,7 @@ final class Helpers
 	}
 
 
-	public static function validateType($value, string $expected, Context $context): void
+	public static function validateType(mixed $value, string $expected, Context $context): void
 	{
 		if (!Nette\Utils\Validators::is($value, $expected)) {
 			$expected = str_replace(DynamicParameter::class . '|', '', $expected);
@@ -125,7 +121,7 @@ final class Helpers
 	}
 
 
-	public static function validateRange($value, array $range, Context $context, string $types = ''): void
+	public static function validateRange(mixed $value, array $range, Context $context, string $types = ''): void
 	{
 		if (is_array($value) || is_string($value)) {
 			[$length, $label] = is_array($value)
@@ -151,7 +147,7 @@ final class Helpers
 	}
 
 
-	public static function isInRange($value, array $range): bool
+	public static function isInRange(mixed $value, array $range): bool
 	{
 		return ($range[0] === null || $value >= $range[0])
 			&& ($range[1] === null || $value <= $range[1]);

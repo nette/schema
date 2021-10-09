@@ -23,10 +23,7 @@ final class AnyOf implements Schema
 	private array $set;
 
 
-	/**
-	 * @param  mixed|Schema  ...$set
-	 */
-	public function __construct(...$set)
+	public function __construct(mixed ...$set)
 	{
 		if (!$set) {
 			throw new Nette\InvalidStateException('The enumeration must not be empty.');
@@ -60,13 +57,13 @@ final class AnyOf implements Schema
 	/********************* processing ****************d*g**/
 
 
-	public function normalize($value, Context $context)
+	public function normalize(mixed $value, Context $context): mixed
 	{
 		return $this->doNormalize($value, $context);
 	}
 
 
-	public function merge($value, $base)
+	public function merge(mixed $value, mixed $base): mixed
 	{
 		if (is_array($value) && isset($value[Helpers::PreventMerging])) {
 			unset($value[Helpers::PreventMerging]);
@@ -77,7 +74,7 @@ final class AnyOf implements Schema
 	}
 
 
-	public function complete($value, Context $context)
+	public function complete(mixed $value, Context $context): mixed
 	{
 		$isOk = $context->createChecker();
 		$value = $this->findAlternative($value, $context);
@@ -86,7 +83,7 @@ final class AnyOf implements Schema
 	}
 
 
-	private function findAlternative($value, Context $context)
+	private function findAlternative(mixed $value, Context $context): mixed
 	{
 		$expecteds = $innerErrors = [];
 		foreach ($this->set as $item) {
@@ -127,10 +124,12 @@ final class AnyOf implements Schema
 				],
 			);
 		}
+
+		return null;
 	}
 
 
-	public function completeDefault(Context $context)
+	public function completeDefault(Context $context): mixed
 	{
 		if ($this->required) {
 			$context->addError(

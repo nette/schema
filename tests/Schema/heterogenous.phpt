@@ -14,25 +14,25 @@ require __DIR__ . '/../bootstrap.php';
 
 class MySchema implements Schema
 {
-	public function normalize($value, Context $context)
+	public function normalize(mixed $value, Context $context): mixed
 	{
 		return $value * 2;
 	}
 
 
-	public function merge($value, $base)
+	public function merge(mixed $value, mixed $base): mixed
 	{
 		return $base . $value;
 	}
 
 
-	public function complete($value, Context $context)
+	public function complete(mixed $value, Context $context): mixed
 	{
 		return "'" . $value . "'";
 	}
 
 
-	public function completeDefault(Context $context)
+	public function completeDefault(Context $context): mixed
 	{
 		return 'def';
 	}
