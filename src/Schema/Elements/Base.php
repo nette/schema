@@ -174,12 +174,7 @@ trait Base
 			if (Nette\Utils\Reflection::isBuiltinType($this->castTo)) {
 				settype($value, $this->castTo);
 			} else {
-				$object = new $this->castTo;
-				foreach ($value as $k => $v) {
-					$object->$k = $v;
-				}
-
-				$value = $object;
+				$value = Nette\Utils\Arrays::toObject($value, new $this->castTo);
 			}
 		}
 

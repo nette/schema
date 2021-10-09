@@ -100,6 +100,6 @@ final class Processor
 	{
 		$this->context = new Context;
 		$this->context->skipDefaults = $this->skipDefaults;
-		$this->onNewContext($this->context);
+		Nette\Utils\Arrays::invoke($this->onNewContext, $this->context);
 	}
 }
