@@ -19,8 +19,8 @@
 		"nette/utils": "^2.5.7 || ^3.1.5 ||  ^4.0"
 	},
 	"require-dev": {
-		"nette/tester": "^2.3 || ^2.4",
-		"tracy/tracy": "^2.7",
+		"nette/tester": "^2.4",
+		"tracy/tracy": "^2.8",
 		"phpstan/phpstan-nette": "^1.0"
 	},
 	"autoload": {

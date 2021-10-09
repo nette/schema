@@ -7,6 +7,12 @@ namespace NS
 	class A
 	{
 		public $noType;
+		public B $classType;
+		public string $nativeType;
+		public self $selfType;
+		public ?B $nullableClassType;
+		public ?string $nullableNativeType;
+		public ?self $nullableSelfType;
 
 		/** @var B noise */
 		public $annotationClassType;
