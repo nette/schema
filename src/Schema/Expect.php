@@ -76,18 +76,15 @@ final class Expect
 	{
 		$ro = new \ReflectionObject($object);
 		foreach ($ro->getProperties() as $prop) {
-			$type = Helpers::getPropertyType($prop) ?? 'mixed';
 			$item = &$items[$prop->getName()];
 			if (!$item) {
-				$item = new Type($type);
+				$item = new Type((string) (Nette\Utils\Type::fromReflection($prop) ?? 'mixed'));
 				if (!$prop->isInitialized($object)) {
 					$item->required();
 				} else {
 					$def = $prop->getValue($object);
 					if (is_object($def)) {
 						$item = static::from($def);
-					} elseif ($def === null && !Nette\Utils\Validators::is(null, $type)) {
-						$item->required();
 					} else {
 						$item->default($def);
 					}

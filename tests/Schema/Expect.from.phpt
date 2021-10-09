@@ -21,76 +21,49 @@ Assert::with(Structure::class, function () {
 
 Assert::with(Structure::class, function () {
 	$schema = Expect::from(new class {
-		/** @var string */
-		public $dsn = 'mysql';
-
-		/** @var string|null */
-		public $user;
-
-		/** @var ?string */
-		public $password;
-
-		/** @var string[] */
-		public $options = [1];
-
-		/** @var bool */
-		public $debugger = true;
-		public $mixed;
-
-		/** @var array|null */
-		public $arr;
-
-		/** @var string */
-		public $required;
+		public string $dsn = 'mysql';
+		public ?string $user;
+		public ?string $password = null;
+		public array|int $options = [];
+		public bool $debugger = true;
+		public mixed $mixed;
+		public array $arr = [1];
 	});
 
 	Assert::type(Structure::class, $schema);
 	Assert::equal([
 		'dsn' => Expect::string('mysql'),
-		'user' => Expect::type('string|null'),
+		'user' => Expect::type('?string')->required(),
 		'password' => Expect::type('?string'),
-		'options' => Expect::type('string[]')->default([1]),
+		'options' => Expect::type('array|int')->default([]),
 		'debugger' => Expect::bool(true),
-		'mixed' => Expect::mixed(),
-		'arr' => Expect::type('array|null')->default(null),
-		'required' => Expect::type('string')->required(),
+		'mixed' => Expect::mixed()->required(),
+		'arr' => Expect::type('array')->default([1]),
 	], $schema->items);
 	Assert::type('string', $schema->castTo);
 });
 
 
-Assert::exception(function () {
-	Expect::from(new class {
-		/** @var Unknown */
-		public $unknown;
-	});
-}, Nette\NotImplementedException::class, 'Anonymous classes are not supported.');
-
-
 Assert::with(Structure::class, function () { // overwritten item
 	$schema = Expect::from(new class {
-		/** @var string */
-		public $dsn = 'mysql';
+		public string $dsn = 'mysql';
 
-		/** @var string|null */
-		public $user;
+		public ?string $user;
 	}, ['dsn' => Expect::int(123)]);
 
 	Assert::equal([
 		'dsn' => Expect::int(123),
-		'user' => Expect::type('string|null'),
+		'user' => Expect::type('?string')->required(),
 	], $schema->items);
 });
 
 
 Assert::with(Structure::class, function () { // nested object
 	$obj = new class {
-		/** @var object */
-		public $inner;
+		public object $inner;
 	};
 	$obj->inner = new class {
-		/** @var string */
-		public $name;
+		public string $name;
 	};
 
 	$schema = Expect::from($obj);
