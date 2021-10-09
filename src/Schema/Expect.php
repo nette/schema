@@ -80,7 +80,7 @@ final class Expect
 			$item = &$items[$prop->getName()];
 			if (!$item) {
 				$item = new Type($type);
-				if (PHP_VERSION_ID >= 70400 && !$prop->isInitialized($object)) {
+				if (!$prop->isInitialized($object)) {
 					$item->required();
 				} else {
 					$def = $prop->getValue($object);

@@ -1,9 +1,5 @@
 <?php
 
-/**
- * @phpversion 8.0
- */
-
 declare(strict_types=1);
 
 use Nette\Schema\Elements\Structure;
