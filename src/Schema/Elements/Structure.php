@@ -21,16 +21,14 @@ final class Structure implements Schema
 	use Nette\SmartObject;
 
 	/** @var Schema[] */
-	private $items;
+	private array $items;
 
-	/** @var Schema|null  for array|list */
-	private $otherItems;
+	/** for array|list */
+	private ?Schema $otherItems = null;
 
 	/** @var array{?int, ?int} */
-	private $range = [null, null];
-
-	/** @var bool */
-	private $skipDefaults = false;
+	private array $range = [null, null];
+	private bool $skipDefaults = false;
 
 
 	/**
