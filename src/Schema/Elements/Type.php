@@ -21,23 +21,20 @@ final class Type implements Schema
 	use Base;
 	use Nette\SmartObject;
 
-	/** @var string */
-	private $type;
+	private string $type;
 
-	/** @var Schema|null for arrays */
-	private $itemsValue;
+	/** for arrays */
+	private ?Schema $itemsValue = null;
 
-	/** @var Schema|null for arrays */
-	private $itemsKey;
+	/** for arrays */
+	private ?Schema $itemsKey = null;
 
 	/** @var array{?float, ?float} */
-	private $range = [null, null];
+	private array $range = [null, null];
 
-	/** @var string|null */
-	private $pattern;
+	private ?string $pattern = null;
 
-	/** @var bool */
-	private $merge = true;
+	private bool $merge = true;
 
 
 	public function __construct(string $type)

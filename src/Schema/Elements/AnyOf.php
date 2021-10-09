@@ -20,8 +20,7 @@ final class AnyOf implements Schema
 	use Base;
 	use Nette\SmartObject;
 
-	/** @var array */
-	private $set;
+	private array $set;
 
 
 	/**

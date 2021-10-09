@@ -40,17 +40,15 @@ final class Message
 	/** no variables */
 	public const DEPRECATED = 'schema.deprecated';
 
-	/** @var string */
-	public $message;
+	public string $message;
 
-	/** @var string */
-	public $code;
+	public string $code;
 
 	/** @var string[] */
-	public $path;
+	public array $path;
 
 	/** @var string[] */
-	public $variables;
+	public array $variables;
 
 
 	public function __construct(string $message, string $code, array $path, array $variables = [])

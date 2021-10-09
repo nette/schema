@@ -18,23 +18,19 @@ use Nette\Schema\Context;
  */
 trait Base
 {
-	/** @var bool */
-	private $required = false;
+	private bool $required = false;
 
-	/** @var mixed */
-	private $default;
+	private mixed $default = null;
 
-	/** @var callable|null */
+	/** @var ?callable */
 	private $before;
 
 	/** @var array[] */
-	private $asserts = [];
+	private array $asserts = [];
 
-	/** @var string|null */
-	private $castTo;
+	private ?string $castTo = null;
 
-	/** @var string|null */
-	private $deprecated;
+	private ?string $deprecated = null;
 
 
 	public function default($value): self
