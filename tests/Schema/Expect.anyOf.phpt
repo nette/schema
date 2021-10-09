@@ -76,7 +76,7 @@ test('no default value', function () {
 
 	Assert::equal(
 		(object) ['key1' => null, 'key2' => null, 'key3' => null],
-		(new Processor)->process($schema, [])
+		(new Processor)->process($schema, []),
 	);
 });
 
@@ -154,7 +154,7 @@ test('required & nullable', function () {
 
 	Assert::equal(
 		(object) ['key1' => null, 'key2' => null, 'key3' => null],
-		(new Processor)->process($schema, ['key1' => null, 'key2' => null, 'key3' => null])
+		(new Processor)->process($schema, ['key1' => null, 'key2' => null, 'key3' => null]),
 	);
 });
 
@@ -221,7 +221,7 @@ test('First is default', function () {
 	$schema = Expect::structure([
 		'key' => Expect::anyOf(
 			Expect::string('def'),
-			false
+			false,
 		)->firstIsDefault(),
 	])->castTo('array');
 
@@ -238,7 +238,7 @@ test('Empty set', function () {
 
 test('normalization', function () {
 	$schema = Expect::anyOf(
-		Expect::string()->before(function ($v) { return (string) $v; })
+		Expect::string()->before(fn($v) => (string) $v),
 	);
 	Assert::same('1', (new Processor)->process($schema, 1));
 });

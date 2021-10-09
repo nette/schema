@@ -192,7 +192,7 @@ final class Type implements Schema
 			$context->addError(
 				"The %label% %path% expects to match pattern '%pattern%', %value% given.",
 				Nette\Schema\Message::PatternMismatch,
-				['value' => $value, 'pattern' => $this->pattern]
+				['value' => $value, 'pattern' => $this->pattern],
 			);
 			return;
 		}
