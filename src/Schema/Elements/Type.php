@@ -42,7 +42,7 @@ final class Type implements Schema
 
 	public function __construct(string $type)
 	{
-		static $defaults = ['list' => [], 'array' => []];
+		$defaults = ['list' => [], 'array' => []];
 		$this->type = $type;
 		$this->default = strpos($type, '[]') ? [] : $defaults[$type] ?? null;
 	}

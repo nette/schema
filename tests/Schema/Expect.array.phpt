@@ -261,7 +261,7 @@ test('items() & structure', function () {
 
 	checkValidationErrors(function () use ($schema) {
 		(new Processor)->process($schema, ['b' => ['a' => 'val']]);
-	}, ["Unexpected item 'b › a', did you mean 'k'?"]);
+	}, ["Unexpected item 'b\u{a0}›\u{a0}a', did you mean 'k'?"]);
 
 	Assert::equal(
 		['a' => 'defval', 'b' => (object) ['k' => 'val']],

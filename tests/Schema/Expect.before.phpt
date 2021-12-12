@@ -35,11 +35,23 @@ test('structure property', function () {
 
 test('order in structure', function () {
 	$schema = Expect::structure([
-		'a' => Expect::string()->before(function ($val) use (&$order) { $order[] = 'a'; return $val; }),
-		'b' => Expect::string()->before(function ($val) use (&$order) { $order[] = 'b'; return $val; }),
+		'a' => Expect::string()->before(function ($val) use (&$order) {
+			$order[] = 'a';
+			return $val;
+		}),
+		'b' => Expect::string()->before(function ($val) use (&$order) {
+			$order[] = 'b';
+			return $val;
+		}),
 	])
-		->otherItems(Expect::string()->before(function ($val) use (&$order) { $order[] = 'other'; return $val; }))
-		->before(function ($val) use (&$order) { $order[] = 'struct'; return $val; });
+		->otherItems(Expect::string()->before(function ($val) use (&$order) {
+			$order[] = 'other';
+			return $val;
+		}))
+		->before(function ($val) use (&$order) {
+			$order[] = 'struct';
+			return $val;
+		});
 
 	$order = [];
 	Assert::null($schema->normalize(null, new Context));
@@ -65,8 +77,14 @@ test('order in structure', function () {
 
 test('order in array', function () {
 	$schema = Expect::array()
-		->items(Expect::string()->before(function ($val) use (&$order) { $order[] = 'item'; return $val; }))
-		->before(function ($val) use (&$order) { $order[] = 'array'; return $val; });
+		->items(Expect::string()->before(function ($val) use (&$order) {
+			$order[] = 'item';
+			return $val;
+		}))
+		->before(function ($val) use (&$order) {
+			$order[] = 'array';
+			return $val;
+		});
 
 	$order = [];
 	Assert::null($schema->normalize(null, new Context));

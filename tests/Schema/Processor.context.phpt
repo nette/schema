@@ -23,7 +23,7 @@ test('', function () {
 
 	$e = checkValidationErrors(function () use ($schema, $processor) {
 		$processor->process($schema, []);
-	}, ["The mandatory item 'first › r' is missing."]);
+	}, ["The mandatory item 'first\u{a0}›\u{a0}r' is missing."]);
 
 	Assert::equal(
 		[

@@ -317,7 +317,7 @@ test('structure items', function () {
 
 	checkValidationErrors(function () use ($schema) {
 		(new Processor)->process($schema, []);
-	}, ["The mandatory item 'b › y' is missing."]);
+	}, ["The mandatory item 'b\u{a0}›\u{a0}y' is missing."]);
 
 	checkValidationErrors(function () use ($schema) {
 		(new Processor)->process($schema, [1, 2, 3]);
@@ -325,19 +325,19 @@ test('structure items', function () {
 		"Unexpected item '0', did you mean 'a'?",
 		"Unexpected item '1', did you mean 'a'?",
 		"Unexpected item '2', did you mean 'a'?",
-		"The mandatory item 'b › y' is missing.",
+		"The mandatory item 'b\u{a0}›\u{a0}y' is missing.",
 	]);
 
 	checkValidationErrors(function () use ($schema) {
 		(new Processor)->process($schema, ['a' => 'val']);
 	}, [
 		"The item 'a' expects to be array, 'val' given.",
-		"The mandatory item 'b › y' is missing.",
+		"The mandatory item 'b\u{a0}›\u{a0}y' is missing.",
 	]);
 
 	checkValidationErrors(function () use ($schema) {
 		(new Processor)->process($schema, ['a' => null]);
-	}, ["The mandatory item 'b › y' is missing."]);
+	}, ["The mandatory item 'b\u{a0}›\u{a0}y' is missing."]);
 
 	checkValidationErrors(function () use ($schema) {
 		(new Processor)->process($schema, ['b' => 123]);
@@ -345,7 +345,7 @@ test('structure items', function () {
 
 	checkValidationErrors(function () use ($schema) {
 		(new Processor)->process($schema, ['b' => null]);
-	}, ["The mandatory item 'b › y' is missing."]);
+	}, ["The mandatory item 'b\u{a0}›\u{a0}y' is missing."]);
 
 	checkValidationErrors(function () use ($schema) {
 		(new Processor)->process($schema, ['b' => 'val']);
@@ -354,21 +354,21 @@ test('structure items', function () {
 	checkValidationErrors(function () use ($schema) {
 		(new Processor)->process($schema, ['b' => ['x' => 'val']]);
 	}, [
-		"Unexpected item 'b › x', did you mean 'y'?",
-		"The mandatory item 'b › y' is missing.",
+		"Unexpected item 'b\u{a0}›\u{a0}x', did you mean 'y'?",
+		"The mandatory item 'b\u{a0}›\u{a0}y' is missing.",
 	]);
 
 	checkValidationErrors(function () use ($schema) {
 		(new Processor)->process($schema, ['b' => ['x1' => 'val', 'x2' => 'val']]);
 	}, [
-		"Unexpected item 'b › x1'.",
-		"Unexpected item 'b › x2'.",
-		"The mandatory item 'b › y' is missing.",
+		"Unexpected item 'b\u{a0}›\u{a0}x1'.",
+		"Unexpected item 'b\u{a0}›\u{a0}x2'.",
+		"The mandatory item 'b\u{a0}›\u{a0}y' is missing.",
 	]);
 
 	checkValidationErrors(function () use ($schema) {
 		(new Processor)->process($schema, ['b' => ['y' => 123]]);
-	}, ["The item 'b › y' expects to be string, 123 given."]);
+	}, ["The item 'b\u{a0}›\u{a0}y' expects to be string, 123 given."]);
 
 	Assert::equal(
 		(object) ['a' => (object) ['x' => 'defval'], 'b' => (object) ['y' => 'val']],
@@ -449,7 +449,7 @@ test('optional structure', function () {
 
 	checkValidationErrors(function () use ($schema, $processor) {
 		$processor->process($schema, ['req' => 'hello', 'optional' => ['foo' => 'Foo']]);
-	}, ["The mandatory item 'optional › req' is missing."]);
+	}, ["The mandatory item 'optional\u{a0}›\u{a0}req' is missing."]);
 });
 
 

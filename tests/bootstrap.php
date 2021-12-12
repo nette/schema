@@ -24,7 +24,7 @@ function test(string $title, Closure $function): void
 }
 
 
-function checkValidationErrors(\Closure $function, array $messages): Nette\Schema\ValidationException
+function checkValidationErrors(Closure $function, array $messages): Nette\Schema\ValidationException
 {
 	$e = Assert::exception($function, Nette\Schema\ValidationException::class);
 	Assert::same($messages, $e->getMessages());
