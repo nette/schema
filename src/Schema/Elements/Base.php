@@ -65,7 +65,7 @@ trait Base
 	}
 
 
-	public function assert(callable $handler, string $description = null): self
+	public function assert(callable $handler, ?string $description = null): self
 	{
 		$this->asserts[] = [$handler, $description];
 		return $this;
