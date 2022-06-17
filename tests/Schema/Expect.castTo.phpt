@@ -31,6 +31,60 @@ test('', function () {
 });
 
 
+test('', function () {
+	class TestClass
+	{
+		public int $a;
+		public int $b;
+
+
+		public function __construct()
+		{
+			throw new InvalidArgumentException('Class constructor is called');
+		}
+	}
+
+	$schemaNoReflection = Expect::array()->castTo(TestClass::class, false);
+	$schemaWithReflection = Expect::array()->castTo(TestClass::class, true);
+
+	Assert::exception(function () use ($schemaNoReflection) {
+		(new Processor)->process($schemaNoReflection, ['a' => 1, 'b' => 2]);
+	}, InvalidArgumentException::class, 'Class constructor is called');
+
+	Assert::noError(function () use ($schemaWithReflection) {
+		$instance = (new Processor)->process($schemaWithReflection, ['a' => 1, 'b' => 2]);
+
+		Assert::type(TestClass::class, $instance);
+		Assert::equal(json_encode(['a' => 1, 'b' => 2]), json_encode($instance));
+	});
+});
+
+
+test('', function () {
+	class PropertyPromotionClass
+	{
+		public function __construct(
+			public int $a,
+			public int $b,
+		) {
+		}
+	}
+
+	$schemaNoReflection = Expect::array()->castTo(PropertyPromotionClass::class, false);
+	$schemaWithReflection = Expect::array()->castTo(PropertyPromotionClass::class, true);
+
+	Assert::exception(function () use ($schemaNoReflection) {
+		(new Processor)->process($schemaNoReflection, ['a' => 1, 'b' => 2]);
+	}, ArgumentCountError::class);
+
+	Assert::noError(function () use ($schemaWithReflection) {
+		$instance = (new Processor)->process($schemaWithReflection, ['a' => 1, 'b' => 2]);
+
+		Assert::type(PropertyPromotionClass::class, $instance);
+		Assert::equal(json_encode(['a' => 1, 'b' => 2]), json_encode($instance));
+	});
+});
+
 // wip
 class Foo
 {

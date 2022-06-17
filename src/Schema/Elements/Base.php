@@ -11,6 +11,8 @@ namespace Nette\Schema\Elements;
 
 use Nette;
 use Nette\Schema\Context;
+use ReflectionClass;
+use ReflectionException;
 
 
 /**
@@ -29,6 +31,8 @@ trait Base
 	private array $asserts = [];
 
 	private ?string $castTo = null;
+
+	private bool $castUsingReflection = false;
 
 	private ?string $deprecated = null;
 
@@ -54,9 +58,10 @@ trait Base
 	}
 
 
-	public function castTo(string $type): self
+	public function castTo(string $type, bool $usingReflection = false): self
 	{
 		$this->castTo = $type;
+		$this->castUsingReflection = $usingReflection;
 		return $this;
 	}
 
@@ -171,6 +176,19 @@ trait Base
 				settype($value, $this->castTo);
 			} elseif (in_array($this->castTo, [\DateTime::class, \DateTimeImmutable::class], true)) {
 				$value = new ($this->castTo)($value);
+			} elseif ($this->castUsingReflection) {
+				try {
+					$reflection = new ReflectionClass($this->castTo);
+					$instance = $reflection->newInstanceWithoutConstructor();
+
+					foreach ($value as $k => $v) {
+						$reflection->getProperty($k)->setValue($instance, $v);
+					}
+				} catch (ReflectionException $e) {
+					throw new Nette\Schema\CastingException("Failed casting to type {$this->castTo}", previous: $e);
+				}
+
+				$value = $instance;
 			} else {
 				$value = Nette\Utils\Arrays::toObject($value, new $this->castTo);
 			}
