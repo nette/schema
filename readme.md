@@ -169,7 +169,7 @@ The parameter can also be a schema, so we can write:
 Expect::arrayOf(Expect::bool())
 ```
 
-The default value is an empty array. If you specify default value and call `mergeDefaults()`, it will be merged with the passed data.
+The default value is an empty array. If you specify a default value and call `mergeDefaults()`, it will be merged with the passed data.
 
 
 Enumeration: anyOf()
@@ -337,7 +337,7 @@ Or
 Expect::string()->assert('is_file'); // the file must exist
 ```
 
-You can add your own description for each assertions. It will be part of the error message.
+You can add your own description for each assertion. It will be part of the error message.
 
 ```php
 $schema = Expect::arrayOf('string')
