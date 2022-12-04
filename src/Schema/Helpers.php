@@ -20,7 +20,6 @@ final class Helpers
 	use Nette\StaticClass;
 
 	public const PreventMerging = '_prevent_merging';
-	public const PREVENT_MERGING = self::PreventMerging;
 
 
 	/**
