@@ -29,7 +29,7 @@ test('', function () {
 		[
 			new Nette\Schema\Message(
 				'The mandatory item %path% is missing.',
-				Nette\Schema\Message::MISSING_ITEM,
+				Nette\Schema\Message::MissingItem,
 				['first', 'r'],
 				['isKey' => false]
 			),

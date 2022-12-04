@@ -112,8 +112,8 @@ final class Type implements Schema
 
 	public function normalize($value, Context $context)
 	{
-		if ($prevent = (is_array($value) && isset($value[Helpers::PREVENT_MERGING]))) {
-			unset($value[Helpers::PREVENT_MERGING]);
+		if ($prevent = (is_array($value) && isset($value[Helpers::PreventMerging]))) {
+			unset($value[Helpers::PreventMerging]);
 		}
 
 		$value = $this->doNormalize($value, $context);
@@ -134,7 +134,7 @@ final class Type implements Schema
 		}
 
 		if ($prevent && is_array($value)) {
-			$value[Helpers::PREVENT_MERGING] = true;
+			$value[Helpers::PreventMerging] = true;
 		}
 
 		return $value;
@@ -143,8 +143,8 @@ final class Type implements Schema
 
 	public function merge($value, $base)
 	{
-		if (is_array($value) && isset($value[Helpers::PREVENT_MERGING])) {
-			unset($value[Helpers::PREVENT_MERGING]);
+		if (is_array($value) && isset($value[Helpers::PreventMerging])) {
+			unset($value[Helpers::PreventMerging]);
 			return $value;
 		}
 
@@ -171,8 +171,8 @@ final class Type implements Schema
 	public function complete($value, Context $context)
 	{
 		$merge = $this->merge;
-		if (is_array($value) && isset($value[Helpers::PREVENT_MERGING])) {
-			unset($value[Helpers::PREVENT_MERGING]);
+		if (is_array($value) && isset($value[Helpers::PreventMerging])) {
+			unset($value[Helpers::PreventMerging]);
 			$merge = false;
 		}
 
@@ -191,7 +191,7 @@ final class Type implements Schema
 		if ($value !== null && $this->pattern !== null && !preg_match("\x01^(?:$this->pattern)$\x01Du", $value)) {
 			$context->addError(
 				"The %label% %path% expects to match pattern '%pattern%', %value% given.",
-				Nette\Schema\Message::PATTERN_MISMATCH,
+				Nette\Schema\Message::PatternMismatch,
 				['value' => $value, 'pattern' => $this->pattern]
 			);
 			return;

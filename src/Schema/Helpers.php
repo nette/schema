@@ -20,7 +20,8 @@ final class Helpers
 {
 	use Nette\StaticClass;
 
-	public const PREVENT_MERGING = '_prevent_merging';
+	public const PreventMerging = '_prevent_merging';
+	public const PREVENT_MERGING = self::PreventMerging;
 
 
 	/**
@@ -29,8 +30,8 @@ final class Helpers
 	 */
 	public static function merge($value, $base)
 	{
-		if (is_array($value) && isset($value[self::PREVENT_MERGING])) {
-			unset($value[self::PREVENT_MERGING]);
+		if (is_array($value) && isset($value[self::PreventMerging])) {
+			unset($value[self::PreventMerging]);
 			return $value;
 		}
 

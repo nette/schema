@@ -104,7 +104,7 @@ test('merging', function () {
 			'arr' => ['newitem'],
 		],
 		(new Processor)->process($schema, [
-			Helpers::PREVENT_MERGING => true,
+			Helpers::PreventMerging => true,
 			'key1' => 'newval',
 			'key3' => 'newval',
 			'newval3',
@@ -125,7 +125,7 @@ test('merging', function () {
 			'key1' => 'newval',
 			'key3' => 'newval',
 			'newval3',
-			'arr' => [Helpers::PREVENT_MERGING => true, 'newitem'],
+			'arr' => [Helpers::PreventMerging => true, 'newitem'],
 		])
 	);
 });
