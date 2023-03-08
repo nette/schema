@@ -18,7 +18,7 @@ use Nette;
 final class Processor
 {
 	public array $onNewContext = [];
-	private ?Context $context;
+	private Context $context;
 	private bool $skipDefaults = false;
 
 
