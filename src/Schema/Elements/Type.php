@@ -130,7 +130,7 @@ final class Type implements Schema
 	}
 
 
-	public function merge(mixed $value, $base): mixed
+	public function merge(mixed $value, mixed $base): mixed
 	{
 		if (is_array($value) && isset($value[Helpers::PreventMerging])) {
 			unset($value[Helpers::PreventMerging]);

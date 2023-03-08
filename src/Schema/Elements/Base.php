@@ -30,7 +30,7 @@ trait Base
 	private ?string $deprecated = null;
 
 
-	public function default($value): self
+	public function default(mixed $value): self
 	{
 		$this->default = $value;
 		return $this;
@@ -161,7 +161,7 @@ trait Base
 	}
 
 
-	private function doFinalize(mixed $value, Context $context)
+	private function doFinalize(mixed $value, Context $context): mixed
 	{
 		if ($this->castTo) {
 			if (Nette\Utils\Validators::isBuiltinType($this->castTo)) {
@@ -183,7 +183,7 @@ trait Base
 					Nette\Schema\Message::FailedAssertion,
 					['value' => $value, 'assertion' => $expected],
 				);
-				return;
+				return null;
 			}
 		}
 

@@ -43,7 +43,7 @@ final class Structure implements Schema
 	}
 
 
-	public function default($value): self
+	public function default(mixed $value): self
 	{
 		throw new Nette\InvalidStateException('Structure cannot have default value.');
 	}
@@ -110,7 +110,7 @@ final class Structure implements Schema
 	}
 
 
-	public function merge(mixed $value, $base): mixed
+	public function merge(mixed $value, mixed $base): mixed
 	{
 		if (is_array($value) && isset($value[Helpers::PreventMerging])) {
 			unset($value[Helpers::PreventMerging]);

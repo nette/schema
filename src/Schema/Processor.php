@@ -24,7 +24,7 @@ final class Processor
 	private bool $skipDefaults = false;
 
 
-	public function skipDefaults(bool $value = true)
+	public function skipDefaults(bool $value = true): void
 	{
 		$this->skipDefaults = $value;
 	}
@@ -34,7 +34,7 @@ final class Processor
 	 * Normalizes and validates data. Result is a clean completed data.
 	 * @throws ValidationException
 	 */
-	public function process(Schema $schema, $data): mixed
+	public function process(Schema $schema, mixed $data): mixed
 	{
 		$this->createContext();
 		$data = $schema->normalize($data, $this->context);
