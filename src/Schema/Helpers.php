@@ -102,7 +102,7 @@ final class Helpers
 		} elseif (is_scalar($value)) {
 			return var_export($value, return: true);
 		} else {
-			return strtolower(gettype($value));
+			return get_debug_type($value);
 		}
 	}
 
