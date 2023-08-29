@@ -18,7 +18,6 @@ use Nette\Schema\Schema;
 final class AnyOf implements Schema
 {
 	use Base;
-	use Nette\SmartObject;
 
 	private array $set;
 

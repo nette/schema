@@ -9,7 +9,6 @@ declare(strict_types=1);
 
 namespace Nette\Schema\Elements;
 
-use Nette;
 use Nette\Schema\Context;
 use Nette\Schema\DynamicParameter;
 use Nette\Schema\Helpers;
@@ -19,7 +18,6 @@ use Nette\Schema\Schema;
 final class Type implements Schema
 {
 	use Base;
-	use Nette\SmartObject;
 
 	private string $type;
 	private ?Schema $itemsValue = null;

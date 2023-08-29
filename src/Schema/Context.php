@@ -9,13 +9,9 @@ declare(strict_types=1);
 
 namespace Nette\Schema;
 
-use Nette;
-
 
 final class Context
 {
-	use Nette\SmartObject;
-
 	public bool $skipDefaults = false;
 
 	/** @var string[] */

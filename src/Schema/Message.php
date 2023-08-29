@@ -9,13 +9,9 @@ declare(strict_types=1);
 
 namespace Nette\Schema;
 
-use Nette;
-
 
 final class Message
 {
-	use Nette\SmartObject;
-
 	/** variables: {value: mixed, expected: string} */
 	public const TypeMismatch = 'schema.typeMismatch';
 

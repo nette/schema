@@ -18,7 +18,6 @@ use Nette\Schema\Schema;
 final class Structure implements Schema
 {
 	use Base;
-	use Nette\SmartObject;
 
 	/** @var Schema[] */
 	private array $items;

@@ -32,8 +32,6 @@ use Nette\Schema\Elements\Type;
  */
 final class Expect
 {
-	use Nette\SmartObject;
-
 	public static function __callStatic(string $name, array $args): Type
 	{
 		$type = new Type($name);

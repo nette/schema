@@ -17,8 +17,6 @@ use Nette;
  */
 final class Processor
 {
-	use Nette\SmartObject;
-
 	public array $onNewContext = [];
 	private ?Context $context;
 	private bool $skipDefaults = false;
