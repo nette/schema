@@ -118,6 +118,7 @@ trait Base
 	private function doValidate($value, string $expected, Context $context): bool
 	{
 		if (!Nette\Utils\Validators::is($value, $expected)) {
+			$expected = str_replace(Nette\Schema\DynamicParameter::class . '|', '', $expected);
 			$expected = str_replace(['|', ':'], [' or ', ' in range '], $expected);
 			$context->addError(
 				'The %label% %path% expects to be %expected%, %value% given.',
