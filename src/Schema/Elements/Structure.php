@@ -153,13 +153,17 @@ final class Structure implements Schema
 
 		$this->doDeprecation($context);
 
-		if (!$this->doValidate($value, 'array', $context)
-			|| !$this->doValidateRange($value, $this->range, $context)
-		) {
-			return;
-		}
+		$isOk = $context->createChecker();
+		Helpers::validateType($value, 'array', $context);
+		$isOk() && Helpers::validateRange($value, $this->range, $context);
+		$isOk() && $this->validateItems($value, $context);
+		$isOk() && $value = $this->doTransform($value, $context);
+		return $isOk() ? $value : null;
+	}
 
-		$errCount = count($context->errors);
+
+	private function validateItems(array &$value, Context $context): void
+	{
 		$items = $this->items;
 		if ($extraKeys = array_keys(array_diff_key($value, $items))) {
 			if ($this->otherItems) {
@@ -190,12 +194,6 @@ final class Structure implements Schema
 
 			array_pop($context->path);
 		}
-
-		if (count($context->errors) > $errCount) {
-			return;
-		}
-
-		return $this->doFinalize($value, $context);
 	}
 
 

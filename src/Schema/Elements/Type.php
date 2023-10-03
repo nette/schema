@@ -182,49 +182,40 @@ final class Type implements Schema
 
 		$this->doDeprecation($context);
 
-		if (!$this->doValidate($value, $this->type, $context)
-			|| !$this->doValidateRange($value, $this->range, $context, $this->type)
-		) {
-			return;
-		}
-
-		if ($value !== null && $this->pattern !== null && !preg_match("\x01^(?:$this->pattern)$\x01Du", $value)) {
-			$context->addError(
-				"The %label% %path% expects to match pattern '%pattern%', %value% given.",
-				Nette\Schema\Message::PatternMismatch,
-				['value' => $value, 'pattern' => $this->pattern]
-			);
-			return;
+		$isOk = $context->createChecker();
+		Helpers::validateType($value, $this->type, $context);
+		$isOk() && Helpers::validateRange($value, $this->range, $context, $this->type);
+		$isOk() && $value !== null && $this->pattern !== null && Helpers::validatePattern($value, $this->pattern, $context);
+		$isOk() && is_array($value) && $this->validateItems($value, $context);
+		$isOk() && $merge && $value = Helpers::merge($value, $this->default);
+		$isOk() && $value = $this->doTransform($value, $context);
+		if (!$isOk()) {
+			return null;
 		}
 
 		if ($value instanceof DynamicParameter) {
 			$expected = $this->type . ($this->range === [null, null] ? '' : ':' . implode('..', $this->range));
 			$context->dynamics[] = [$value, str_replace(DynamicParameter::class . '|', '', $expected), $context->path];
 		}
+		return $value;
+	}
 
-		if ($this->itemsValue) {
-			$errCount = count($context->errors);
-			$res = [];
-			foreach ($value as $key => $val) {
-				$context->path[] = $key;
-				$context->isKey = true;
-				$key = $this->itemsKey ? $this->itemsKey->complete($key, $context) : $key;
-				$context->isKey = false;
-				$res[$key] = $this->itemsValue->complete($val, $context);
-				array_pop($context->path);
-			}
 
-			if (count($context->errors) > $errCount) {
-				return null;
-			}
-
-			$value = $res;
+	private function validateItems(array &$value, Context $context): void
+	{
+		if (!$this->itemsValue) {
+			return;
 		}
 
-		if ($merge) {
-			$value = Helpers::merge($value, $this->default);
+		$res = [];
+		foreach ($value as $key => $val) {
+			$context->path[] = $key;
+			$context->isKey = true;
+			$key = $this->itemsKey ? $this->itemsKey->complete($key, $context) : $key;
+			$context->isKey = false;
+			$res[$key] = $this->itemsValue->complete($val, $context);
+			array_pop($context->path);
 		}
-
-		return $this->doFinalize($value, $context);
+		$value = $res;
 	}
 }

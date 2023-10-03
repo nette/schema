@@ -11,6 +11,7 @@ namespace Nette\Schema\Elements;
 
 use Nette;
 use Nette\Schema\Context;
+use Nette\Schema\Helpers;
 
 
 /**
@@ -115,61 +116,7 @@ trait Base
 	}
 
 
-	private function doValidate($value, string $expected, Context $context): bool
-	{
-		if (!Nette\Utils\Validators::is($value, $expected)) {
-			$expected = str_replace(Nette\Schema\DynamicParameter::class . '|', '', $expected);
-			$expected = str_replace(['|', ':'], [' or ', ' in range '], $expected);
-			$context->addError(
-				'The %label% %path% expects to be %expected%, %value% given.',
-				Nette\Schema\Message::TypeMismatch,
-				['value' => $value, 'expected' => $expected]
-			);
-			return false;
-		}
-
-		return true;
-	}
-
-
-	private function doValidateRange($value, array $range, Context $context, string $types = ''): bool
-	{
-		if (is_array($value) || is_string($value)) {
-			[$length, $label] = is_array($value)
-				? [count($value), 'items']
-				: (in_array('unicode', explode('|', $types), true)
-					? [Nette\Utils\Strings::length($value), 'characters']
-					: [strlen($value), 'bytes']);
-
-			if (!self::isInRange($length, $range)) {
-				$context->addError(
-					"The length of %label% %path% expects to be in range %expected%, %length% $label given.",
-					Nette\Schema\Message::LengthOutOfRange,
-					['value' => $value, 'length' => $length, 'expected' => implode('..', $range)]
-				);
-				return false;
-			}
-		} elseif ((is_int($value) || is_float($value)) && !self::isInRange($value, $range)) {
-			$context->addError(
-				'The %label% %path% expects to be in range %expected%, %value% given.',
-				Nette\Schema\Message::ValueOutOfRange,
-				['value' => $value, 'expected' => implode('..', $range)]
-			);
-			return false;
-		}
-
-		return true;
-	}
-
-
-	private function isInRange($value, array $range): bool
-	{
-		return ($range[0] === null || $value >= $range[0])
-			&& ($range[1] === null || $value <= $range[1]);
-	}
-
-
-	private function doFinalize($value, Context $context)
+	private function doTransform($value, Context $context)
 	{
 		if ($this->castTo) {
 			if (Nette\Utils\Reflection::isBuiltinType($this->castTo)) {
@@ -179,7 +126,6 @@ trait Base
 				foreach ($value as $k => $v) {
 					$object->$k = $v;
 				}
-
 				$value = $object;
 			}
 		}
@@ -192,10 +138,35 @@ trait Base
 					Nette\Schema\Message::FailedAssertion,
 					['value' => $value, 'assertion' => $expected]
 				);
-				return;
+				return null;
 			}
 		}
 
 		return $value;
+	}
+
+
+	/** @deprecated use Nette\Schema\Validators::validateType() */
+	private function doValidate($value, string $expected, Context $context): bool
+	{
+		$isOk = $context->createChecker();
+		Helpers::validateType($value, $expected, $context);
+		return $isOk();
+	}
+
+
+	/** @deprecated use Nette\Schema\Validators::validateRange() */
+	private static function doValidateRange($value, array $range, Context $context, string $types = ''): bool
+	{
+		$isOk = $context->createChecker();
+		Helpers::validateRange($value, $range, $context, $types);
+		return $isOk();
+	}
+
+
+	/** @deprecated use doTransform() */
+	private function doFinalize($value, Context $context)
+	{
+		return $this->doTransform($value, $context);
 	}
 }

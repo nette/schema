@@ -108,4 +108,63 @@ final class Helpers
 			return strtolower(gettype($value));
 		}
 	}
+
+
+	public static function validateType($value, string $expected, Context $context): void
+	{
+		if (!Nette\Utils\Validators::is($value, $expected)) {
+			$expected = str_replace(DynamicParameter::class . '|', '', $expected);
+			$expected = str_replace(['|', ':'], [' or ', ' in range '], $expected);
+			$context->addError(
+				'The %label% %path% expects to be %expected%, %value% given.',
+				Message::TypeMismatch,
+				['value' => $value, 'expected' => $expected]
+			);
+		}
+	}
+
+
+	public static function validateRange($value, array $range, Context $context, string $types = ''): void
+	{
+		if (is_array($value) || is_string($value)) {
+			[$length, $label] = is_array($value)
+				? [count($value), 'items']
+				: (in_array('unicode', explode('|', $types), true)
+					? [Nette\Utils\Strings::length($value), 'characters']
+					: [strlen($value), 'bytes']);
+
+			if (!self::isInRange($length, $range)) {
+				$context->addError(
+					"The length of %label% %path% expects to be in range %expected%, %length% $label given.",
+					Message::LengthOutOfRange,
+					['value' => $value, 'length' => $length, 'expected' => implode('..', $range)]
+				);
+			}
+		} elseif ((is_int($value) || is_float($value)) && !self::isInRange($value, $range)) {
+			$context->addError(
+				'The %label% %path% expects to be in range %expected%, %value% given.',
+				Message::ValueOutOfRange,
+				['value' => $value, 'expected' => implode('..', $range)]
+			);
+		}
+	}
+
+
+	public static function isInRange($value, array $range): bool
+	{
+		return ($range[0] === null || $value >= $range[0])
+			&& ($range[1] === null || $value <= $range[1]);
+	}
+
+
+	public static function validatePattern(string $value, string $pattern, Context $context): void
+	{
+		if (!preg_match("\x01^(?:$pattern)$\x01Du", $value)) {
+			$context->addError(
+				"The %label% %path% expects to match pattern '%pattern%', %value% given.",
+				Message::PatternMismatch,
+				['value' => $value, 'pattern' => $pattern]
+			);
+		}
+	}
 }
