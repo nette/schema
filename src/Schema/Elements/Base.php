@@ -19,20 +19,15 @@ use Nette\Schema\Helpers;
  */
 trait Base
 {
-	/** @var bool */
-	private $required = false;
+	private bool $required = false;
+	private mixed $default = null;
 
-	/** @var mixed */
-	private $default;
-
-	/** @var callable|null */
+	/** @var ?callable */
 	private $before;
 
 	/** @var callable[] */
-	private $transforms = [];
-
-	/** @var string|null */
-	private $deprecated;
+	private array $transforms = [];
+	private ?string $deprecated = null;
 
 
 	public function default($value): self

@@ -16,23 +16,21 @@ final class Context
 {
 	use Nette\SmartObject;
 
-	/** @var bool */
-	public $skipDefaults = false;
+	public bool $skipDefaults = false;
 
 	/** @var string[] */
-	public $path = [];
+	public array $path = [];
 
-	/** @var bool */
-	public $isKey = false;
-
-	/** @var Message[] */
-	public $errors = [];
+	public bool $isKey = false;
 
 	/** @var Message[] */
-	public $warnings = [];
+	public array $errors = [];
+
+	/** @var Message[] */
+	public array $warnings = [];
 
 	/** @var array[] */
-	public $dynamics = [];
+	public array $dynamics = [];
 
 
 	public function addError(string $message, string $code, array $variables = []): Message
