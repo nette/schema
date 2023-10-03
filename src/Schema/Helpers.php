@@ -59,9 +59,7 @@ final class Helpers
 
 	public static function getPropertyType($prop): ?string
 	{
-		if (!class_exists(Nette\Utils\Type::class)) {
-			throw new Nette\NotSupportedException('Expect::from() requires nette/utils 3.x');
-		} elseif ($type = Nette\Utils\Type::fromReflection($prop)) {
+		if ($type = Nette\Utils\Type::fromReflection($prop)) {
 			return (string) $type;
 		} elseif (
 			($prop instanceof \ReflectionProperty)
@@ -189,11 +187,7 @@ final class Helpers
 			};
 		} else {
 			return static function ($value) use ($type) {
-				$object = new $type;
-				foreach ($value as $k => $v) {
-					$object->$k = $v;
-				}
-				return $object;
+				return Nette\Utils\Arrays::toObject((array) $value, new $type);
 			};
 		}
 	}
