@@ -58,18 +58,22 @@ test('', function () {
 			[
 				new DynamicParameter("\$this->parameters['foo']"),
 				'string',
+				['a'],
 			],
 			[
 				new DynamicParameter("\$this->parameters['bar']"),
 				'string',
+				['b'],
 			],
 			[
 				new DynamicParameter("\$this->parameters['int']"),
 				'int:10..20',
+				['d'],
 			],
 			[
 				new DynamicParameter("\$this->parameters['baz']"),
 				'int',
+				['arr', 'x'],
 			],
 		],
 		$context->dynamics

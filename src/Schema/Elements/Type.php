@@ -199,7 +199,7 @@ final class Type implements Schema
 
 		if ($value instanceof DynamicParameter) {
 			$expected = $this->type . ($this->range === [null, null] ? '' : ':' . implode('..', $this->range));
-			$context->dynamics[] = [$value, str_replace(DynamicParameter::class . '|', '', $expected)];
+			$context->dynamics[] = [$value, str_replace(DynamicParameter::class . '|', '', $expected), $context->path];
 		}
 
 		if ($this->itemsValue) {
