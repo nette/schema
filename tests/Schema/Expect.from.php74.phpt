@@ -8,6 +8,7 @@ declare(strict_types=1);
 
 use Nette\Schema\Elements\Structure;
 use Nette\Schema\Expect;
+use Nette\Schema\Processor;
 use Tester\Assert;
 
 
@@ -15,7 +16,7 @@ require __DIR__ . '/../bootstrap.php';
 
 
 Assert::with(Structure::class, function () {
-	$schema = Expect::from(new class {
+	$schema = Expect::from($obj = new class {
 		public string $dsn = 'mysql';
 		public ?string $user;
 		public ?string $password = null;
@@ -35,5 +36,5 @@ Assert::with(Structure::class, function () {
 		'mixed' => Expect::mixed(),
 		'arr' => Expect::type('array')->default([1]),
 	], $schema->items);
-	Assert::type('string', $schema->castTo);
+	Assert::type($obj, (new Processor)->process($schema, ['user' => '']));
 });

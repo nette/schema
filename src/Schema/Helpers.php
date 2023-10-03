@@ -167,4 +167,23 @@ final class Helpers
 			);
 		}
 	}
+
+
+	public static function getCastStrategy(string $type): \Closure
+	{
+		if (Nette\Utils\Reflection::isBuiltinType($type)) {
+			return static function ($value) use ($type) {
+				settype($value, $type);
+				return $value;
+			};
+		} else {
+			return static function ($value) use ($type) {
+				$object = new $type;
+				foreach ($value as $k => $v) {
+					$object->$k = $v;
+				}
+				return $object;
+			};
+		}
+	}
 }

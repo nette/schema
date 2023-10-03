@@ -32,9 +32,6 @@ trait Base
 	private $transforms = [];
 
 	/** @var string|null */
-	private $castTo;
-
-	/** @var string|null */
 	private $deprecated;
 
 
@@ -61,8 +58,7 @@ trait Base
 
 	public function castTo(string $type): self
 	{
-		$this->castTo = $type;
-		return $this;
+		return $this->transform(Helpers::getCastStrategy($type));
 	}
 
 
@@ -134,18 +130,6 @@ trait Base
 
 	private function doTransform($value, Context $context)
 	{
-		if ($this->castTo) {
-			if (Nette\Utils\Reflection::isBuiltinType($this->castTo)) {
-				settype($value, $this->castTo);
-			} else {
-				$object = new $this->castTo;
-				foreach ($value as $k => $v) {
-					$object->$k = $v;
-				}
-				$value = $object;
-			}
-		}
-
 		$isOk = $context->createChecker();
 		foreach ($this->transforms as $handler) {
 			$value = $handler($value, $context);
