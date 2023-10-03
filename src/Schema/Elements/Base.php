@@ -28,9 +28,6 @@ trait Base
 	/** @var callable|null */
 	private $before;
 
-	/** @var array[] */
-	private $asserts = [];
-
 	/** @var callable[] */
 	private $transforms = [];
 
@@ -78,8 +75,17 @@ trait Base
 
 	public function assert(callable $handler, ?string $description = null): self
 	{
-		$this->asserts[] = [$handler, $description];
-		return $this;
+		$expected = $description ?: (is_string($handler) ? "$handler()" : '#' . count($this->transforms));
+		return $this->transform(function ($value, Context $context) use ($handler, $description, $expected) {
+			if ($handler($value)) {
+				return $value;
+			}
+			$context->addError(
+				'Failed assertion ' . ($description ? "'%assertion%'" : '%assertion%') . ' for %label% %path% with value %value%.',
+				Nette\Schema\Message::FailedAssertion,
+				['value' => $value, 'assertion' => $expected]
+			);
+		});
 	}
 
 
@@ -137,18 +143,6 @@ trait Base
 					$object->$k = $v;
 				}
 				$value = $object;
-			}
-		}
-
-		foreach ($this->asserts as $i => [$handler, $description]) {
-			if (!$handler($value)) {
-				$expected = $description ?: (is_string($handler) ? "$handler()" : "#$i");
-				$context->addError(
-					'Failed assertion ' . ($description ? "'%assertion%'" : '%assertion%') . ' for %label% %path% with value %value%.',
-					Nette\Schema\Message::FailedAssertion,
-					['value' => $value, 'assertion' => $expected]
-				);
-				return null;
 			}
 		}
 

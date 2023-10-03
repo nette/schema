@@ -39,3 +39,18 @@ test('validation via transform', function () {
 
 	Assert::same(2, (new Processor)->process($schema, 2));
 });
+
+
+test('multiple tranformation/assertions', function () {
+	$schema = Expect::string()
+		->assert('ctype_lower')
+		->transform(function ($s) { return strtoupper($s); })
+		->assert('ctype_upper')
+		->transform(function ($s) { return strrev($s); });
+
+	checkValidationErrors(function () use ($schema) {
+		(new Processor)->process($schema, 'ABC');
+	}, ["Failed assertion ctype_lower() for item with value 'ABC'."]);
+
+	Assert::same('CBA', (new Processor)->process($schema, 'abc'));
+});
