@@ -31,6 +31,9 @@ trait Base
 	/** @var array[] */
 	private $asserts = [];
 
+	/** @var callable[] */
+	private $transforms = [];
+
 	/** @var string|null */
 	private $castTo;
 
@@ -62,6 +65,13 @@ trait Base
 	public function castTo(string $type): self
 	{
 		$this->castTo = $type;
+		return $this;
+	}
+
+
+	public function transform(callable $handler): self
+	{
+		$this->transforms[] = $handler;
 		return $this;
 	}
 
@@ -142,6 +152,13 @@ trait Base
 			}
 		}
 
+		$isOk = $context->createChecker();
+		foreach ($this->transforms as $handler) {
+			$value = $handler($value, $context);
+			if (!$isOk()) {
+				return null;
+			}
+		}
 		return $value;
 	}
 

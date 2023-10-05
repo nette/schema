@@ -376,7 +376,30 @@ $processor->process($schema, ['a', 'b', 'c']);
 // Failed assertion "Even items in array" for item with value array.
 ```
 
-The method can be called repeatedly to add more assertions.
+
+Transformation: transform()
+---------------------------
+
+Successfully validated data can be modified using a custom function:
+
+```php
+// conversion to uppercase:
+Expect::string()->transform(fn(string $s) => strtoupper($s));
+```
+
+The `transform()` method can both transform and validate the value simultaneously. This is often simpler and less redundant than chaining `transform()` and `assert()`. For this purpose, the function receives a [Nette\Schema\Context](https://api.nette.org/schema/master/Nette/Schema/Context.html) object with an `addError()` method, which can be used to add information about validation issues:
+
+```php
+Expect::string()
+	->transform(function (string $s, Nette\Schema\Context $context) {
+		if (!ctype_lower($s)) {
+			$context->addError('All characters must be lowercased', 'my.case.error');
+			return null;
+		}
+
+		return strtoupper($s);
+	});
+```
 
 
 Casting: castTo()
