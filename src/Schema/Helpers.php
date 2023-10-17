@@ -98,7 +98,9 @@ final class Helpers
 	 */
 	public static function formatValue($value): string
 	{
-		if (is_object($value)) {
+		if ($value instanceof DynamicParameter) {
+			return 'dynamic';
+		} elseif (is_object($value)) {
 			return 'object ' . get_class($value);
 		} elseif (is_string($value)) {
 			return "'" . Nette\Utils\Strings::truncate($value, 15, '...') . "'";

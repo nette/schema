@@ -17,3 +17,5 @@ Assert::same("'hello'", Helpers::formatValue('hello'));
 Assert::same("'nettenettene...'", Helpers::formatValue(str_repeat('nette', 100)));
 Assert::same('array', Helpers::formatValue([1, 2]));
 Assert::same('object stdClass', Helpers::formatValue(new stdClass));
+Assert::same('dynamic', Helpers::formatValue(new class implements Nette\Schema\DynamicParameter {
+}));
