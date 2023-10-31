@@ -57,13 +57,16 @@ final class Helpers
 	}
 
 
-	public static function getPropertyType(\ReflectionProperty $prop): ?string
+	public static function getPropertyType($prop): ?string
 	{
 		if (!class_exists(Nette\Utils\Type::class)) {
 			throw new Nette\NotSupportedException('Expect::from() requires nette/utils 3.x');
 		} elseif ($type = Nette\Utils\Type::fromReflection($prop)) {
 			return (string) $type;
-		} elseif ($type = preg_replace('#\s.*#', '', (string) self::parseAnnotation($prop, 'var'))) {
+		} elseif (
+			($prop instanceof \ReflectionProperty)
+			&& ($type = preg_replace('#\s.*#', '', (string) self::parseAnnotation($prop, 'var')))
+		) {
 			$class = Reflection::getPropertyDeclaringClass($prop);
 			return preg_replace_callback('#[\w\\\\]+#', function ($m) use ($class) {
 				return Reflection::expandClassName($m[0], $class);
@@ -183,8 +186,8 @@ final class Helpers
 				if (PHP_VERSION_ID < 80000 && is_array($value)) {
 					throw new Nette\NotSupportedException("Creating $type objects is supported since PHP 8.0");
 				}
-				return is_array($value)
-					? new $type(...$value)
+				return is_array($value) || $value instanceof \stdClass
+					? new $type(...(array) $value)
 					: new $type($value);
 			};
 		} else {

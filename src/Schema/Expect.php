@@ -75,15 +75,22 @@ final class Expect
 	public static function from($object, array $items = []): Structure
 	{
 		$ro = new \ReflectionObject($object);
-		foreach ($ro->getProperties() as $prop) {
-			$type = Helpers::getPropertyType($prop) ?? 'mixed';
+		$props = $ro->hasMethod('__construct')
+			? $ro->getMethod('__construct')->getParameters()
+			: $ro->getProperties();
+
+		foreach ($props as $prop) {
 			$item = &$items[$prop->getName()];
 			if (!$item) {
+				$type = Helpers::getPropertyType($prop) ?? 'mixed';
 				$item = new Type($type);
-				if (PHP_VERSION_ID >= 70400 && !$prop->isInitialized($object)) {
+				if ($prop instanceof \ReflectionProperty
+					? PHP_VERSION_ID >= 70400 && !$prop->isInitialized($object)
+					: !$prop->isOptional()
+				) {
 					$item->required();
 				} else {
-					$def = $prop->getValue($object);
+					$def = ($prop instanceof \ReflectionProperty ? $prop->getValue($object) : $prop->getDefaultValue());
 					if (is_object($def)) {
 						$item = static::from($def);
 					} elseif ($def === null && !Nette\Utils\Validators::is(null, $type)) {
