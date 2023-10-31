@@ -485,12 +485,9 @@ You can generate structure schema from the class. Example:
 ```php
 class Config
 {
-	/** @var string */
-	public $name;
-	/** @var string|null */
-	public $password;
-	/** @var bool */
-	public $admin = false;
+	public string $name;
+	public ?string $password;
+	public bool $admin = false;
 }
 
 $schema = Expect::from(new Config);
@@ -502,19 +499,6 @@ $data = [
 $normalized = $processor->process($schema, $data);
 // $normalized instanceof Config
 // $normalized = {'name' => 'jeff', 'password' => null, 'admin' => false}
-```
-
-If you are using PHP 7.4 or higher, you can use native types:
-
-```php
-class Config
-{
-	public string $name;
-	public ?string $password;
-	public bool $admin = false;
-}
-
-$schema = Expect::from(new Config);
 ```
 
 Anonymous classes are also supported:
