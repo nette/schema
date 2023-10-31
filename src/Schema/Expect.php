@@ -74,14 +74,11 @@ final class Expect
 		foreach ($props as $prop) {
 			$item = &$items[$prop->getName()];
 			if (!$item) {
-				$type = Helpers::getPropertyType($prop) ?? 'mixed';
-				$item = new Type($type);
+				$item = new Type((string) (Nette\Utils\Type::fromReflection($prop) ?? 'mixed'));
 				if ($prop instanceof \ReflectionProperty ? $prop->isInitialized($object) : $prop->isOptional()) {
 					$def = ($prop instanceof \ReflectionProperty ? $prop->getValue($object) : $prop->getDefaultValue());
 					if (is_object($def)) {
 						$item = static::from($def);
-					} elseif ($def === null && !Nette\Utils\Validators::is(null, $type)) {
-						$item->required();
 					} else {
 						$item->default($def);
 					}
