@@ -84,12 +84,7 @@ final class Expect
 			if (!$item) {
 				$type = Helpers::getPropertyType($prop) ?? 'mixed';
 				$item = new Type($type);
-				if ($prop instanceof \ReflectionProperty
-					? PHP_VERSION_ID >= 70400 && !$prop->isInitialized($object)
-					: !$prop->isOptional()
-				) {
-					$item->required();
-				} else {
+				if ($prop instanceof \ReflectionProperty ? $prop->isInitialized($object) : $prop->isOptional()) {
 					$def = ($prop instanceof \ReflectionProperty ? $prop->getValue($object) : $prop->getDefaultValue());
 					if (is_object($def)) {
 						$item = static::from($def);
@@ -98,6 +93,8 @@ final class Expect
 					} else {
 						$item->default($def);
 					}
+				} else {
+					$item->required();
 				}
 			}
 		}

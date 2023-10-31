@@ -14,6 +14,18 @@ if (!class_exists(Nette\Utils\Type::class)) {
 
 Assert::null(Helpers::getPropertyType(new ReflectionProperty(NS\A::class, 'noType')));
 
+Assert::same('Test\B', Helpers::getPropertyType(new ReflectionProperty(NS\A::class, 'classType')));
+
+Assert::same('string', Helpers::getPropertyType(new ReflectionProperty(NS\A::class, 'nativeType')));
+
+Assert::same('NS\A', Helpers::getPropertyType(new ReflectionProperty(NS\A::class, 'selfType')));
+
+Assert::same('?Test\B', Helpers::getPropertyType(new ReflectionProperty(NS\A::class, 'nullableClassType')));
+
+Assert::same('?string', Helpers::getPropertyType(new ReflectionProperty(NS\A::class, 'nullableNativeType')));
+
+Assert::same('?NS\A', Helpers::getPropertyType(new ReflectionProperty(NS\A::class, 'nullableSelfType')));
+
 Assert::same('Test\B', Helpers::getPropertyType(new ReflectionProperty(NS\A::class, 'annotationClassType')));
 
 Assert::same('Test\B|null|string', Helpers::getPropertyType(new ReflectionProperty(NS\A::class, 'annotationUnionType')));

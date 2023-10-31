@@ -39,10 +39,6 @@ test('simple object', function () {
 
 
 test('object with constructor', function () {
-	if (PHP_VERSION_ID < 80000) {
-		return;
-	}
-
 	class Foo2
 	{
 		private $a;
