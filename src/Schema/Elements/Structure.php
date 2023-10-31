@@ -175,7 +175,7 @@ final class Structure implements Schema
 					$context->addError(
 						'Unexpected item %path%' . ($hint ? ", did you mean '%hint%'?" : '.'),
 						Nette\Schema\Message::UnexpectedItem,
-						['hint' => $hint]
+						['hint' => $hint],
 					)->path[] = $key;
 				}
 			}

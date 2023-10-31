@@ -12,7 +12,7 @@ require __DIR__ . '/../bootstrap.php';
 
 
 test('simple tranformation', function () {
-	$schema = Expect::string()->transform(function ($s) { return strrev($s); });
+	$schema = Expect::string()->transform(fn($s) => strrev($s));
 
 	Assert::same('olleh', (new Processor)->process($schema, 'hello'));
 });
@@ -44,9 +44,9 @@ test('validation via transform', function () {
 test('multiple tranformation/assertions', function () {
 	$schema = Expect::string()
 		->assert('ctype_lower')
-		->transform(function ($s) { return strtoupper($s); })
+		->transform(fn($s) => strtoupper($s))
 		->assert('ctype_upper')
-		->transform(function ($s) { return strrev($s); });
+		->transform(fn($s) => strrev($s));
 
 	checkValidationErrors(function () use ($schema) {
 		(new Processor)->process($schema, 'ABC');

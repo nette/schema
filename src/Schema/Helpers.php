@@ -66,9 +66,7 @@ final class Helpers
 			&& ($type = preg_replace('#\s.*#', '', (string) self::parseAnnotation($prop, 'var')))
 		) {
 			$class = Reflection::getPropertyDeclaringClass($prop);
-			return preg_replace_callback('#[\w\\\\]+#', function ($m) use ($class) {
-				return Reflection::expandClassName($m[0], $class);
-			}, $type);
+			return preg_replace_callback('#[\w\\\\]+#', fn($m) => Reflection::expandClassName($m[0], $class), $type);
 		}
 
 		return null;
@@ -102,11 +100,11 @@ final class Helpers
 		if ($value instanceof DynamicParameter) {
 			return 'dynamic';
 		} elseif (is_object($value)) {
-			return 'object ' . get_class($value);
+			return 'object ' . $value::class;
 		} elseif (is_string($value)) {
 			return "'" . Nette\Utils\Strings::truncate($value, 15, '...') . "'";
 		} elseif (is_scalar($value)) {
-			return var_export($value, true);
+			return var_export($value, return: true);
 		} else {
 			return strtolower(gettype($value));
 		}
@@ -121,7 +119,7 @@ final class Helpers
 			$context->addError(
 				'The %label% %path% expects to be %expected%, %value% given.',
 				Message::TypeMismatch,
-				['value' => $value, 'expected' => $expected]
+				['value' => $value, 'expected' => $expected],
 			);
 		}
 	}
@@ -140,14 +138,14 @@ final class Helpers
 				$context->addError(
 					"The length of %label% %path% expects to be in range %expected%, %length% $label given.",
 					Message::LengthOutOfRange,
-					['value' => $value, 'length' => $length, 'expected' => implode('..', $range)]
+					['value' => $value, 'length' => $length, 'expected' => implode('..', $range)],
 				);
 			}
 		} elseif ((is_int($value) || is_float($value)) && !self::isInRange($value, $range)) {
 			$context->addError(
 				'The %label% %path% expects to be in range %expected%, %value% given.',
 				Message::ValueOutOfRange,
-				['value' => $value, 'expected' => implode('..', $range)]
+				['value' => $value, 'expected' => implode('..', $range)],
 			);
 		}
 	}
@@ -166,7 +164,7 @@ final class Helpers
 			$context->addError(
 				"The %label% %path% expects to match pattern '%pattern%', %value% given.",
 				Message::PatternMismatch,
-				['value' => $value, 'pattern' => $pattern]
+				['value' => $value, 'pattern' => $pattern],
 			);
 		}
 	}
@@ -180,15 +178,11 @@ final class Helpers
 				return $value;
 			};
 		} elseif (method_exists($type, '__construct')) {
-			return static function ($value) use ($type) {
-				return is_array($value) || $value instanceof \stdClass
-					? new $type(...(array) $value)
-					: new $type($value);
-			};
+			return static fn($value) => is_array($value) || $value instanceof \stdClass
+				? new $type(...(array) $value)
+				: new $type($value);
 		} else {
-			return static function ($value) use ($type) {
-				return Nette\Utils\Arrays::toObject((array) $value, new $type);
-			};
+			return static fn($value) => Nette\Utils\Arrays::toObject((array) $value, new $type);
 		}
 	}
 }

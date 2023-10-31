@@ -52,8 +52,6 @@ final class Context
 	public function createChecker(): \Closure
 	{
 		$count = count($this->errors);
-		return function () use ($count): bool {
-			return $count === count($this->errors);
-		};
+		return fn(): bool => $count === count($this->errors);
 	}
 }

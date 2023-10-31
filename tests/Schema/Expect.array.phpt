@@ -48,7 +48,7 @@ test('not merging', function () {
 
 	Assert::same(
 		[1, 2, 3],
-		(new Processor)->process($schema, [1, 2, 3])
+		(new Processor)->process($schema, [1, 2, 3]),
 	);
 });
 
@@ -76,7 +76,7 @@ test('merging', function () {
 			'arr' => ['item'],
 			1, 2, 3,
 		],
-		(new Processor)->process($schema, [1, 2, 3])
+		(new Processor)->process($schema, [1, 2, 3]),
 	);
 
 	Assert::same(
@@ -93,7 +93,7 @@ test('merging', function () {
 			'key3' => 'newval',
 			'newval3',
 			'arr' => ['newitem'],
-		])
+		]),
 	);
 
 	Assert::same(
@@ -109,7 +109,7 @@ test('merging', function () {
 			'key3' => 'newval',
 			'newval3',
 			'arr' => ['newitem'],
-		])
+		]),
 	);
 
 	Assert::same(
@@ -126,7 +126,7 @@ test('merging', function () {
 			'key3' => 'newval',
 			'newval3',
 			'arr' => [Helpers::PreventMerging => true, 'newitem'],
-		])
+		]),
 	);
 });
 
@@ -164,7 +164,7 @@ test('merging & other items validation', function () {
 			'key1' => 'newval',
 			'key3' => 'newval',
 			'newval3',
-		])
+		]),
 	);
 });
 
@@ -198,7 +198,7 @@ test('merging & other items validation', function () {
 			'key1' => 'val1',
 			'key2' => 'val2',
 			'val3',
-		])
+		]),
 	);
 });
 
@@ -265,7 +265,7 @@ test('items() & structure', function () {
 
 	Assert::equal(
 		['a' => 'defval', 'b' => (object) ['k' => 'val']],
-		(new Processor)->process($schema, ['b' => ['k' => 'val']])
+		(new Processor)->process($schema, ['b' => ['k' => 'val']]),
 	);
 });
 
@@ -311,9 +311,10 @@ test('arrayOf() & keys II.', function () {
 
 
 test('arrayOf() error', function () {
-	Assert::exception(function () {
-		Expect::arrayOf(['a' => Expect::string()]);
-	}, TypeError::class);
+	Assert::exception(
+		fn() => Expect::arrayOf(['a' => Expect::string()]),
+		TypeError::class,
+	);
 });
 
 

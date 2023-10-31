@@ -56,7 +56,7 @@ test('accepts object', function () {
 
 	Assert::equal(
 		(object) ['a' => 'rab'],
-		(new Processor)->processMultiple($schema, [(object) ['a' => 'foo'], (object) ['a' => 'bar']])
+		(new Processor)->processMultiple($schema, [(object) ['a' => 'foo'], (object) ['a' => 'bar']]),
 	);
 });
 
@@ -77,7 +77,7 @@ test('scalar items', function () {
 
 	Assert::equal(
 		(object) ['a' => null, 'b' => null, 'c' => null, 'd' => null, 'e' => null, 'f' => null, 'g' => 'abc', 'h' => 123, 'i' => 123, 'j' => null],
-		(new Processor)->process($schema, [])
+		(new Processor)->process($schema, []),
 	);
 });
 
@@ -96,15 +96,16 @@ test('array items', function () {
 
 	Assert::equal(
 		(object) ['a' => [], 'b' => [], 'c' => [], 'd' => [], 'e' => [], 'f' => [], 'g' => [], 'h' => (object) []],
-		(new Processor)->process($schema, [])
+		(new Processor)->process($schema, []),
 	);
 });
 
 
 test('default value must be readonly', function () {
-	Assert::exception(function () {
-		$schema = Expect::structure([])->default([]);
-	}, Nette\InvalidStateException::class);
+	Assert::exception(
+		fn() => Expect::structure([])->default([]),
+		Nette\InvalidStateException::class,
+	);
 });
 
 
@@ -125,7 +126,7 @@ test('with indexed item', function () {
 			null,
 			'arr' => [],
 		],
-		$processor->process($schema, [])
+		$processor->process($schema, []),
 	);
 
 	Assert::equal(
@@ -135,7 +136,7 @@ test('with indexed item', function () {
 			null,
 			'arr' => [],
 		],
-		$processor->processMultiple($schema, [])
+		$processor->processMultiple($schema, []),
 	);
 
 	checkValidationErrors(function () use ($processor, $schema) {
@@ -153,7 +154,7 @@ test('with indexed item', function () {
 			'newval3',
 			'arr' => [],
 		],
-		$processor->process($schema, ['key1' => 'newval', 'newval3'])
+		$processor->process($schema, ['key1' => 'newval', 'newval3']),
 	);
 
 	checkValidationErrors(function () use ($processor, $schema) {
@@ -179,7 +180,7 @@ test('with indexed item & otherItems', function () {
 			null,
 			'arr' => [],
 		],
-		$processor->process($schema, [])
+		$processor->process($schema, []),
 	);
 
 	Assert::equal(
@@ -189,7 +190,7 @@ test('with indexed item & otherItems', function () {
 			null,
 			'arr' => [],
 		],
-		$processor->processMultiple($schema, [])
+		$processor->processMultiple($schema, []),
 	);
 
 	checkValidationErrors(function () use ($processor, $schema) {
@@ -203,7 +204,7 @@ test('with indexed item & otherItems', function () {
 			'newval3',
 			'arr' => [],
 		],
-		$processor->process($schema, ['key1' => 'newval', 'newval3'])
+		$processor->process($schema, ['key1' => 'newval', 'newval3']),
 	);
 
 	Assert::equal(
@@ -214,7 +215,7 @@ test('with indexed item & otherItems', function () {
 			'arr' => [],
 			'newval4',
 		],
-		$processor->processMultiple($schema, [['key1' => 'newval', 'newval3'], ['key1' => 'newval1', 'key2' => 'newval2', 'newval4']])
+		$processor->processMultiple($schema, [['key1' => 'newval', 'newval3'], ['key1' => 'newval1', 'key2' => 'newval2', 'newval4']]),
 	);
 });
 
@@ -286,7 +287,7 @@ test('required item', function () {
 
 	Assert::equal(
 		(object) ['b' => 'val', 'c' => [1, 2, 3]],
-		(new Processor)->process($schema, ['b' => 'val', 'c' => [1, 2, 3]])
+		(new Processor)->process($schema, ['b' => 'val', 'c' => [1, 2, 3]]),
 	);
 });
 
@@ -372,7 +373,7 @@ test('structure items', function () {
 
 	Assert::equal(
 		(object) ['a' => (object) ['x' => 'defval'], 'b' => (object) ['y' => 'val']],
-		(new Processor)->process($schema, ['b' => ['y' => 'val']])
+		(new Processor)->process($schema, ['b' => ['y' => 'val']]),
 	);
 });
 
@@ -389,19 +390,19 @@ test('processing', function () {
 
 	Assert::equal(
 		(object) ['a' => (object) ['x' => 'defval'], 'b' => (object) ['y' => 'newval']],
-		(new Processor)->process($schema, ['b' => ['y' => 'newval']])
+		(new Processor)->process($schema, ['b' => ['y' => 'newval']]),
 	);
 	Assert::equal(
 		(object) ['a' => (object) ['x' => 'newval'], 'b' => (object) ['y' => 'newval']],
-		(new Processor)->processMultiple($schema, [['a' => ['x' => 'newval']], ['b' => ['y' => 'newval']]])
+		(new Processor)->processMultiple($schema, [['a' => ['x' => 'newval']], ['b' => ['y' => 'newval']]]),
 	);
 	Assert::equal(
 		(object) ['a' => (object) ['x' => 'defval'], 'b' => (object) ['y' => 'newval']],
-		(new Processor)->processMultiple($schema, [null, ['b' => ['y' => 'newval']]])
+		(new Processor)->processMultiple($schema, [null, ['b' => ['y' => 'newval']]]),
 	);
 	Assert::equal(
 		(object) ['a' => (object) ['x' => 'defval'], 'b' => (object) ['y' => 'newval']],
-		(new Processor)->processMultiple($schema, [['b' => ['y' => 'newval']], null])
+		(new Processor)->processMultiple($schema, [['b' => ['y' => 'newval']], null]),
 	);
 });
 
@@ -423,7 +424,7 @@ test('processing without default values', function () {
 
 	Assert::equal(
 		(object) ['d' => 'newval'],
-		$processor->process($schema, ['d' => 'newval'])
+		$processor->process($schema, ['d' => 'newval']),
 	);
 });
 
@@ -444,7 +445,7 @@ test('optional structure', function () {
 			'req' => 'hello',
 			'optional' => null,
 		],
-		$processor->process($schema, ['req' => 'hello'])
+		$processor->process($schema, ['req' => 'hello']),
 	);
 
 	checkValidationErrors(function () use ($schema, $processor) {
@@ -461,7 +462,7 @@ test('deprecated item', function () {
 	$processor = new Processor;
 	Assert::equal(
 		(object) ['b' => 'val'],
-		$processor->process($schema, ['b' => 'val'])
+		$processor->process($schema, ['b' => 'val']),
 	);
 	Assert::same(["depr 'b'"], $processor->getWarnings());
 });
@@ -498,6 +499,6 @@ test('processing without default values skipped on structure', function () {
 			'foo1' => [],
 			'foo2' => ['bar' => 'baz'],
 		],
-		$processor->process($schema, [])
+		$processor->process($schema, []),
 	);
 });

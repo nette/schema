@@ -125,7 +125,7 @@ final class AnyOf implements Schema
 				[
 					'value' => $value,
 					'expected' => implode('|', array_unique($expecteds)),
-				]
+				],
 			);
 		}
 	}
@@ -136,7 +136,7 @@ final class AnyOf implements Schema
 		if ($this->required) {
 			$context->addError(
 				'The mandatory item %path% is missing.',
-				Nette\Schema\Message::MissingItem
+				Nette\Schema\Message::MissingItem,
 			);
 			return null;
 		}

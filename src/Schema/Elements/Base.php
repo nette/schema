@@ -79,7 +79,7 @@ trait Base
 			$context->addError(
 				'Failed assertion ' . ($description ? "'%assertion%'" : '%assertion%') . ' for %label% %path% with value %value%.',
 				Nette\Schema\Message::FailedAssertion,
-				['value' => $value, 'assertion' => $expected]
+				['value' => $value, 'assertion' => $expected],
 			);
 		});
 	}
@@ -98,7 +98,7 @@ trait Base
 		if ($this->required) {
 			$context->addError(
 				'The mandatory item %path% is missing.',
-				Nette\Schema\Message::MissingItem
+				Nette\Schema\Message::MissingItem,
 			);
 			return null;
 		}
@@ -122,7 +122,7 @@ trait Base
 		if ($this->deprecated !== null) {
 			$context->addWarning(
 				$this->deprecated,
-				Nette\Schema\Message::Deprecated
+				Nette\Schema\Message::Deprecated,
 			);
 		}
 	}

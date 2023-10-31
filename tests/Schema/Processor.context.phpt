@@ -31,9 +31,9 @@ test('', function () {
 				'The mandatory item %path% is missing.',
 				Nette\Schema\Message::MissingItem,
 				['first', 'r'],
-				['isKey' => false]
+				['isKey' => false],
 			),
 		],
-		$e->getMessageObjects()
+		$e->getMessageObjects(),
 	);
 });
