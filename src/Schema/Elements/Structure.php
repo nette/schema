@@ -150,30 +150,32 @@ final class Structure implements Schema
 		$isOk = $context->createChecker();
 		Helpers::validateType($value, 'array', $context);
 		$isOk() && Helpers::validateRange($value, $this->range, $context);
-		$isOk() && $this->validateItems($value, $context);
+		$isOk() && $this->completeItems($value, $context);
 		$isOk() && $value = $this->doTransform($value, $context);
 		return $isOk() ? $value : null;
 	}
 
 
-	private function validateItems(array &$value, Context $context): void
+	private function validateItems(array $value, Context $context): void
 	{
-		$items = $this->items;
-		if ($extraKeys = array_keys(array_diff_key($value, $items))) {
-			if ($this->otherItems) {
-				$items += array_fill_keys($extraKeys, $this->otherItems);
-			} else {
-				$keys = array_map('strval', array_keys($items));
-				foreach ($extraKeys as $key) {
-					$hint = Nette\Utils\Helpers::getSuggestion($keys, (string) $key);
-					$context->addError(
-						'Unexpected item %path%' . ($hint ? ", did you mean '%hint%'?" : '.'),
-						Nette\Schema\Message::UnexpectedItem,
-						['hint' => $hint],
-					)->path[] = $key;
-				}
+		$extraKeys = array_keys(array_diff_key($value, $this->items));
+		if ($extraKeys && !$this->otherItems) {
+			$keys = array_map('strval', array_keys($this->items));
+			foreach ($extraKeys as $key) {
+				$hint = Nette\Utils\Helpers::getSuggestion($keys, (string) $key);
+				$context->addError(
+					'Unexpected item %path%' . ($hint ? ", did you mean '%hint%'?" : '.'),
+					Nette\Schema\Message::UnexpectedItem,
+					['hint' => $hint],
+				)->path[] = $key;
 			}
 		}
+	}
+
+
+	private function completeItems(array &$value, Context $context): void
+	{
+		$items = $this->items + array_fill_keys(array_keys(array_diff_key($value, $this->items)), $this->otherItems);
 
 		foreach ($items as $itemKey => $itemVal) {
 			$context->path[] = $itemKey;
