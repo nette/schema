@@ -101,12 +101,11 @@ test('array items', function () {
 });
 
 
-test('default value must be readonly', function () {
-	Assert::exception(
-		fn() => Expect::structure([])->default([]),
-		Nette\InvalidStateException::class,
-	);
-});
+testException(
+	'default value must be readonly',
+	fn() => Expect::structure([])->default([]),
+	Nette\InvalidStateException::class,
+);
 
 
 test('with indexed item', function () {

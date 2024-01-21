@@ -15,13 +15,8 @@ if (@!include __DIR__ . '/../vendor/autoload.php') {
 
 // configure environment
 Tester\Environment::setup();
+Tester\Environment::setupFunctions();
 date_default_timezone_set('Europe/Prague');
-
-
-function test(string $title, Closure $function): void
-{
-	$function();
-}
 
 
 function checkValidationErrors(Closure $function, array $messages): Nette\Schema\ValidationException
