@@ -64,27 +64,42 @@ final class Expect
 	}
 
 
-	public static function from(object $object, array $items = []): Structure
+	public static function from(object|string $object, array $items = []): Structure
 	{
-		$ro = new \ReflectionObject($object);
+		$ro = new \ReflectionClass($object);
 		$props = $ro->hasMethod('__construct')
 			? $ro->getMethod('__construct')->getParameters()
 			: $ro->getProperties();
 
 		foreach ($props as $prop) {
-			$item = &$items[$prop->getName()];
-			if (!$item) {
-				$item = new Type((string) (Nette\Utils\Type::fromReflection($prop) ?? 'mixed'));
-				if ($prop instanceof \ReflectionProperty ? $prop->isInitialized($object) : $prop->isOptional()) {
-					$def = ($prop instanceof \ReflectionProperty ? $prop->getValue($object) : $prop->getDefaultValue());
-					if (is_object($def)) {
-						$item = static::from($def);
-					} else {
-						$item->default($def);
-					}
+			\assert($prop instanceof \ReflectionProperty || $prop instanceof \ReflectionParameter);
+			if ($item = &$items[$prop->getName()]) {
+				continue;
+			}
+
+			$item = new Type($propType = (string) (Nette\Utils\Type::fromReflection($prop) ?? 'mixed'));
+			if (class_exists($propType)) {
+				$item = static::from($propType);
+			}
+
+			$hasDefault = match (true) {
+				$prop instanceof \ReflectionParameter => $prop->isOptional(),
+				is_object($object) => $prop->isInitialized($object),
+				default => $prop->hasDefaultValue(),
+			};
+			if ($hasDefault) {
+				$default = match (true) {
+					$prop instanceof \ReflectionParameter => $prop->getDefaultValue(),
+					is_object($object) => $prop->getValue($object),
+					default => $prop->getDefaultValue(),
+				};
+				if (is_object($default)) {
+					$item = static::from($default);
 				} else {
-					$item->required();
+					$item->default($default);
 				}
+			} else {
+				$item->required();
 			}
 		}
 
