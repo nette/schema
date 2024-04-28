@@ -107,38 +107,54 @@ final class Expect
 
 
 	/**
-	 * Generates a structure schema from a class instance by reflecting its properties or constructor parameters.
-	 * @param  array<string, Schema>  $items  Optional overrides for specific properties.
+	 * Generates a structure schema from a class by reflecting its properties or constructor parameters.
+	 * @param  class-string|object  $object
+	 * @param  array<string, Schema>  $items
 	 */
-	public static function from(object $object, array $items = []): Structure
+	public static function from(object|string $object, array $items = []): Structure
 	{
-		$ro = new \ReflectionObject($object);
+		$ro = new \ReflectionClass($object);
 		$props = $ro->hasMethod('__construct')
 			? $ro->getMethod('__construct')->getParameters()
 			: $ro->getProperties();
 
 		foreach ($props as $prop) {
 			$name = $prop->getName();
-			if (!isset($items[$name])) {
-				$type = (string) (Nette\Utils\Type::fromReflection($prop) ?? 'mixed');
-				if (is_subclass_of($enum = ltrim($type, '?'), \BackedEnum::class)) {
-					$item = self::enum($enum);
-					$enum === $type || $item->nullable();
-				} else {
-					$item = self::type($type);
-				}
-				if ($prop instanceof \ReflectionProperty ? $prop->isInitialized($object) : $prop->isOptional()) {
-					$def = ($prop instanceof \ReflectionProperty ? $prop->getValue($object) : $prop->getDefaultValue());
-					if (is_object($def) && !$def instanceof \UnitEnum) {
-						$item = static::from($def);
-					} else {
-						$item->default($def);
-					}
-				} else {
-					$item->required();
-				}
-				$items[$name] = $item;
+			if (isset($items[$name])) {
+				continue;
 			}
+
+			$propType = (string) (Nette\Utils\Type::fromReflection($prop) ?? 'mixed');
+			if (is_subclass_of($enum = ltrim($propType, '?'), \BackedEnum::class)) {
+				$item = self::enum($enum);
+				$enum === $propType || $item->nullable();
+			} elseif (class_exists($propType) && !enum_exists($propType)) {
+				$item = static::from($propType);
+			} else {
+				$item = self::type($propType);
+			}
+
+			$hasDefault = match (true) {
+				$prop instanceof \ReflectionParameter => $prop->isOptional(),
+				is_object($object) => $prop->isInitialized($object),
+				default => $prop->hasDefaultValue(),
+			};
+			if ($hasDefault) {
+				$default = match (true) {
+					$prop instanceof \ReflectionParameter => $prop->getDefaultValue(),
+					is_object($object) => $prop->getValue($object),
+					default => $prop->getDefaultValue(),
+				};
+				if (is_object($default) && !$default instanceof \UnitEnum) {
+					$item = static::from($default);
+				} else {
+					$item->default($default);
+				}
+			} else {
+				$item->required();
+			}
+
+			$items[$name] = $item;
 		}
 
 		return (new Structure($items))->castTo($ro->getName());
