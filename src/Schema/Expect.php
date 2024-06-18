@@ -95,7 +95,7 @@ final class Expect
 	}
 
 
-	public static function arrayOf(string|Schema $valueType, string|Schema $keyType = null): Type
+	public static function arrayOf(string|Schema $valueType, string|Schema|null $keyType = null): Type
 	{
 		return (new Type('array'))->items($valueType, $keyType);
 	}
