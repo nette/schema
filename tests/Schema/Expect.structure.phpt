@@ -501,3 +501,18 @@ test('processing without default values skipped on structure', function () {
 		$processor->process($schema, []),
 	);
 });
+
+
+test('extend', function () {
+	$schema = Expect::structure(['a' => Expect::string(), 'b' => Expect::string()]);
+
+	Assert::equal(
+		Expect::structure(['a' => Expect::int(), 'b' => Expect::string(), 'c' => Expect::int()]),
+		$schema->extend(['a' => Expect::int(), 'c' => Expect::int()]),
+	);
+
+	Assert::equal(
+		Expect::structure(['a' => Expect::int(), 'b' => Expect::string(), 'c' => Expect::int()]),
+		$schema->extend(Expect::structure(['a' => Expect::int(), 'c' => Expect::int()])),
+	);
+});
