@@ -31,12 +31,12 @@ final class Structure implements Schema
 
 
 	/**
-	 * @param  Schema[]  $items
+	 * @param  Schema[]  $shape
 	 */
-	public function __construct(array $items)
+	public function __construct(array $shape)
 	{
-		(function (Schema ...$items) {})(...array_values($items));
-		$this->items = $items;
+		(function (Schema ...$items) {})(...array_values($shape));
+		$this->items = $shape;
 		$this->castTo('object');
 		$this->required = true;
 	}
@@ -80,6 +80,12 @@ final class Structure implements Schema
 	{
 		$shape = $shape instanceof self ? $shape->items : $shape;
 		return new self(array_merge($this->items, $shape));
+	}
+
+
+	public function getShape(): array
+	{
+		return $this->items;
 	}
 
 

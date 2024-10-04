@@ -56,11 +56,11 @@ final class Expect
 
 
 	/**
-	 * @param  Schema[]  $items
+	 * @param  Schema[]  $shape
 	 */
-	public static function structure(array $items): Structure
+	public static function structure(array $shape): Structure
 	{
-		return new Structure($items);
+		return new Structure($shape);
 	}
 
 

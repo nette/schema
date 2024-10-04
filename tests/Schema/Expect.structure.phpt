@@ -516,3 +516,11 @@ test('extend', function () {
 		$schema->extend(Expect::structure(['a' => Expect::int(), 'c' => Expect::int()])),
 	);
 });
+
+
+test('getShape', function () {
+	Assert::equal(
+		['a' => Expect::int(), 'b' => Expect::string()],
+		Expect::structure(['a' => Expect::int(), 'b' => Expect::string()])->getShape(),
+	);
+});
