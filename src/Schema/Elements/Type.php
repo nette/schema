@@ -112,10 +112,6 @@ final class Type implements Schema
 
 	public function normalize(mixed $value, Context $context): mixed
 	{
-		if ($prevent = (is_array($value) && isset($value[Helpers::PreventMerging]))) {
-			unset($value[Helpers::PreventMerging]);
-		}
-
 		$value = $this->doNormalize($value, $context);
 		if (is_array($value) && $this->itemsValue) {
 			$res = [];
@@ -133,18 +129,13 @@ final class Type implements Schema
 			$value = $res;
 		}
 
-		if ($prevent && is_array($value)) {
-			$value[Helpers::PreventMerging] = true;
-		}
-
 		return $value;
 	}
 
 
 	public function merge(mixed $value, mixed $base): mixed
 	{
-		if ($this->mergeMode === MergeMode::Replace || (is_array($value) && isset($value[Helpers::PreventMerging]))) {
-			unset($value[Helpers::PreventMerging]);
+		if ($this->mergeMode === MergeMode::Replace) {
 			return $value;
 		}
 
@@ -170,12 +161,6 @@ final class Type implements Schema
 
 	public function complete(mixed $value, Context $context): mixed
 	{
-		$merge = $this->merge;
-		if (is_array($value) && isset($value[Helpers::PreventMerging])) {
-			unset($value[Helpers::PreventMerging]);
-			$merge = false;
-		}
-
 		if ($value === null && is_array($this->default)) {
 			$value = []; // is unable to distinguish null from array in NEON
 		}
@@ -187,7 +172,7 @@ final class Type implements Schema
 		$isOk() && Helpers::validateRange($value, $this->range, $context, $this->type);
 		$isOk() && $value !== null && $this->pattern !== null && Helpers::validatePattern($value, $this->pattern, $context);
 		$isOk() && is_array($value) && $this->validateItems($value, $context);
-		$isOk() && $merge && $value = Helpers::merge($value, $this->default);
+		$isOk() && $this->merge && $value = Helpers::merge($value, $this->default);
 		$isOk() && $value = $this->doTransform($value, $context);
 		if (!$isOk()) {
 			return null;
