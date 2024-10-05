@@ -29,7 +29,7 @@ final class Type implements Schema
 	private array $range = [null, null];
 	private ?string $pattern = null;
 	private bool $merge = false;
-	private ?MergeMode $mergeMode = null;
+	private MergeMode $mergeMode = MergeMode::AppendKeys;
 
 
 	public function __construct(string $type)
@@ -149,7 +149,7 @@ final class Type implements Schema
 			return $value;
 		}
 
-		if (is_array($value) && is_array($base) && ($this->itemsValue || $this->mergeMode)) {
+		if (is_array($value) && is_array($base)) {
 			$index = $this->mergeMode === MergeMode::OverwriteKeys ? null : 0;
 			foreach ($value as $key => $val) {
 				if ($key === $index) {
@@ -165,7 +165,7 @@ final class Type implements Schema
 			return $base;
 		}
 
-		return Helpers::merge($value, $base);
+		return $value === null && is_array($base) ? $base : $value;
 	}
 
 
