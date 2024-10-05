@@ -13,7 +13,7 @@ use Nette;
 use Nette\Schema\Context;
 use Nette\Schema\Helpers;
 use Nette\Schema\Schema;
-use function array_merge, array_unique, implode, is_array;
+use function array_merge, array_unique, implode;
 
 
 final class AnyOf implements Schema
@@ -66,11 +66,6 @@ final class AnyOf implements Schema
 
 	public function merge(mixed $value, mixed $base): mixed
 	{
-		if (is_array($value) && isset($value[Helpers::PreventMerging])) {
-			unset($value[Helpers::PreventMerging]);
-			return $value;
-		}
-
 		return Helpers::merge($value, $base);
 	}
 
