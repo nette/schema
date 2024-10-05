@@ -135,20 +135,17 @@ final class Structure implements Schema
 				if ($key === $index) {
 					$base[] = $val;
 					$index++;
-				} elseif (array_key_exists($key, $base)) {
-					$itemSchema = $this->items[$key] ?? $this->otherItems;
-					$base[$key] = $itemSchema
-						? $itemSchema->merge($val, $base[$key])
-						: Helpers::merge($val, $base[$key]);
 				} else {
-					$base[$key] = $val;
+					$base[$key] = array_key_exists($key, $base) && ($itemSchema = $this->items[$key] ?? $this->otherItems)
+						? $itemSchema->merge($val, $base[$key])
+						: $val;
 				}
 			}
 
 			return $base;
 		}
 
-		return Helpers::merge($value, $base);
+		return $value ?? $base;
 	}
 
 
