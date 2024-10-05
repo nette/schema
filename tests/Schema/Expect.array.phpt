@@ -332,3 +332,18 @@ test('type[]', function () {
 
 	Assert::same(['key' => 1], (new Processor)->process($schema, ['key' => 1]));
 });
+
+
+test('array shape', function () {
+	$schema = Expect::array([
+		'a' => Expect::string(),
+		'b' => Expect::string('string'),
+		'c' => Expect::anyOf(1, 2),
+	]);
+
+	Assert::type(Nette\Schema\Elements\Structure::class, $schema);
+	Assert::equal(
+		['a' => null, 'b' => 'string', 'c' => null],
+		(new Processor)->process($schema, []),
+	);
+});

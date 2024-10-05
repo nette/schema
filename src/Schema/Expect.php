@@ -24,7 +24,6 @@ use Nette\Schema\Elements\Type;
  * @method static Type float($default = null)
  * @method static Type bool($default = null)
  * @method static Type null()
- * @method static Type array($default = [])
  * @method static Type list($default = [])
  * @method static Type mixed($default = null)
  * @method static Type email($default = null)
@@ -92,6 +91,17 @@ final class Expect
 		}
 
 		return (new Structure($items))->castTo($ro->getName());
+	}
+
+
+	/**
+	 * @param  mixed[]  $shape
+	 */
+	public static function array(?array $shape = []): Structure|Type
+	{
+		return Nette\Utils\Arrays::first($shape ?? []) instanceof Schema
+			? (new Structure($shape))->castTo('array')
+			: (new Type('array'))->default($shape);
 	}
 
 
