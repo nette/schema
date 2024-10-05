@@ -95,10 +95,6 @@ final class Structure implements Schema
 
 	public function normalize(mixed $value, Context $context): mixed
 	{
-		if ($prevent = (is_array($value) && isset($value[Helpers::PreventMerging]))) {
-			unset($value[Helpers::PreventMerging]);
-		}
-
 		$value = $this->doNormalize($value, $context);
 		if (is_object($value)) {
 			$value = (array) $value;
@@ -112,10 +108,6 @@ final class Structure implements Schema
 					$value[$key] = $itemSchema->normalize($val, $context);
 					array_pop($context->path);
 				}
-			}
-
-			if ($prevent) {
-				$value[Helpers::PreventMerging] = true;
 			}
 		}
 
