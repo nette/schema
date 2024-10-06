@@ -12,6 +12,7 @@ namespace Nette\Schema\Elements;
 use Nette\Schema\Context;
 use Nette\Schema\DynamicParameter;
 use Nette\Schema\Helpers;
+use Nette\Schema\MergeMode;
 use Nette\Schema\Schema;
 use function array_key_exists, array_pop, implode, is_array, str_replace, strpos;
 
@@ -28,6 +29,7 @@ final class Type implements Schema
 	private array $range = [null, null];
 	private ?string $pattern = null;
 	private bool $merge = false;
+	private ?MergeMode $mergeMode = null;
 
 
 	public function __construct(string $type)
@@ -52,6 +54,13 @@ final class Type implements Schema
 			trigger_error(__METHOD__ . '() is deprecated and will be removed in the next major version.', E_USER_DEPRECATED);
 		}
 		$this->merge = $state;
+		return $this;
+	}
+
+
+	public function mergeMode(MergeMode $mode): self
+	{
+		$this->mergeMode = $mode;
 		return $this;
 	}
 
@@ -135,19 +144,19 @@ final class Type implements Schema
 
 	public function merge(mixed $value, mixed $base): mixed
 	{
-		if (is_array($value) && isset($value[Helpers::PreventMerging])) {
+		if ($this->mergeMode === MergeMode::Replace || (is_array($value) && isset($value[Helpers::PreventMerging]))) {
 			unset($value[Helpers::PreventMerging]);
 			return $value;
 		}
 
-		if (is_array($value) && is_array($base) && $this->itemsValue) {
-			$index = 0;
+		if (is_array($value) && is_array($base) && ($this->itemsValue || $this->mergeMode)) {
+			$index = $this->mergeMode === MergeMode::OverwriteKeys ? null : 0;
 			foreach ($value as $key => $val) {
 				if ($key === $index) {
 					$base[] = $val;
 					$index++;
 				} else {
-					$base[$key] = array_key_exists($key, $base)
+					$base[$key] = array_key_exists($key, $base) && $this->itemsValue
 						? $this->itemsValue->merge($val, $base[$key])
 						: $val;
 				}
