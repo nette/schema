@@ -156,9 +156,15 @@ test('with indexed item', function () {
 		$processor->process($schema, ['key1' => 'newval', 'newval3']),
 	);
 
-	checkValidationErrors(function () use ($processor, $schema) {
-		$processor->processMultiple($schema, [['key1' => 'newval', 'newval3'], ['key2' => 'newval', 'newval4']]);
-	}, ["Unexpected item '1'."]);
+	Assert::equal(
+		(object) [
+			'key1' => 'newval',
+			'key2' => 'newval',
+			'newval4',
+			'arr' => [],
+		],
+		$processor->processMultiple($schema, [['key1' => 'newval', 'newval3'], ['key2' => 'newval', 'newval4']]),
+	);
 });
 
 

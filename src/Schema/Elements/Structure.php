@@ -130,7 +130,7 @@ final class Structure implements Schema
 		}
 
 		if (is_array($value) && is_array($base)) {
-			$index = 0;
+			$index = $this->otherItems === null ? null : 0;
 			foreach ($value as $key => $val) {
 				if ($key === $index) {
 					$base[] = $val;
