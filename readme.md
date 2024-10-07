@@ -13,7 +13,7 @@ Introduction
 
 A practical library for validation and normalization of data structures against a given schema with a smart & easy-to-understand API.
 
-Documentation can be found on the [website](https://doc.nette.org/schema).
+Documentation can be found on the [website](https://doc.nette.org/en/schema).
 
 Installation:
 
@@ -127,7 +127,7 @@ Expect::null()
 Expect::array($default = [])
 ```
 
-And then all types [supported by the Validators](https://doc.nette.org/validators#toc-validation-rules) via `Expect::type('scalar')` or abbreviated `Expect::scalar()`. Also class or interface names are accepted, e.g. `Expect::type('AddressEntity')`.
+And then all types [supported by the Validators](https://doc.nette.org/validators#toc-expected-types) via `Expect::type('scalar')` or abbreviated `Expect::scalar()`. Also class or interface names are accepted, e.g. `Expect::type('AddressEntity')`.
 
 You can also use union notation:
 
