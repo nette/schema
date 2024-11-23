@@ -47,7 +47,7 @@ final class Type implements Schema
 	}
 
 
-	/** @deprecated mergeDefaults is disabled by default */
+	#[\Deprecated('mergeDefaults is disabled by default')]
 	public function mergeDefaults(bool $state = true): self
 	{
 		if ($state === true) {
