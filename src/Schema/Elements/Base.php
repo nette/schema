@@ -153,7 +153,7 @@ trait Base
 	}
 
 
-	/** @deprecated use Nette\Schema\Validators::validateType() */
+	#[\Deprecated('use Nette\Schema\Validators::validateType()')]
 	private function doValidate(mixed $value, string $expected, Context $context): bool
 	{
 		$isOk = $context->createChecker();
@@ -162,10 +162,8 @@ trait Base
 	}
 
 
-	/**
-	 * @deprecated use Nette\Schema\Validators::validateRange()
-	 * @param  array{?float, ?float}  $range
-	 */
+	/** @param array{?float, ?float} $range */
+	#[\Deprecated('use Nette\Schema\Validators::validateRange()')]
 	private static function doValidateRange(mixed $value, array $range, Context $context, string $types = ''): bool
 	{
 		$isOk = $context->createChecker();
@@ -174,7 +172,7 @@ trait Base
 	}
 
 
-	/** @deprecated use doTransform() */
+	#[\Deprecated('use doTransform()')]
 	private function doFinalize(mixed $value, Context $context): mixed
 	{
 		return $this->doTransform($value, $context);
