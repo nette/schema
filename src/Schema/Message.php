@@ -39,28 +39,28 @@ final class Message
 	/** no variables */
 	public const Deprecated = 'schema.deprecated';
 
-	/** @deprecated use Message::TypeMismatch */
+	#[\Deprecated('use Message::TypeMismatch')]
 	public const TYPE_MISMATCH = self::TypeMismatch;
 
-	/** @deprecated use Message::ValueOutOfRange */
+	#[\Deprecated('use Message::ValueOutOfRange')]
 	public const VALUE_OUT_OF_RANGE = self::ValueOutOfRange;
 
-	/** @deprecated use Message::LengthOutOfRange */
+	#[\Deprecated('use Message::LengthOutOfRange')]
 	public const LENGTH_OUT_OF_RANGE = self::LengthOutOfRange;
 
-	/** @deprecated use Message::PatternMismatch */
+	#[\Deprecated('use Message::PatternMismatch')]
 	public const PATTERN_MISMATCH = self::PatternMismatch;
 
-	/** @deprecated use Message::FailedAssertion */
+	#[\Deprecated('use Message::FailedAssertion')]
 	public const FAILED_ASSERTION = self::FailedAssertion;
 
-	/** @deprecated use Message::MissingItem */
+	#[\Deprecated('use Message::MissingItem')]
 	public const MISSING_ITEM = self::MissingItem;
 
-	/** @deprecated use Message::UnexpectedItem */
+	#[\Deprecated('use Message::UnexpectedItem')]
 	public const UNEXPECTED_ITEM = self::UnexpectedItem;
 
-	/** @deprecated use Message::Deprecated */
+	#[\Deprecated('use Message::Deprecated')]
 	public const DEPRECATED = self::Deprecated;
 
 	public string $message;
