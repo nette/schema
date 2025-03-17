@@ -17,26 +17,12 @@ test('', function () {
 });
 
 
-test('calling before() repeatedly is deprecated and replaces the handler', function () {
-	$calls = [];
-	$schema = Expect::string()->before(function ($val) use (&$calls) {
-		$calls[] = 'a';
-		return $val . 'a';
-	});
+test('multiple handlers run in declaration order', function () {
+	$schema = Expect::string()
+		->before(fn($val) => $val . 'a')
+		->before(fn($val) => $val . 'b');
 
-	Assert::error(
-		function () use ($schema, &$calls) {
-			$schema->before(function ($val) use (&$calls) {
-				$calls[] = 'b';
-				return $val . 'b';
-			});
-		},
-		E_USER_DEPRECATED,
-		'Calling before() repeatedly is deprecated, it replaces the previous handler while in 2.0 the handlers will be chained; merge them into one.',
-	);
-
-	Assert::same('xb', $schema->normalize('x', new Context));
-	Assert::same(['b'], $calls);
+	Assert::same('xab', $schema->normalize('x', new Context));
 });
 
 
