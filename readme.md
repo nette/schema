@@ -591,7 +591,18 @@ $normalized = $processor->process($schema, 'a b c');
 // OK and returns ['a', 'b', 'c']
 ```
 
-An element has one handler: a second call to `before()` replaces the first one and raises a deprecation notice (since version 1.4), because in version 2.0 the handlers will be chained, each receiving the result of the previous one. Put all the normalization into one handler instead.
+The method can be called repeatedly (since version 2.0). The handlers are then chained, each receiving the result of the previous one:
+
+```php
+$schema = Expect::arrayOf('string')
+	->before(fn($v) => explode(' ', $v))
+	->before(fn($v) => array_map('strtoupper', $v));
+
+$normalized = $processor->process($schema, 'a b c');
+// OK and returns ['A', 'B', 'C']
+```
+
+Up to version 1.4, a second call to `before()` replaced the first one (1.4 with a deprecation notice).
 
 
 Mapping to Objects: from()

@@ -87,8 +87,8 @@ parallel `PREVENT_MERGING` constant, so the key name is a cross-package contract
 ## One transform pipeline; `assert`/`castTo` are sugar over `transform`
 
 `before()`, `transform()`, `assert()`, and `castTo()` are **not** independent
-stages. `before` runs in `normalize` (pre-validation); a repeated call replaces
-the handler and is deprecated, because 2.0 chains them (`Base::$before`).
+stages. `before` runs in `normalize` (pre-validation); repeated calls chain in
+declaration order, each handler receiving the previous result (`Base::$before`).
 `EnumType` maps the backing value in its own `doNormalize()` after the handler,
 never through `before()`, so the handler sees the raw input.
 Everything else appends to a single `$transforms` list (`Base`): `castTo` is
