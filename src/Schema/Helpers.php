@@ -167,7 +167,7 @@ final class Helpers
 
 	public static function getCastStrategy(string $type): \Closure
 	{
-		if (Nette\Utils\Reflection::isBuiltinType($type)) {
+		if (Nette\Utils\Validators::isBuiltinType($type)) {
 			return static function ($value) use ($type) {
 				settype($value, $type);
 				return $value;

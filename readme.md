@@ -1,5 +1,4 @@
-Nette Schema
-************
+# Nette Schema
 
 [![Downloads this Month](https://img.shields.io/packagist/dm/nette/schema.svg)](https://packagist.org/packages/nette/schema)
 [![Tests](https://github.com/nette/schema/workflows/Tests/badge.svg?branch=master)](https://github.com/nette/schema/actions)
