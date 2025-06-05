@@ -21,7 +21,7 @@
 	"require-dev": {
 		"nette/tester": "^2.5.2",
 		"tracy/tracy": "^2.8",
-		"phpstan/phpstan-nette": "^1.0"
+		"phpstan/phpstan-nette": "^2.0@stable"
 	},
 	"autoload": {
 		"classmap": ["src/"]
