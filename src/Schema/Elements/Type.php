@@ -13,6 +13,7 @@ use Nette\Schema\Context;
 use Nette\Schema\DynamicParameter;
 use Nette\Schema\Helpers;
 use Nette\Schema\Schema;
+use function array_key_exists, array_pop, implode, is_array, str_replace, strpos;
 
 
 final class Type implements Schema
