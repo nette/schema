@@ -201,7 +201,7 @@ final class Type implements Schema
 			$context->isKey = true;
 			$key = $this->itemsKey ? $this->itemsKey->complete($key, $context) : $key;
 			$context->isKey = false;
-			$res[$key] = $this->itemsValue->complete($val, $context);
+			$res[$key ?? ''] = $this->itemsValue->complete($val, $context);
 			array_pop($context->path);
 		}
 		$value = $res;
