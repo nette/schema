@@ -117,7 +117,7 @@ final class Expect
 			if ($prop instanceof \ReflectionParameter && $prop->isVariadic()) {
 				throw new Nette\InvalidArgumentException("Variadic parameter \$$name of {$ro->getName()}::__construct() is not supported by Expect::from().");
 			} elseif (!isset($items[$name])) {
-				$type = Helpers::getPropertyType($prop) ?? 'mixed';
+				$type = (string) (Nette\Utils\Type::fromReflection($prop) ?? 'mixed');
 				if (is_subclass_of($enum = ltrim($type, '?'), \BackedEnum::class)) {
 					$item = self::enum($enum);
 					$enum === $type || $item->nullable();
@@ -128,8 +128,6 @@ final class Expect
 					$def = ($prop instanceof \ReflectionProperty ? $prop->getValue($object) : $prop->getDefaultValue());
 					if (is_object($def) && !$def instanceof \UnitEnum) {
 						$item = static::from($def);
-					} elseif ($def === null && !Nette\Utils\Validators::is(null, $type)) {
-						$item->required();
 					} else {
 						$item->default($def);
 					}
