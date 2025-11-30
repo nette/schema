@@ -175,7 +175,7 @@ final class Structure implements Schema
 			if ($this->otherItems) {
 				$items += array_fill_keys($extraKeys, $this->otherItems);
 			} else {
-				$keys = array_map('strval', array_keys($items));
+				$keys = array_map(strval(...), array_keys($items));
 				foreach ($extraKeys as $key) {
 					$hint = Nette\Utils\Helpers::getSuggestion($keys, (string) $key);
 					$context->addError(

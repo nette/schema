@@ -127,7 +127,7 @@ final class Helpers
 		if (is_array($value) || is_string($value)) {
 			[$length, $label] = is_array($value)
 				? [count($value), 'items']
-				: (in_array('unicode', explode('|', $types), true)
+				: (in_array('unicode', explode('|', $types), strict: true)
 					? [Nette\Utils\Strings::length($value), 'characters']
 					: [strlen($value), 'bytes']);
 
