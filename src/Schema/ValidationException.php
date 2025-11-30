@@ -26,7 +26,7 @@ class ValidationException extends Nette\InvalidStateException
 	 */
 	public function __construct(?string $message, array $messages = [])
 	{
-		parent::__construct($message ?: $messages[0]->toString());
+		parent::__construct($message ?? $messages[0]->toString());
 		$this->messages = $messages;
 	}
 

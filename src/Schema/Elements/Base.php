@@ -67,7 +67,7 @@ trait Base
 
 	public function assert(callable $handler, ?string $description = null): self
 	{
-		$expected = $description ?: (is_string($handler) ? "$handler()" : '#' . count($this->transforms));
+		$expected = $description ?? (is_string($handler) ? "$handler()" : '#' . count($this->transforms));
 		return $this->transform(function ($value, Context $context) use ($handler, $description, $expected) {
 			if ($handler($value)) {
 				return $value;
