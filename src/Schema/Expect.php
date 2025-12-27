@@ -32,6 +32,7 @@ use function is_object;
  */
 final class Expect
 {
+	/** @param  list<mixed>  $args */
 	public static function __callStatic(string $name, array $args): Type
 	{
 		$type = new Type($name);
@@ -55,15 +56,14 @@ final class Expect
 	}
 
 
-	/**
-	 * @param  Schema[]  $shape
-	 */
+	/** @param Schema[]  $shape */
 	public static function structure(array $shape): Structure
 	{
 		return new Structure($shape);
 	}
 
 
+	/** @param  array<string, Schema>  $items */
 	public static function from(object $object, array $items = []): Structure
 	{
 		$ro = new \ReflectionObject($object);
