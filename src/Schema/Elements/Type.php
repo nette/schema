@@ -187,6 +187,7 @@ final class Type implements Schema
 	}
 
 
+	/** @param  array<mixed>  $value */
 	private function validateItems(array &$value, Context $context): void
 	{
 		if (!$this->itemsValue) {

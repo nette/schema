@@ -72,7 +72,7 @@ final class Helpers
 
 	/**
 	 * Returns an annotation value.
-	 * @param  \ReflectionProperty  $ref
+	 * @param  \ReflectionClass<object>|\ReflectionProperty  $ref
 	 */
 	public static function parseAnnotation(\Reflector $ref, string $name): ?string
 	{
@@ -119,6 +119,7 @@ final class Helpers
 	}
 
 
+	/** @param  array{?float, ?float}  $range */
 	public static function validateRange(mixed $value, array $range, Context $context, string $types = ''): void
 	{
 		if (is_array($value) || is_string($value)) {
@@ -145,6 +146,7 @@ final class Helpers
 	}
 
 
+	/** @param  array{?float, ?float}  $range */
 	public static function isInRange(mixed $value, array $range): bool
 	{
 		return ($range[0] === null || $value >= $range[0])
@@ -164,6 +166,7 @@ final class Helpers
 	}
 
 
+	/** @return \Closure(mixed): mixed */
 	public static function getCastStrategy(string $type): \Closure
 	{
 		if (Nette\Utils\Validators::isBuiltinType($type)) {

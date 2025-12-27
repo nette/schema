@@ -24,7 +24,7 @@ trait Base
 	/** @var ?\Closure(mixed): mixed */
 	private ?\Closure $before = null;
 
-	/** @var array<\Closure(mixed, Context): mixed> */
+	/** @var list<\Closure(mixed, Context): mixed> */
 	private array $transforms = [];
 	private ?string $deprecated = null;
 
@@ -43,6 +43,7 @@ trait Base
 	}
 
 
+	/** @param  callable(mixed): mixed  $handler */
 	public function before(callable $handler): self
 	{
 		$this->before = $handler(...);
@@ -56,6 +57,7 @@ trait Base
 	}
 
 
+	/** @param  callable(mixed, Context): mixed  $handler */
 	public function transform(callable $handler): self
 	{
 		$this->transforms[] = $handler(...);
@@ -63,6 +65,7 @@ trait Base
 	}
 
 
+	/** @param  callable(mixed): bool  $handler */
 	public function assert(callable $handler, ?string $description = null): self
 	{
 		$expected = $description ?: (is_string($handler) ? "$handler()" : '#' . count($this->transforms));
@@ -144,7 +147,10 @@ trait Base
 	}
 
 
-	/** @deprecated use Nette\Schema\Validators::validateRange() */
+	/**
+	 * @deprecated use Nette\Schema\Validators::validateRange()
+	 * @param  array{?float, ?float}  $range
+	 */
 	private static function doValidateRange(mixed $value, array $range, Context $context, string $types = ''): bool
 	{
 		$isOk = $context->createChecker();
