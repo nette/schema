@@ -31,6 +31,9 @@ final class Context
 	public array $dynamics = [];
 
 
+	/**
+	 * @param  string[]  $variables
+	 */
 	public function addError(string $message, string $code, array $variables = []): Message
 	{
 		$variables['isKey'] = $this->isKey;
