@@ -10,14 +10,14 @@ use Tester\Assert;
 require __DIR__ . '/../bootstrap.php';
 
 
-test('', function () {
+test('pattern validates matching string', function () {
 	$schema = Expect::string()->pattern('\d{9}');
 
 	Assert::same('123456789', (new Processor)->process($schema, '123456789'));
 });
 
 
-test('', function () {
+test('pattern rejects non-matching string', function () {
 	$schema = Expect::string()->pattern('\d{9}');
 
 	checkValidationErrors(function () use ($schema) {
@@ -26,7 +26,7 @@ test('', function () {
 });
 
 
-test('', function () {
+test('nullable pattern accepts null without validation', function () {
 	$schema = Expect::string()->nullable()->pattern('\d{9}');
 
 	Assert::same(null, (new Processor)->process($schema, null));
