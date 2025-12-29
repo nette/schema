@@ -8,7 +8,7 @@ use Tester\Assert;
 require __DIR__ . '/../bootstrap.php';
 
 
-test('', function () {
+test('scalar type accepts all scalar values', function () {
 	$schema = Expect::scalar();
 
 	Assert::same('hello', (new Processor)->process($schema, 'hello'));
@@ -30,7 +30,7 @@ test('', function () {
 });
 
 
-test('', function () {
+test('string type validates correctly', function () {
 	$schema = Expect::string();
 
 	Assert::same('hello', (new Processor)->process($schema, 'hello'));
@@ -53,7 +53,7 @@ test('', function () {
 });
 
 
-test('', function () {
+test('union type accepts any of specified types', function () {
 	$schema = Expect::type('string|bool');
 
 	Assert::same('one', (new Processor)->process($schema, 'one'));
@@ -74,7 +74,7 @@ test('', function () {
 });
 
 
-test('', function () {
+test('nullable type accepts null value', function () {
 	$schema = Expect::type('string')->nullable();
 
 	Assert::same('one', (new Processor)->process($schema, 'one'));
