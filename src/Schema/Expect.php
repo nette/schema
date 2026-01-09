@@ -64,6 +64,7 @@ final class Expect
 	}
 
 
+	/** @param  array<string, Schema>  $items */
 	public static function from(object $object, array $items = []): Structure
 	{
 		$ro = new \ReflectionObject($object);
