@@ -41,6 +41,9 @@ final class Context
 	}
 
 
+	/**
+	 * @param  string[]  $variables
+	 */
 	public function addWarning(string $message, string $code, array $variables = []): Message
 	{
 		return $this->warnings[] = new Message($message, $code, $this->path, $variables);

@@ -23,10 +23,10 @@ trait Base
 	private bool $required = false;
 	private mixed $default = null;
 
-	/** @var ?callable */
-	private $before;
+	/** @var ?\Closure(mixed): mixed */
+	private ?\Closure $before = null;
 
-	/** @var callable[] */
+	/** @var array<\Closure(mixed, Context): mixed> */
 	private array $transforms = [];
 	private ?string $deprecated = null;
 
@@ -45,9 +45,10 @@ trait Base
 	}
 
 
+	/** @param  callable(mixed): mixed  $handler */
 	public function before(callable $handler): self
 	{
-		$this->before = $handler;
+		$this->before = $handler(...);
 		return $this;
 	}
 
@@ -58,16 +59,19 @@ trait Base
 	}
 
 
+	/** @param  callable(mixed, Context): mixed  $handler */
 	public function transform(callable $handler): self
 	{
-		$this->transforms[] = $handler;
+		$this->transforms[] = $handler(...);
 		return $this;
 	}
 
 
+	/** @param  callable(mixed): bool  $handler */
 	public function assert(callable $handler, ?string $description = null): self
 	{
 		$expected = $description ?? (is_string($handler) ? "$handler()" : '#' . count($this->transforms));
+		$handler = $handler(...);
 		return $this->transform(function ($value, Context $context) use ($handler, $description, $expected) {
 			if ($handler($value)) {
 				return $value;

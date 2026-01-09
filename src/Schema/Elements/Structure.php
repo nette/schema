@@ -77,6 +77,7 @@ final class Structure implements Schema
 	}
 
 
+	/** @param  Schema[]|self  $shape */
 	public function extend(array|self $shape): self
 	{
 		$shape = $shape instanceof self ? $shape->items : $shape;
