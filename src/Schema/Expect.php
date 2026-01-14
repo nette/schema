@@ -28,6 +28,10 @@ use function array_key_exists, count, is_object;
  */
 final class Expect
 {
+	/** @var array<string, true>  classes from() is reflecting right now */
+	private static array $reflecting = [];
+
+
 	/** @param  array<int|string, mixed>  $args */
 	public static function __callStatic(string $name, array $args): Type
 	{
@@ -113,42 +117,70 @@ final class Expect
 			? $ro->getMethod('__construct')->getParameters()
 			: array_filter($ro->getProperties(\ReflectionProperty::IS_PUBLIC), fn($prop) => !$prop->isStatic());
 
+		self::$reflecting[$ro->getName()] = true;
+		try {
+			$items = self::reflectItems($ro, $props, $object, $items);
+		} finally {
+			unset(self::$reflecting[$ro->getName()]);
+		}
+
+		return (new Structure($items))->castTo($ro->getName());
+	}
+
+
+	/**
+	 * @param  \ReflectionClass<object>  $ro
+	 * @param  array<\ReflectionParameter|\ReflectionProperty>  $props
+	 * @param  array<string, Schema>  $items
+	 * @return array<string, Schema>
+	 */
+	private static function reflectItems(\ReflectionClass $ro, array $props, object|string $object, array $items): array
+	{
 		foreach ($props as $prop) {
 			$name = $prop->getName();
 			if ($prop instanceof \ReflectionParameter && $prop->isVariadic()) {
 				throw new Nette\InvalidArgumentException("Variadic parameter \$$name of {$ro->getName()}::__construct() is not supported by Expect::from().");
-			} elseif (!isset($items[$name])) {
-				$type = (string) (Nette\Utils\Type::fromReflection($prop) ?? 'mixed');
-				if (is_subclass_of($enum = ltrim($type, '?'), \BackedEnum::class)) {
-					$item = self::enum($enum);
-					$enum === $type || $item->nullable();
-				} else {
-					$item = self::type($type);
-				}
-				$hasDefault = match (true) {
-					$prop instanceof \ReflectionParameter => $prop->isOptional(),
-					is_object($object) => $prop->isInitialized($object),
-					default => $prop->hasDefaultValue(),
-				};
-				if ($hasDefault) {
-					$def = match (true) {
-						$prop instanceof \ReflectionParameter => $prop->getDefaultValue(),
-						is_object($object) => $prop->getValue($object),
-						default => $prop->getDefaultValue(),
-					};
-					if (is_object($def) && !$def instanceof \UnitEnum) {
-						$item = static::from($def);
-					} else {
-						$item->default($def);
-					}
-				} else {
-					$item->required();
-				}
-				$items[$name] = $item;
+			} elseif (isset($items[$name])) {
+				continue;
 			}
+
+			$propType = (string) (Nette\Utils\Type::fromReflection($prop) ?? 'mixed');
+			if (is_subclass_of($enum = ltrim($propType, '?'), \BackedEnum::class)) {
+				$item = self::enum($enum);
+				$enum === $propType || $item->nullable();
+			} elseif (class_exists($propType) && !enum_exists($propType)) {
+				if (isset(self::$reflecting[$propType])) {
+					throw new Nette\InvalidArgumentException("Property \$$name of {$ro->getName()} refers back to $propType, Expect::from() cannot map a recursive structure; give the item in \$items.");
+				}
+				$item = static::from($propType);
+			} else {
+				$item = self::type($propType);
+			}
+
+			$hasDefault = match (true) {
+				$prop instanceof \ReflectionParameter => $prop->isOptional(),
+				is_object($object) => $prop->isInitialized($object),
+				default => $prop->hasDefaultValue(),
+			};
+			if ($hasDefault) {
+				$default = match (true) {
+					$prop instanceof \ReflectionParameter => $prop->getDefaultValue(),
+					is_object($object) => $prop->getValue($object),
+					default => $prop->getDefaultValue(),
+				};
+				if (is_object($default) && !$default instanceof \UnitEnum) {
+					$item = static::from($default);
+				} else {
+					$item->default($default);
+				}
+			} else {
+				$item->required();
+			}
+
+			$items[$name] = $item;
 		}
 
-		return (new Structure($items))->castTo($ro->getName());
+		return $items;
 	}
 
 
