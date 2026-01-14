@@ -82,3 +82,56 @@ Assert::with(Structure::class, function () { // overwritten item
 		'user' => Expect::type('?string')->required(),
 	], $schema->items);
 });
+
+
+Assert::with(Structure::class, function () { // nested object
+	class Data4
+	{
+		public Data5 $inner;
+	}
+
+	class Data5
+	{
+		public string $name;
+	}
+
+	$schema = Expect::from(Data4::class);
+
+	Assert::equal([
+		'inner' => Expect::structure([
+			'name' => Expect::string()->required(),
+		])->castTo(Data5::class),
+	], $schema->items);
+});
+
+
+class LoopDto
+{
+	public LoopDto $self;
+}
+
+class PingDto
+{
+	public PongDto $pong;
+}
+
+class PongDto
+{
+	public PingDto $ping;
+}
+
+test('a recursive structure is refused, not reflected forever', function () {
+	Assert::exception(
+		fn() => Expect::from(LoopDto::class),
+		Nette\InvalidArgumentException::class,
+		'Property $self of LoopDto refers back to LoopDto, Expect::from() cannot map a recursive structure; give the item in $items.',
+	);
+	Assert::exception(
+		fn() => Expect::from(PingDto::class),
+		Nette\InvalidArgumentException::class,
+		'Property $ping of PongDto refers back to PingDto, %a%',
+	);
+
+	// an override breaks the cycle
+	Assert::type(Structure::class, Expect::from(LoopDto::class, ['self' => Expect::mixed()]));
+});
