@@ -102,12 +102,13 @@ final class Expect
 
 
 	/**
-	 * Generates a structure schema from a class instance by reflecting its properties or constructor parameters.
-	 * @param  array<string, Schema>  $items  Optional overrides for specific properties.
+	 * Generates a structure schema from a class by reflecting its properties or constructor parameters.
+	 * @param  class-string|object  $object
+	 * @param  array<string, Schema>  $items
 	 */
-	public static function from(object $object, array $items = []): Structure
+	public static function from(object|string $object, array $items = []): Structure
 	{
-		$ro = new \ReflectionObject($object);
+		$ro = new \ReflectionClass($object);
 		$props = $ro->hasMethod('__construct')
 			? $ro->getMethod('__construct')->getParameters()
 			: array_filter($ro->getProperties(\ReflectionProperty::IS_PUBLIC), fn($prop) => !$prop->isStatic());
@@ -124,8 +125,17 @@ final class Expect
 				} else {
 					$item = self::type($type);
 				}
-				if ($prop instanceof \ReflectionProperty ? $prop->isInitialized($object) : $prop->isOptional()) {
-					$def = ($prop instanceof \ReflectionProperty ? $prop->getValue($object) : $prop->getDefaultValue());
+				$hasDefault = match (true) {
+					$prop instanceof \ReflectionParameter => $prop->isOptional(),
+					is_object($object) => $prop->isInitialized($object),
+					default => $prop->hasDefaultValue(),
+				};
+				if ($hasDefault) {
+					$def = match (true) {
+						$prop instanceof \ReflectionParameter => $prop->getDefaultValue(),
+						is_object($object) => $prop->getValue($object),
+						default => $prop->getDefaultValue(),
+					};
 					if (is_object($def) && !$def instanceof \UnitEnum) {
 						$item = static::from($def);
 					} else {
