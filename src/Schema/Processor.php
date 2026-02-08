@@ -9,8 +9,6 @@ declare(strict_types=1);
 
 namespace Nette\Schema;
 
-use Nette;
-
 
 /**
  * Schema validator.
@@ -93,6 +91,8 @@ final class Processor
 	{
 		$this->context = new Context;
 		$this->context->skipDefaults = $this->skipDefaults;
-		Nette\Utils\Arrays::invoke($this->onNewContext, $this->context);
+		foreach ($this->onNewContext as $cb) {
+			$cb($this->context);
+		}
 	}
 }

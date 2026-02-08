@@ -1,10 +1,12 @@
 parameters:
 	level: 8
-	checkMissingIterableValueType: false
-	errorFormat: raw
 
 	paths:
 		- src
 
-includes:
-	- vendor/phpstan/phpstan-nette/extension.neon
+	checkMissingCallableSignature: true
+
+	ignoreErrors:
+		-   # Runtime type validation that all $shape items are Schema instances
+			identifier: expr.resultUnused
+			path: src/Schema/Elements/Structure.php
