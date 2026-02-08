@@ -21,10 +21,10 @@ trait Base
 	private bool $required = false;
 	private mixed $default = null;
 
-	/** @var ?callable */
-	private $before;
+	/** @var ?\Closure(mixed): mixed */
+	private ?\Closure $before = null;
 
-	/** @var callable[] */
+	/** @var array<\Closure(mixed, Context): mixed> */
 	private array $transforms = [];
 	private ?string $deprecated = null;
 
@@ -45,7 +45,7 @@ trait Base
 
 	public function before(callable $handler): self
 	{
-		$this->before = $handler;
+		$this->before = $handler(...);
 		return $this;
 	}
 
@@ -58,7 +58,7 @@ trait Base
 
 	public function transform(callable $handler): self
 	{
-		$this->transforms[] = $handler;
+		$this->transforms[] = $handler(...);
 		return $this;
 	}
 
