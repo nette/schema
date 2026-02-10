@@ -70,8 +70,8 @@ final class Expect
 			: $ro->getProperties();
 
 		foreach ($props as $prop) {
-			$item = &$items[$prop->getName()];
-			if (!$item) {
+			$name = $prop->getName();
+			if (!isset($items[$name])) {
 				$type = Helpers::getPropertyType($prop) ?? 'mixed';
 				$item = new Type($type);
 				if ($prop instanceof \ReflectionProperty ? $prop->isInitialized($object) : $prop->isOptional()) {
@@ -86,6 +86,7 @@ final class Expect
 				} else {
 					$item->required();
 				}
+				$items[$name] = $item;
 			}
 		}
 
@@ -98,7 +99,8 @@ final class Expect
 	 */
 	public static function array(?array $shape = []): Structure|Type
 	{
-		return Nette\Utils\Arrays::first($shape ?? []) instanceof Schema
+		$shape ??= [];
+		return Nette\Utils\Arrays::first($shape) instanceof Schema
 			? (new Structure($shape))->castTo('array')
 			: (new Type('array'))->default($shape);
 	}

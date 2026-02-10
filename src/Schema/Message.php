@@ -7,7 +7,6 @@
 
 namespace Nette\Schema;
 
-use Nette;
 use function implode, preg_replace_callback;
 
 
@@ -85,6 +84,6 @@ final class Message
 		return preg_replace_callback('~( ?)%(\w+)%~', function ($m) use ($vars) {
 			[, $space, $key] = $m;
 			return $vars[$key] === null ? '' : $space . $vars[$key];
-		}, $this->message) ?? throw new Nette\InvalidStateException(preg_last_error_msg());
+		}, $this->message);
 	}
 }
