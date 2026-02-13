@@ -13,7 +13,7 @@ use Nette;
 use Nette\Schema\Context;
 use Nette\Schema\Helpers;
 use Nette\Schema\Schema;
-use function array_diff_key, array_fill_keys, array_key_exists, array_keys, array_map, array_merge, array_pop, array_values, is_array, is_object;
+use function array_diff_key, array_fill_keys, array_key_exists, array_keys, array_map, array_merge, array_pop, array_values, is_array, is_object, strval;
 
 
 final class Structure implements Schema
@@ -175,7 +175,7 @@ final class Structure implements Schema
 			if ($this->otherItems) {
 				$items += array_fill_keys($extraKeys, $this->otherItems);
 			} else {
-				$keys = array_map('strval', array_keys($items));
+				$keys = array_map(strval(...), array_keys($items));
 				foreach ($extraKeys as $key) {
 					$hint = Nette\Utils\Helpers::getSuggestion($keys, (string) $key);
 					$context->addError(

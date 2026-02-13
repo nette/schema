@@ -76,7 +76,7 @@ final class Helpers
 	 * Returns an annotation value.
 	 * @param  \ReflectionClass<object>|\ReflectionProperty  $ref
 	 */
-	public static function parseAnnotation(\Reflector $ref, string $name): ?string
+	public static function parseAnnotation(\ReflectionClass|\ReflectionProperty $ref, string $name): ?string
 	{
 		if (!Reflection::areCommentsAvailable()) {
 			throw new Nette\InvalidStateException('You have to enable phpDoc comments in opcode cache.');
@@ -127,7 +127,7 @@ final class Helpers
 		if (is_array($value) || is_string($value)) {
 			[$length, $label] = is_array($value)
 				? [count($value), 'items']
-				: (in_array('unicode', explode('|', $types), true)
+				: (in_array('unicode', explode('|', $types), strict: true)
 					? [Nette\Utils\Strings::length($value), 'characters']
 					: [strlen($value), 'bytes']);
 

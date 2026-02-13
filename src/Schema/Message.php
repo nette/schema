@@ -10,7 +10,7 @@ declare(strict_types=1);
 namespace Nette\Schema;
 
 use Nette;
-use function implode, preg_last_error_msg, preg_replace_callback;
+use function implode, preg_replace_callback;
 
 
 final class Message
@@ -63,22 +63,15 @@ final class Message
 	/** @deprecated use Message::Deprecated */
 	public const DEPRECATED = self::Deprecated;
 
-	public string $message;
-	public string $code;
 
-	/** @var string[] */
-	public array $path;
-
-	/** @var string[] */
-	public array $variables;
-
-
-	public function __construct(string $message, string $code, array $path, array $variables = [])
-	{
-		$this->message = $message;
-		$this->code = $code;
-		$this->path = $path;
-		$this->variables = $variables;
+	public function __construct(
+		public string $message,
+		public string $code,
+		/** @var list<int|string> */
+		public array $path,
+		/** @var array<string, mixed> */
+		public array $variables = [],
+	) {
 	}
 
 

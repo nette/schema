@@ -17,17 +17,12 @@ use Nette;
  */
 class ValidationException extends Nette\InvalidStateException
 {
-	/** @var Message[] */
-	private array $messages;
-
-
-	/**
-	 * @param  Message[]  $messages
-	 */
-	public function __construct(?string $message, array $messages = [])
-	{
-		parent::__construct($message ?: $messages[0]->toString());
-		$this->messages = $messages;
+	public function __construct(
+		?string $message,
+		/** @var list<Message> */
+		private array $messages = [],
+	) {
+		parent::__construct($message ?? $messages[0]->toString());
 	}
 
 

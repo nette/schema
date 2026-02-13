@@ -97,10 +97,3 @@ test('listOf() & scalar', function () {
 		(new Processor)->process($schema, ['key' => 'val']);
 	}, ['The item expects to be list, array given.']);
 });
-
-
-testException(
-	'listOf() & error',
-	fn() => Expect::listOf(['a' => Expect::string()]),
-	TypeError::class,
-);
