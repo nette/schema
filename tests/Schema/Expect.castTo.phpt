@@ -20,8 +20,8 @@ test('built-in', function () {
 test('simple object', function () {
 	class Foo1
 	{
-		public $a;
-		public $b;
+		public mixed $a;
+		public mixed $b;
 	}
 
 	$foo = new Foo1;
@@ -39,8 +39,8 @@ test('simple object', function () {
 test('object with constructor', function () {
 	class Foo2
 	{
-		private $a;
-		private $b;
+		private int $a;
+		private int $b;
 
 
 		public function __construct(int $a, int $b)

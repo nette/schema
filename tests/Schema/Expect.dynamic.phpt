@@ -10,13 +10,9 @@ require __DIR__ . '/../bootstrap.php';
 
 class DynamicParameter implements Nette\Schema\DynamicParameter
 {
-	/** @var string */
-	private $value;
-
-
-	public function __construct(string $value)
-	{
-		$this->value = $value;
+	public function __construct(
+		private string $value,
+	) {
 	}
 }
 

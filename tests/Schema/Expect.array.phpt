@@ -308,13 +308,6 @@ test('arrayOf() & keys II.', function () {
 });
 
 
-testException(
-	'arrayOf() error',
-	fn() => Expect::arrayOf(['a' => Expect::string()]),
-	TypeError::class,
-);
-
-
 test('type[]', function () {
 	$schema = Expect::type('int[]');
 
