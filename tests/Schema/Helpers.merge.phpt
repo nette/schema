@@ -1,10 +1,8 @@
-<?php
+<?php declare(strict_types=1);
 
 /**
  * Test: Nette\Schema\Helpers::merge()
  */
-
-declare(strict_types=1);
 
 use Nette\Schema\Helpers;
 use Tester\Assert;

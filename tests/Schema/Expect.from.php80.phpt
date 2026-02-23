@@ -1,6 +1,4 @@
-<?php
-
-declare(strict_types=1);
+<?php declare(strict_types=1);
 
 use Nette\Schema\Elements\Structure;
 use Nette\Schema\Expect;
