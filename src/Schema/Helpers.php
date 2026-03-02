@@ -8,7 +8,7 @@
 namespace Nette\Schema;
 
 use Nette;
-use function count, is_array, is_float, is_int, is_object, is_scalar, is_string, strlen;
+use function count, in_array, is_array, is_float, is_int, is_object, is_scalar, is_string, strlen;
 
 
 /**
@@ -68,23 +68,6 @@ final class Helpers
 			return var_export($value, return: true);
 		} else {
 			return get_debug_type($value);
-		}
-	}
-
-
-	/**
-	 * Adds a TypeMismatch error to the context if the value does not match the expected type.
-	 */
-	public static function validateType(mixed $value, string $expected, Context $context): void
-	{
-		if (!Nette\Utils\Validators::is($value, $expected)) {
-			$expected = str_replace(DynamicParameter::class . '|', '', $expected);
-			$expected = str_replace(['|', ':'], [' or ', ' in range '], $expected);
-			$context->addError(
-				'The %label% %path% expects to be %expected%, %value% given.',
-				Message::TypeMismatch,
-				['value' => $value, 'expected' => $expected],
-			);
 		}
 	}
 
@@ -159,7 +142,7 @@ final class Helpers
 			$cast = self::getCastStrategy(substr($type, 1));
 			return static fn($value, Context $context) => $value === null ? null : $cast($value, $context);
 
-		} elseif (Nette\Utils\Validators::isBuiltinType($type)) {
+		} elseif (in_array(strtolower($type), ['array', 'bool', 'boolean', 'float', 'int', 'integer', 'string', 'object', 'null'], true)) {
 			return static function ($value) use ($type) {
 				settype($value, $type);
 				return $value;
