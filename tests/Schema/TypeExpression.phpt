@@ -53,9 +53,12 @@ test('nullable and dynamic are flags', function () {
 	Assert::same(Kind::Int, $d['kind']);
 	Assert::true($d['dynamic']);
 
-	$d = TypeExpression::parse(DynamicParameter::class);
-	Assert::same(Kind::Any, $d['kind']);
-	Assert::true($d['dynamic']);
+	$d = TypeExpression::parse(DynamicParameter::class); // the marker interface alone is a class like any other
+	Assert::same(Kind::Instance, $d['kind']);
+	Assert::false($d['dynamic']);
+
+	$d = TypeExpression::parse('null[]');
+	Assert::same(Kind::Null, $d['items']['kind']);
 
 	Assert::false(TypeExpression::parse('null')['nullable']);
 });
