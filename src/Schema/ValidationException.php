@@ -24,7 +24,10 @@ class ValidationException extends Nette\InvalidStateException
 	}
 
 
-	/** @return list<string> */
+	/**
+	 * Returns all validation error messages as formatted strings.
+	 * @return list<string>
+	 */
 	public function getMessages(): array
 	{
 		$res = [];
@@ -36,7 +39,10 @@ class ValidationException extends Nette\InvalidStateException
 	}
 
 
-	/** @return list<Message> */
+	/**
+	 * Returns all validation error messages as Message objects.
+	 * @return list<Message>
+	 */
 	public function getMessageObjects(): array
 	{
 		return $this->messages;

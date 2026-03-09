@@ -36,6 +36,9 @@ final class Type implements Schema
 	}
 
 
+	/**
+	 * Allows the value to be null in addition to the declared type.
+	 */
 	public function nullable(): self
 	{
 		$this->type = 'null|' . $this->type;
@@ -43,6 +46,9 @@ final class Type implements Schema
 	}
 
 
+	/**
+	 * Controls whether the default value is merged with the input array (enabled by default).
+	 */
 	public function mergeDefaults(bool $state = true): self
 	{
 		$this->merge = $state;
@@ -50,6 +56,9 @@ final class Type implements Schema
 	}
 
 
+	/**
+	 * Allows the value to be a DynamicParameter, which is recorded for deferred validation.
+	 */
 	public function dynamic(): self
 	{
 		$this->type = DynamicParameter::class . '|' . $this->type;
@@ -86,6 +95,9 @@ final class Type implements Schema
 	}
 
 
+	/**
+	 * Sets a regex pattern the string value must match entirely (anchored to start and end).
+	 */
 	public function pattern(?string $pattern): self
 	{
 		$this->pattern = $pattern;

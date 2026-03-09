@@ -10,6 +10,9 @@ namespace Nette\Schema;
 use function implode, preg_replace_callback;
 
 
+/**
+ * Represents a single validation error or warning with a message template, error code, path, and variables.
+ */
 final class Message
 {
 	/** variables: {value: mixed, expected: string} */
@@ -72,6 +75,9 @@ final class Message
 	}
 
 
+	/**
+	 * Formats the message template by substituting %variable% placeholders with their values.
+	 */
 	public function toString(): string
 	{
 		$vars = $this->variables;
