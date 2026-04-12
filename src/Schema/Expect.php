@@ -15,7 +15,7 @@ use function array_key_exists, count, is_object;
 /**
  * Schema generator.
  *
- * @method static Type scalar($default = null)
+ * @method static AnyOf scalar($default = null)
  * @method static StringType string($default = null)
  * @method static NumberType int($default = null)
  * @method static NumberType float($default = null)
@@ -33,7 +33,7 @@ final class Expect
 
 
 	/** @param  array<int|string, mixed>  $args */
-	public static function __callStatic(string $name, array $args): Type
+	public static function __callStatic(string $name, array $args): Type|AnyOf
 	{
 		$type = self::type($name);
 		if ($args) {
@@ -46,12 +46,24 @@ final class Expect
 
 	/**
 	 * Creates a schema for a type expression (e.g., 'int|string', 'null|float', 'email'); an expression
-	 * of a single kind of value gets its dedicated StringType, NumberType or ArrayType. An enum class means
-	 * instanceof, as any class; Expect::enum() accepts its backing values.
+	 * of a single kind of value gets its dedicated StringType, NumberType or ArrayType, a union of different
+	 * kinds becomes anyOf() of the variants. An enum class means instanceof, as any class; Expect::enum()
+	 * accepts its backing values.
 	 */
-	public static function type(string $type): Type
+	public static function type(string $type): Type|AnyOf
 	{
-		$class = self::typeClass(TypeExpression::parse($type));
+		$item = TypeExpression::parse($type);
+		$class = self::typeClass($item);
+		if ($item['kind'] === Kind::Union && $class === Type::class) {
+			$schema = AnyOf::fromExpression(
+				$type,
+				...array_map(fn(array $variant) => self::type($variant['source'] ?? TypeExpression::format($variant)), $item['variants']),
+			);
+			$item['nullable'] && $schema->nullable();
+			$item['dynamic'] && $schema->dynamic();
+			return $schema;
+		}
+
 		return new $class($type);
 	}
 

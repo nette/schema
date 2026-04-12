@@ -114,3 +114,15 @@ test('a variant of a dynamic anyOf gets the DynamicParameter first', function ()
 	// a variant accepting any value transforms it
 	Assert::same('handled', Expect::anyOf(Expect::mixed()->transform(fn() => 'handled'))->dynamic()->complete($param, new Context));
 });
+
+
+test('a union from a type expression defers the whole expression', function () {
+	$param = new DynamicParameter('$a');
+	$context = new Context;
+	Assert::same($param, Expect::type('int|string')->dynamic()->complete($param, $context));
+	Assert::equal([[$param, 'int|string', []]], $context->dynamics);
+
+	$context = new Context;
+	Expect::type('?int|string')->dynamic()->complete($param, $context);
+	Assert::equal([[$param, '?int|string', []]], $context->dynamics);
+});

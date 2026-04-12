@@ -19,7 +19,7 @@ assertType(StringType::class, Expect::string());
 assertType(NumberType::class, Expect::int());
 assertType(Type::class, Expect::bool());
 assertType(NumberType::class, Expect::float());
-assertType(Type::class, Expect::scalar());
+assertType(AnyOf::class, Expect::scalar()); // a union of different kinds
 assertType(Type::class, Expect::null());
 assertType(Type::class, Expect::mixed());
 assertType(ArrayType::class, Expect::list());
@@ -30,12 +30,12 @@ assertType(StringType::class, Expect::unicode());
 assertType(StringType::class, Expect::type('string'));
 assertType(NumberType::class, Expect::type('int|float'));
 assertType(ArrayType::class, Expect::type('string[]'));
-assertType(Type::class, Expect::type('int|string'));
+assertType(AnyOf::class, Expect::type('int|string')); // a union of different kinds
 assertType(Type::class, Expect::type(stdClass::class));
 
 function testTypeFromVariable(string $type): void
 {
-	assertType(Type::class, Expect::type($type));
+	assertType(AnyOf::class . '|' . Type::class, Expect::type($type));
 }
 
 
