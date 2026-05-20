@@ -186,6 +186,19 @@ test('enums and unions', function () {
 		JsonSchema::export(Expect::anyOf('a', Expect::int()->min(1))),
 	);
 	Assert::same(['type' => 'number', 'minimum' => 1], JsonSchema::export(Expect::type('number')->min(1)));
+
+	// the options of a union of one kind hold for every variant
+	Assert::same(
+		['anyOf' => [['type' => 'integer', 'minimum' => 5], ['type' => 'number', 'minimum' => 5]]],
+		JsonSchema::export(Expect::type('int|float')->min(5)),
+	);
+	Assert::same(
+		['anyOf' => [
+			['type' => 'string', 'pattern' => '^(?:x+)$', 'format' => 'email'],
+			['type' => 'string', 'pattern' => '^(?:x+)$', 'format' => 'uri'],
+		]],
+		JsonSchema::export(Expect::type('email|url')->pattern('x+')),
+	);
 });
 
 

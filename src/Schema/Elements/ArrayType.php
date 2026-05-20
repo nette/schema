@@ -7,8 +7,9 @@
 
 namespace Nette\Schema\Elements;
 
-use Nette\Schema\{Context, MergeMode, Schema};
-use function is_array;
+use Nette;
+use Nette\Schema\{Context, Helpers, MergeMode, Schema};
+use function array_key_exists, is_array, is_int, is_string;
 
 
 /**
@@ -16,6 +17,15 @@ use function is_array;
  */
 final class ArrayType extends Type
 {
+	private ?Schema $items = null;
+	private ?Schema $keys = null;
+
+	/** @var array{int|float|null, int|float|null} */
+	private array $range = [null, null];
+	private bool $mergeDefaults = true;
+	private ?MergeMode $mergeMode = null;
+
+
 	public function __construct(
 		string $type,
 		/** a single value is accepted and wrapped into a one-item list */
@@ -25,10 +35,17 @@ final class ArrayType extends Type
 	}
 
 
-	public function doNormalize(mixed $value, Context $context): mixed
+	public function min(int|float|null $min): static
 	{
-		$value = parent::doNormalize($value, $context);
-		return $this->wrap && !is_array($value) && $value !== null ? [$value] : $value;
+		$this->range[0] = $min;
+		return $this;
+	}
+
+
+	public function max(int|float|null $max): static
+	{
+		$this->range[1] = $max;
+		return $this;
 	}
 
 
@@ -37,7 +54,9 @@ final class ArrayType extends Type
 	 */
 	public function items(string|Schema $valueType = 'mixed', string|Schema|null $keyType = null): static
 	{
-		return parent::items($valueType, $keyType);
+		$this->items = $valueType instanceof Schema ? $valueType : Nette\Schema\Expect::type($valueType);
+		$this->keys = $keyType instanceof Schema || $keyType === null ? $keyType : Nette\Schema\Expect::type($keyType);
+		return $this;
 	}
 
 
@@ -46,20 +65,161 @@ final class ArrayType extends Type
 	 */
 	public function mergeMode(MergeMode $mode): static
 	{
-		return parent::mergeMode($mode);
+		$this->mergeMode = $mode;
+		return $this;
 	}
 
 
-	/** @deprecated  an array has no pattern */
-	public function pattern(?string $pattern): static
+	/**
+	 * Controls whether the default value is merged with the input array (enabled by default).
+	 */
+	public function mergeDefaults(bool $state = true): static
 	{
-		trigger_error(__METHOD__ . '() is deprecated, an array has no pattern.', E_USER_DEPRECATED);
-		return parent::pattern($pattern);
+		$this->mergeDefaults = $state;
+		return $this;
 	}
 
 
 	public function describe(): array
 	{
-		return parent::describe() + ['wrap' => $this->wrap];
+		return $this->describeOptions(
+			$this->range,
+			($this->items === null ? [] : ['items' => $this->items, 'keys' => $this->keys]) + ['wrap' => $this->wrap],
+		);
+	}
+
+
+	protected function getExpression(bool $withRange = false): string
+	{
+		return parent::getExpression() . ($withRange && $this->range !== [null, null] ? ':' . implode('..', $this->range) : '');
+	}
+
+
+	/********************* processing ****************d*g**/
+
+
+	public function doNormalize(mixed $value, Context $context): mixed
+	{
+		$value = parent::doNormalize($value, $context);
+		return $this->wrap && !is_array($value) && $value !== null ? [$value] : $value;
+	}
+
+
+	protected function normalizeValue(mixed $value, Context $context): mixed
+	{
+		if (!is_array($value) || !$this->items) {
+			return $value;
+		}
+
+		$res = [];
+		foreach ($value as $key => $val) {
+			$context->path[] = $key;
+			$context->isKey = true;
+			$key = $this->keys ? $this->keys->normalize($key, $context) : $key;
+			if (!is_int($key) && !is_string($key)) {
+				$context->addError(
+					'The %label% %path% expects to be int|string, %value% given.',
+					Nette\Schema\Message::TypeMismatch,
+					['value' => $key, 'expected' => 'int|string'],
+				);
+				$context->isKey = false;
+				array_pop($context->path);
+				continue;
+			}
+
+			$context->isKey = false;
+			$res[$key] = $this->items->normalize($val, $context);
+			array_pop($context->path);
+		}
+
+		return $res;
+	}
+
+
+	protected function mergeValues(mixed $value, mixed $base): mixed
+	{
+		if ($this->mergeMode === MergeMode::Replace) {
+			return $value;
+		}
+
+		if (is_array($value) && is_array($base) && ($this->items || $this->mergeMode)) {
+			$index = $this->mergeMode === MergeMode::OverwriteKeys ? null : 0;
+			foreach ($value as $key => $val) {
+				if ($key === $index) {
+					$base[] = $val;
+					$index++;
+				} else {
+					$base[$key] = array_key_exists($key, $base) && $this->items
+						? $this->items->merge($val, $base[$key])
+						: $val;
+				}
+			}
+
+			return $base;
+		}
+
+		return Helpers::merge($value, $base);
+	}
+
+
+	/**
+	 * An empty block in NEON is null, which is the same as writing no key at all, so it means the default.
+	 */
+	protected function coerce(mixed $value): mixed
+	{
+		return $value === null && is_array($this->default) && !$this->getParsed()['nullable']
+			? ($this->mergeDefaults ? [] : $this->default) // with mergeDefaults() the default is merged in later
+			: $value;
+	}
+
+
+	protected function validate(mixed $value, Context $context): mixed
+	{
+		$isOk = $context->createChecker();
+		parent::validate($value, $context);
+		$isOk() && is_array($value) && Helpers::validateRange($value, $this->range, $context);
+		// items of a Traversable cannot be replaced by their completed form
+		$isOk() && is_array($value) && $this->items !== null && $value = $this->completeItems($value, $this->items, $context);
+		return $value;
+	}
+
+
+	/**
+	 * @param  array<mixed>  $value
+	 * @return array<mixed>
+	 */
+	private function completeItems(array $value, Schema $items, Context $context): array
+	{
+		$res = [];
+		foreach ($value as $key => $val) {
+			$context->path[] = $key;
+			$context->isKey = true;
+			$isKeyOk = $context->createChecker();
+			$key = $this->keys ? $this->keys->complete($key, $context) : $key;
+			if ($isKeyOk() && !is_int($key) && !is_string($key)) {
+				$context->addError(
+					'The %label% %path% expects to be int|string, %value% given.',
+					Nette\Schema\Message::TypeMismatch,
+					['value' => $key, 'expected' => 'int|string'],
+				);
+			}
+
+			$context->isKey = false;
+			$keyOk = $isKeyOk();
+			$val = $items->complete($val, $context);
+			if ($keyOk) {
+				$res[$key] = $val;
+			}
+
+			array_pop($context->path);
+		}
+
+		return $res;
+	}
+
+
+	protected function mergeDefault(mixed $value): mixed
+	{
+		return $this->mergeDefaults ? parent::mergeDefault($value) : $value;
 	}
 }
