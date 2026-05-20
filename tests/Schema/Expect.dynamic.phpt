@@ -126,3 +126,11 @@ test('a union from a type expression defers the whole expression', function () {
 	Expect::type('?int|string')->dynamic()->complete($param, $context);
 	Assert::equal([[$param, '?int|string', []]], $context->dynamics);
 });
+
+
+test('a tuple defers its length too', function () {
+	$param = new DynamicParameter('$a');
+	$context = new Context;
+	Assert::same($param, Expect::tuple([Expect::int(), Expect::int()])->dynamic()->min(1)->complete($param, $context));
+	Assert::equal([[$param, 'list:1..', []]], $context->dynamics);
+});

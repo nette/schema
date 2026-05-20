@@ -40,7 +40,7 @@ test('not merging', function () {
 
 	Assert::same(['a', 'b', 'c'], (new Processor)->process($schema, ['a', 'b', 'c']));
 
-	Assert::same([], (new Processor)->process($schema, null));
+	Assert::same([1, 2, 3], (new Processor)->process($schema, null)); // an empty block in NEON is the same as no key
 });
 
 
