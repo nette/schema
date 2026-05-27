@@ -90,6 +90,7 @@ trait Base
 				Nette\Schema\Message::FailedAssertion,
 				['value' => $value, 'assertion' => $expected],
 			);
+			return null;
 		});
 	}
 
