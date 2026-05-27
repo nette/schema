@@ -90,6 +90,7 @@ trait Base
 				Nette\Schema\Message::FailedAssertion,
 				['value' => $value, 'assertion' => $expected],
 			);
+			return null;
 		});
 	}
 
@@ -152,7 +153,7 @@ trait Base
 	}
 
 
-	/** @deprecated use Nette\Schema\Validators::validateType() */
+	/** @deprecated use Nette\Schema\Helpers::validateType() */
 	private function doValidate(mixed $value, string $expected, Context $context): bool
 	{
 		$isOk = $context->createChecker();
@@ -162,7 +163,7 @@ trait Base
 
 
 	/**
-	 * @deprecated use Nette\Schema\Validators::validateRange()
+	 * @deprecated use Nette\Schema\Helpers::validateRange()
 	 * @param  array{?float, ?float}  $range
 	 */
 	private static function doValidateRange(mixed $value, array $range, Context $context, string $types = ''): bool
