@@ -22,7 +22,7 @@ final class ArrayType extends Type
 
 	/** @var array{int|float|null, int|float|null} */
 	private array $range = [null, null];
-	private bool $mergeDefaults = true;
+	private bool $mergeDefaults = false;
 	private ?MergeMode $mergeMode = null;
 
 
@@ -71,7 +71,7 @@ final class ArrayType extends Type
 
 
 	/**
-	 * Controls whether the default value is merged with the input array (enabled by default).
+	 * Controls whether the default value is merged with the input array (disabled by default).
 	 */
 	public function mergeDefaults(bool $state = true): static
 	{
