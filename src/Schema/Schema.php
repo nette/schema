@@ -21,7 +21,7 @@ interface Schema
 	/**
 	 * Merges two normalized values, with $value taking priority over $base.
 	 */
-	function merge(mixed $value, mixed $base): mixed;
+	function merge(mixed $value, mixed $base, Context $context): mixed;
 
 	/**
 	 * Validates the value and applies defaults, transforms, and assertions.

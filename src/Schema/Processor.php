@@ -63,7 +63,8 @@ final class Processor
 			foreach ($dataset as $data) {
 				$data = $schema->normalize($data, $context);
 				$this->throwErrors($context);
-				$flatten = $first ? $data : $schema->merge($data, $flatten);
+				$flatten = $first ? $data : $schema->merge($data, $flatten, $context);
+				$this->throwErrors($context);
 				$first = false;
 			}
 
