@@ -45,20 +45,73 @@ test('Replace mode replaces the whole value', function () {
 });
 
 
-test('without a mode untyped arrays merge deeply, an explicit mode merges by keys only', function () {
-	$layers = [
-		['a' => ['x' => ['deep' => 1], 'y' => 2]],
-		['a' => ['x' => ['deep2' => 3]]],
-	];
+test('arrays under a mixed item cannot merge, the remedy is a real array schema', function () {
+	$schema = Expect::structure([
+		'a' => Expect::mixed(),
+	]);
 
-	Assert::equal(
-		(object) ['a' => ['x' => ['deep' => 1, 'deep2' => 3], 'y' => 2]],
-		(new Processor)->processMultiple(Expect::structure(['a' => Expect::array()]), $layers),
-	);
+	checkValidationErrors(function () use ($schema) {
+		(new Processor)->processMultiple($schema, [
+			['a' => ['k' => ['deep' => 1]]],
+			['a' => ['k' => ['deep2' => 2]]],
+		]);
+	}, ["Cannot merge 'a\u{a0}›\u{a0}k': the schema does not describe array items, use arrayOf()."]);
+});
+
+
+test('ambiguous merge of untyped arrays reports error', function () {
+	$schema = Expect::structure([
+		'a' => Expect::array(),
+	]);
+
+	checkValidationErrors(function () use ($schema) {
+		(new Processor)->processMultiple($schema, [
+			['a' => ['x' => ['deep' => 1], 'y' => 2]],
+			['a' => ['x' => ['deep2' => 3]]],
+		]);
+	}, ["Cannot merge 'a\u{a0}›\u{a0}x': the schema does not describe array items, use arrayOf() or mergeMode()."]);
+});
+
+
+test('explicit mergeMode() opts out of the ambiguity error', function () {
+	$schema = Expect::structure([
+		'a' => Expect::array()->mergeMode(MergeMode::AppendKeys),
+	]);
 
 	Assert::equal(
 		(object) ['a' => ['x' => ['deep2' => 3], 'y' => 2]],
-		(new Processor)->processMultiple(Expect::structure(['a' => Expect::array()->mergeMode(MergeMode::AppendKeys)]), $layers),
+		(new Processor)->processMultiple($schema, [
+			['a' => ['x' => ['deep' => 1], 'y' => 2]],
+			['a' => ['x' => ['deep2' => 3]]],
+		]),
+	);
+});
+
+
+test('items schema drives deep merging', function () {
+	$schema = Expect::arrayOf(Expect::array());
+
+	Assert::equal(
+		['x' => ['deep' => 1, 'deep2' => 3], 'y' => [2]],
+		(new Processor)->processMultiple($schema, [
+			['x' => ['deep' => 1], 'y' => [2]],
+			['x' => ['deep2' => 3]],
+		]),
+	);
+});
+
+
+test('scalar collisions in untyped arrays overwrite silently', function () {
+	$schema = Expect::structure([
+		'a' => Expect::array(),
+	]);
+
+	Assert::equal(
+		(object) ['a' => ['k' => 9, 'j' => 2]],
+		(new Processor)->processMultiple($schema, [
+			['a' => ['k' => 1, 'j' => 2]],
+			['a' => ['k' => 9]],
+		]),
 	);
 });
 
@@ -79,52 +132,50 @@ test('mergeWith() combines scalars', function () {
 });
 
 
-test('merge modes on structures', function () {
+test('mergeWith() as deep-merge escape hatch', function () {
+	$deep = function ($value, $base) use (&$deep) {
+		if (is_array($value) && is_array($base)) {
+			foreach ($value as $k => $v) {
+				$base[$k] = array_key_exists($k, $base) ? $deep($v, $base[$k]) : $v;
+			}
+			return $base;
+		}
+		return $value;
+	};
+
 	$schema = Expect::structure([
-		'foo1' => Expect::structure([
-			'key' => Expect::string(),
-			0 => Expect::string(),
-		])->mergeMode(MergeMode::Replace),
-		'foo2' => Expect::structure([
-			'key' => Expect::string(),
-			0 => Expect::string(),
-		])->mergeMode(MergeMode::OverwriteKeys),
-		'foo3' => Expect::structure([
-			'key' => Expect::string(),
-			0 => Expect::string(),
-		])->mergeMode(MergeMode::AppendKeys)->otherItems('string'),
+		'a' => Expect::array()->mergeWith($deep),
 	]);
 
 	Assert::equal(
-		(object) [
-			'foo1' => (object) [null, 'key' => 'new'],
-			'foo2' => (object) ['new', 'key' => 'new'],
-			'foo3' => (object) ['old', 'new', 'key' => 'new'],
-		],
+		(object) ['a' => ['x' => ['deep' => 1, 'deep2' => 3], 'y' => 2]],
 		(new Processor)->processMultiple($schema, [
-			[
-				'foo1' => ['old', 'key' => '1'],
-				'foo2' => ['old', 'key' => '1'],
-				'foo3' => ['old', 'key' => '1'],
-			],
-			[
-				'foo1' => ['key' => 'new'],
-				'foo2' => ['new', 'key' => 'new'],
-				'foo3' => ['new', 'key' => 'new'],
-			],
+			['a' => ['x' => ['deep' => 1], 'y' => 2]],
+			['a' => ['x' => ['deep2' => 3]]],
 		]),
 	);
 });
 
 
-test('mergeWith() on anyOf and on a tuple', function () {
-	$schema = Expect::anyOf(Expect::int(), Expect::bool())
-		->mergeWith(fn($value, $base) => $value + $base);
-
-	Assert::same(5, (new Processor)->processMultiple($schema, [2, 3]));
-
+test('mergeWith() on a tuple', function () {
 	$schema = Expect::tuple([Expect::int(), Expect::int()])
 		->mergeWith(fn($value, $base) => [$value[0] + $base[0], $value[1] + $base[1]]);
 
 	Assert::same([4, 6], (new Processor)->processMultiple($schema, [[1, 2], [3, 4]]));
+});
+
+
+test('null layer does not overwrite an array but overwrites a scalar', function () {
+	$schema = Expect::structure([
+		'arr' => Expect::array(),
+		'scalar' => Expect::mixed(),
+	]);
+
+	Assert::equal(
+		(object) ['arr' => [1], 'scalar' => null],
+		(new Processor)->processMultiple($schema, [
+			['arr' => [1], 'scalar' => 'a'],
+			['arr' => null, 'scalar' => null],
+		]),
+	);
 });
