@@ -19,6 +19,15 @@ test('', function () {
 });
 
 
+test('multiple handlers run in registration order', function () {
+	$schema = Expect::string()
+		->before(fn($val) => $val . 'a')
+		->before(fn($val) => $val . 'b');
+
+	Assert::same('xab', $schema->normalize('x', new Context));
+});
+
+
 test('structure property', function () {
 	$schema = Expect::structure([
 		'key' => Expect::string()->before('strrev'),
