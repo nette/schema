@@ -21,8 +21,8 @@ trait Base
 	private bool $required = false;
 	private mixed $default = null;
 
-	/** @var ?\Closure(mixed): mixed */
-	private ?\Closure $before = null;
+	/** @var list<\Closure(mixed): mixed> */
+	private array $before = [];
 
 	/** @var list<\Closure(mixed, Context): mixed> */
 	private array $transforms = [];
@@ -44,12 +44,12 @@ trait Base
 
 
 	/**
-	 * Sets a pre-normalization callback applied to the raw input value before any validation.
+	 * Adds a pre-normalization callback applied to the raw input value before any validation.
 	 * @param  callable(mixed): mixed  $handler
 	 */
 	public function before(callable $handler): self
 	{
-		$this->before = $handler(...);
+		$this->before[] = $handler(...);
 		return $this;
 	}
 
@@ -121,8 +121,8 @@ trait Base
 
 	public function doNormalize(mixed $value, Context $context): mixed
 	{
-		if ($this->before) {
-			$value = ($this->before)($value);
+		foreach ($this->before as $handler) {
+			$value = $handler($value);
 		}
 
 		return $value;
