@@ -49,6 +49,13 @@ trait Base
 	 */
 	public function before(callable $handler): static
 	{
+		if ($this->before) {
+			trigger_error(
+				'Calling before() repeatedly is deprecated, it replaces the previous handler while in 2.0 the handlers will be chained; merge them into one.',
+				E_USER_DEPRECATED,
+			);
+		}
+
 		$this->before = $handler(...);
 		return $this;
 	}
