@@ -16,7 +16,7 @@ per run:
   left-to-right, then a single `complete()`.
 
 **Validation is not a separate step — it happens inside `complete()`.** Type
-checking, range, pattern, item recursion, default merging, and transforms all run
+checking, range, pattern, item recursion, and transforms all run
 there (`Type::complete`). `merge()` is reached **only** through
 `processMultiple`. `completeDefault()` runs for items missing from the input.
 Reading the interface as "normalize / validate / complete" (as older docs do)
@@ -67,25 +67,63 @@ before it — that is how `%path%` disappears at the root. Codes are the
 placeholder with no matching variable triggers an undefined-array-key warning
 in `toString()`, so keep template and variables in sync.
 
-## `PreventMerging`: in-band metadata, handled in many places
+## Schema-driven merging (2.0)
 
-The magic array key `Helpers::PreventMerging` (`'_prevent_merging'`) is
-injected **directly into the data** to mean "replace, don't merge with the base /
-default". Because it rides inside the value, **every element must detect and strip
-it** — and they do so in subtly different ways:
+`Schema::merge(mixed $value, mixed $base, Context $context)` combines two
+normalized layers, `$value` (later, higher priority) over `$base`. Errors
+accumulate in the Context like everywhere else (`Processor::processMultiple`
+throws after each merge, before `complete()`), and recursion maintains
+`$context->path`, so merge errors carry a path.
 
-- `Type::normalize` strips it, then **re-adds** it after recursing into items (so
-  it survives normalization).
-- `Type::complete` strips it and forces `$merge = false` (default not merged in).
-- `Type::merge` / `AnyOf::merge` / `Helpers::merge` strip it and return the value
-  as-is (no merge).
-- `Structure::merge` strips it and sets `$base = null` (full replace).
+Every element resolves its strategy in the same order:
 
-This is the package's sharpest trap: a piece of control state travelling through
-the payload, replicated across five sites. Any new `Schema` element must reproduce
-the strip-and-honor dance or merging silently misbehaves. (There is a standing
-idea to replace it with a declarative `MergeMode::Replace`; DI carries its own
-parallel `PREVENT_MERGING` constant. See `docs/local/ideas/odstranit-prevent-merging.md`.)
+1. **`mergeWith(closure)`** (`Base`) wins outright — a user-supplied **pure
+   combiner** `fn($value, $base): mixed`. It runs only *between* layers (n−1
+   times; the sole layer of a single-layer dataset never passes through it), so
+   it must combine, never canonicalize shape — that belongs to `before()`.
+   Legitimate for scalars too (bool OR, max, concatenation) and doubles as the
+   escape hatch for blind deep merge of free-form trees.
+2. **`MergeMode`** (`mergeMode()`, internal state `null` = unspecified):
+   `Replace` returns `$value` wholesale; `OverwriteKeys` merges by keys with
+   numeric keys overwritten positionally; `AppendKeys` additionally appends
+   new numeric elements. Defaults: `Type` → `AppendKeys`; `Structure` →
+   `AppendKeys` with `otherItems`, else `OverwriteKeys`.
+3. **Recursion follows the schema only** — `Type` through `itemsValue`,
+   `Structure` through `items[key] ?? otherItems`. A colliding key whose both
+   sides are arrays but whose schema gives no guidance (no items schema, no
+   explicit `mergeMode()`) adds a **`Message::CannotMerge` error** instead of
+   silently picking a depth — explicit `mergeMode()` is the declared opt-out
+   (colliding value then overwrites). Scalar collisions overwrite silently.
+4. **Null rule (uniform):** a `null` layer value loses to an array and beats
+   a scalar (`$value === null && is_array($base) ? $base : $value`) — NEON
+   `key:` means "no opinion" against arrays.
+
+**`AnyOf::merge` probes instead of merging blindly:** it finds the first
+variant (declaration order) that **both** layers match and delegates to its
+`merge()`. Matching runs each layer through `normalize` + `complete` in a
+throwaway Context with **`Context::isPartial`** set — a validation-only mode
+where `completeDefault` doesn't report missing required items (a layer is
+legally partial), `doTransform` is skipped (a `castTo` constructor would
+crash on a partial layer), and deprecations stay silent. No common variant:
+two arrays → `CannotMerge` error; otherwise the later value wins (scalar
+`proxy: string|array` overrides keep working). `DynamicParameter` on either
+side → plain replace. **Known limitation:** the probe matches layers through
+the variant's `normalize()`, but delegation merges the AnyOf-level values —
+a variant whose `before()` reshapes layers therefore merges as plain replace
+(v1-compatible). Re-normalizing for the merge is not an option: `complete()`
+would then run the variant's `before()` a second time on the merged result.
+
+## `PreventMerging` is gone; transitional guard
+
+The v1 magic key `'_prevent_merging'` (in-band metadata meaning "replace,
+don't merge") was **removed entirely** — no constant, no `Helpers::merge()`,
+nothing strips it from data. So it doesn't silently flow into output as
+ordinary data, `Processor::rejectPreventMerging()` recursively scans every
+dataset before normalization and reports the key as a `CannotMerge` error;
+the declarative replacement is `mergeMode(MergeMode::Replace)`, the NEON
+`key!:` syntax is DI's job (dropping the key from earlier layers before
+`processMultiple`). DI still carries its own parallel `PREVENT_MERGING`
+constant and merge for `includes` handling.
 
 ## One transform pipeline; `assert`/`castTo` are sugar over `transform`
 
@@ -109,6 +147,11 @@ one `doTransform` pass, after type/range/pattern validation. Reordering
   from an empty array". The check is **unconditional — it fires even after
   `nullable()`**, so a nullable array-typed item never yields `null`, and a NEON
   key written bare (`key:`) validates as an empty array.
+- **Defaults are not merged into supplied arrays** (2.0 BC break): `Type::$merge`
+  defaults to `false`, so a partially supplied array no longer gets the default's
+  keys merged underneath it. `mergeDefaults()` still works but is
+  `#[\Deprecated]` and emits `E_USER_DEPRECATED` when enabling; its blind deep
+  merge lives on only as private `Type::deepMerge()`.
 
 ## Keys validate like values — and collapse on failure
 
@@ -164,10 +207,7 @@ by validating dynamics eagerly.
 
 - **`processMultiple` merges left-value-wins:** each later dataset item is the
   `value` (higher priority) merged over the accumulated `base`, so later configs
-  override earlier ones. Numeric-keyed items append; string-keyed recurse.
-- **`Structure::merge` appends numeric keys only when `otherItems` is set**
-  (`$index = $this->otherItems === null ? null : 0`); `Type::merge` and
-  `Helpers::merge` always append numeric-keyed items.
+  override earlier ones (details in "Schema-driven merging" above).
 - **`castTo` forks by target** (`Helpers::getCastStrategy`): builtin →
   `settype`; class **with** constructor → named args from the array/stdClass
   (a scalar is passed as a single argument); anything else → property assignment
@@ -181,13 +221,20 @@ by validating dynamics eagerly.
 
 ## `Expect::from()` mapping rules
 
-`Expect::from($object)` reflects **constructor parameters if `__construct`
-exists, otherwise properties** — a class with a constructor has its properties
-ignored entirely. Per item: uninitialized property / non-optional parameter →
-`required()`; a `null` default on a type that does not accept null → also
-`required()` (not "default null"); an **object** default recurses into a nested
-`from()`; anything else becomes `default($def)`. The type comes from
-`Helpers::getPropertyType` (native type, then `@var`), falling back to `mixed`.
+`Expect::from()` accepts an instance **or a class name** (since 2.0) and
+reflects **constructor parameters if `__construct` exists, otherwise
+properties** — a class with a constructor has its properties ignored entirely.
+Types come from **native declarations only** (`Nette\Utils\Type::fromReflection`,
+fallback `mixed`); phpDoc `@var` support was removed in 2.0. Per item:
+
+- a non-nullable class-typed item recurses into `from($thatClass)` **even
+  without a default** (beware: `class_exists` is also true for enums, which
+  then map badly);
+- no default (uninitialized property / non-optional parameter) → `required()`;
+- an **object** default recurses into a nested `from($default)` (instance-based);
+- any other default — including `null` — becomes `default($def)` (the 1.x rule
+  "null default on a non-nullable type → `required()`" is gone).
+
 The result is a `Structure` with `castTo($class)` **stacked after** the
 constructor's built-in `castTo('object')`, so a completed value travels
 array → `stdClass` → instance through the cast fork above.
@@ -198,7 +245,9 @@ array → `stdClass` → instance through the cast fork above.
 |---|---|
 | Entry points, phase order | `Processor::process`, `processMultiple` |
 | Error accumulation, checker idiom | `Context`, every `Elements/*::complete` |
-| `PreventMerging` handling | `Helpers::merge`, `Type`/`Structure`/`AnyOf` normalize/merge/complete |
+| Merge strategies | `MergeMode`, `Base::mergeMode`/`mergeWith`, every `Elements/*::merge` |
+| AnyOf probe, partial mode | `AnyOf::matches`, `Context::isPartial` |
+| `_prevent_merging` guard | `Processor::rejectPreventMerging` |
 | Transform/assert/castTo pipeline | `Base` (`transforms`, `doTransform`, `assert`, `castTo`) |
 | Type validation & null/dynamic | `Type::complete`, `Helpers::validateType` |
 | Structure object output, defaults | `Structure` (`completeDefault`, `validateItems`) |
@@ -207,4 +256,4 @@ array → `stdClass` → instance through the cast fork above.
 | DI / integration hook | `Processor::onNewContext`, `createContext` |
 | Error message rendering | `Message::toString`, `Message::*` code constants |
 | Key schemas, `isKey` | `Type::normalize`/`validateItems`, `Context::isKey` |
-| Object-to-schema mapping | `Expect::from`, `Helpers::getPropertyType` |
+| Object-to-schema mapping | `Expect::from` (native types only) |
