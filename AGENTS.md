@@ -19,7 +19,8 @@ subtler than it looks.
 inputs) through a fluent `Expect::` builder and a `Processor`.
 
 - **PHP Version**: 8.1 - 8.5
-- **Package**: `nette/schema` (dep: `nette/utils`)
+- **Package**: `nette/schema` (dep: `nette/utils`); `master` = 2.0-dev,
+  maintenance lives on `v1.x` branches
 
 ## Essential Commands
 
@@ -36,6 +37,7 @@ composer phpstan
 
 - Every file starts with `declare(strict_types=1);`; **tabs**; single quotes;
   `@internal` for implementation details, `@method` for `Expect`'s magic methods;
+  deprecations use the native `#[\Deprecated]` attribute, not phpDoc;
   Nette Coding Standard.
 - Tests are Nette Tester `.phpt` named `Expect.<feature>.phpt`; `checkValidationErrors()`
   asserts the expected error messages of a failing `process()`.
@@ -54,9 +56,17 @@ composer phpstan
   `complete()` is an `$isOk = $context->createChecker(); $isOk() && nextStep()`
   short-circuit chain - thread any new validation step through the checker or it
   runs on already-rejected values.
-- **`PreventMerging` (`'_prevent_merging'`) is in-band control metadata** injected
-  into the data and stripped-and-honored differently in ~5 places (Type/Structure/
-  AnyOf/Helpers). Any new element must reproduce the dance or merging misbehaves.
+- **Merging is schema-driven** (2.0): `Schema::merge()` takes a `Context`,
+  strategy resolves as `mergeWith(closure)` → `MergeMode` (`mergeMode()`) →
+  recursion **only through item schemas**. Ambiguous merges (colliding arrays
+  with no schema guidance) add a `Message::CannotMerge` error, never a silent
+  guess. `AnyOf` probes which alternative both layers match
+  (`Context::isPartial` = validation-only completion) and delegates to it.
+- **`PreventMerging` (`'_prevent_merging'`) was removed** (BC break) —
+  `Processor::rejectPreventMerging()` reports the key as an error; use
+  `mergeMode(MergeMode::Replace)` instead.
+- **Defaults are not merged into supplied arrays** (`Type::$merge = false`;
+  `mergeDefaults()` is deprecated) - a partial input array stays partial.
 - **`assert`/`castTo` are sugar over `transform`** - one `$transforms` list running
   in declaration order, so `->assert()->castTo()` differs from `->castTo()->assert()`.
 - **`default` null is not `nullable`** (`nullable()` prepends `'null|'` to the type
