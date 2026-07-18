@@ -10,6 +10,7 @@ namespace Nette\Schema\Elements;
 use Nette;
 use Nette\Schema\Context;
 use Nette\Schema\Helpers;
+use Nette\Schema\MergeMode;
 use function count, is_string;
 
 
@@ -28,6 +29,10 @@ trait Base
 	private array $transforms = [];
 	private ?string $deprecated = null;
 	private ?string $description = null;
+	private ?MergeMode $mergeMode = null;
+
+	/** @var ?\Closure(mixed, mixed): mixed */
+	private ?\Closure $mergeWith = null;
 
 
 	public function default(mixed $value): self
@@ -51,6 +56,28 @@ trait Base
 	public function before(callable $handler): self
 	{
 		$this->before[] = $handler(...);
+		return $this;
+	}
+
+
+	/**
+	 * Sets how array values are combined when merging multiple configuration layers.
+	 */
+	public function mergeMode(MergeMode $mode): self
+	{
+		$this->mergeMode = $mode;
+		return $this;
+	}
+
+
+	/**
+	 * Sets a custom strategy combining two layers. Must be a pure combiner; canonicalize layer shape in before() instead.
+	 * Either side may be null, a layer can legally be null.
+	 * @param  callable(mixed, mixed): mixed  $fn
+	 */
+	public function mergeWith(callable $fn): self
+	{
+		$this->mergeWith = $fn(...);
 		return $this;
 	}
 

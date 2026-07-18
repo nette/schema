@@ -11,6 +11,8 @@ use Nette\Schema\Context;
 use Nette\Schema\DynamicParameter;
 use Nette\Schema\Helpers;
 use Nette\Schema\Kind;
+use Nette\Schema\MergeMode;
+use Nette\Schema\Message;
 use Nette\Schema\Schema;
 use Nette\Schema\TypeExpression;
 use Nette\Utils\Validators;
@@ -185,17 +187,34 @@ final class Type implements Schema
 			return $value;
 		}
 
-		if (is_array($value) && is_array($base) && $this->itemsValue) {
-			$index = 0;
+		if ($this->mergeWith) {
+			return ($this->mergeWith)($value, $base);
+		}
+
+		$mode = $this->mergeMode ?? MergeMode::AppendKeys;
+		if ($mode === MergeMode::Replace) {
+			return $value;
+		}
+
+		if (is_array($value) && is_array($base)) {
+			$index = $mode === MergeMode::OverwriteKeys ? null : 0;
 			foreach ($value as $key => $val) {
 				if ($key === $index) {
 					$base[] = $val;
 					$index++;
-				} elseif (array_key_exists($key, $base)) {
+				} elseif (!array_key_exists($key, $base)) {
+					$base[$key] = $val;
+				} elseif ($this->itemsValue) {
 					$context->path[] = $key;
 					$base[$key] = $this->itemsValue->merge($val, $base[$key], $context);
 					array_pop($context->path);
 				} else {
+					if (is_array($val) && is_array($base[$key]) && $this->mergeMode === null) {
+						$context->addError(
+							'Cannot merge %path%: the schema does not describe array items, use arrayOf() or mergeMode().',
+							Message::CannotMerge,
+						)->path[] = $key;
+					}
 					$base[$key] = $val;
 				}
 			}
@@ -203,7 +222,7 @@ final class Type implements Schema
 			return $base;
 		}
 
-		return Helpers::merge($value, $base);
+		return $value === null && is_array($base) ? $base : $value;
 	}
 
 

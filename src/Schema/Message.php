@@ -39,6 +39,9 @@ final class Message
 	/** no variables */
 	public const Deprecated = 'schema.deprecated';
 
+	/** no variables */
+	public const CannotMerge = 'schema.cannotMerge';
+
 	#[\Deprecated('use Message::TypeMismatch')]
 	public const TYPE_MISMATCH = self::TypeMismatch;
 
