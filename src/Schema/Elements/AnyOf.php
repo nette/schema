@@ -10,6 +10,7 @@ namespace Nette\Schema\Elements;
 use Nette;
 use Nette\Schema\Context;
 use Nette\Schema\Helpers;
+use Nette\Schema\MergeMode;
 use Nette\Schema\Schema;
 use function array_merge, array_unique, implode, is_array;
 
@@ -81,7 +82,54 @@ final class AnyOf implements Schema
 			return $value;
 		}
 
-		return Helpers::merge($value, $base);
+		if ($this->mergeWith) {
+			return ($this->mergeWith)($value, $base);
+		}
+
+		if ($this->mergeMode === MergeMode::Replace
+			|| $value instanceof Nette\Schema\DynamicParameter
+			|| $base instanceof Nette\Schema\DynamicParameter
+			|| $base === null
+		) {
+			return $value;
+		}
+
+		if ($value === null) {
+			return is_array($base) ? $base : $value;
+		}
+
+		foreach ($this->set as $item) {
+			if ($item instanceof Schema
+				? $this->matches($value, $item, $context) && $this->matches($base, $item, $context)
+				: $item === $value && $item === $base
+			) {
+				return $item instanceof Schema
+					? $item->merge($value, $base, $context)
+					: $value;
+			}
+		}
+
+		if (is_array($value) && is_array($base)) {
+			$context->addError(
+				'Cannot merge %path%: layers do not match the same alternative.',
+				Nette\Schema\Message::CannotMerge,
+			);
+		}
+
+		return $value;
+	}
+
+
+	/**
+	 * Checks whether the (possibly partial) layer would validate against the given alternative.
+	 */
+	private function matches(mixed $value, Schema $schema, Context $context): bool
+	{
+		$dolly = new Context;
+		$dolly->path = $context->path;
+		$dolly->isPartial = true;
+		$schema->complete($schema->normalize($value, $dolly), $dolly);
+		return !$dolly->errors;
 	}
 
 
@@ -142,7 +190,7 @@ final class AnyOf implements Schema
 
 	public function completeDefault(Context $context): mixed
 	{
-		if ($this->required) {
+		if ($this->required && !$context->isPartial) {
 			$context->addError(
 				'The mandatory item %path% is missing.',
 				Nette\Schema\Message::MissingItem,

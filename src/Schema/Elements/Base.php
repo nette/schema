@@ -134,7 +134,7 @@ trait Base
 
 	public function completeDefault(Context $context): mixed
 	{
-		if ($this->required) {
+		if ($this->required && !$context->isPartial) {
 			$context->addError(
 				'The mandatory item %path% is missing.',
 				Nette\Schema\Message::MissingItem,
@@ -158,7 +158,7 @@ trait Base
 
 	private function doDeprecation(Context $context): void
 	{
-		if ($this->deprecated !== null) {
+		if ($this->deprecated !== null && !$context->isPartial) {
 			$context->addWarning(
 				$this->deprecated,
 				Nette\Schema\Message::Deprecated,
@@ -169,6 +169,10 @@ trait Base
 
 	private function doTransform(mixed $value, Context $context): mixed
 	{
+		if ($context->isPartial) {
+			return $value;
+		}
+
 		$isOk = $context->createChecker();
 		foreach ($this->transforms as $handler) {
 			$value = $handler($value, $context);
