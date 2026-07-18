@@ -146,6 +146,74 @@ test('mergeWith() as deep-merge escape hatch', function () {
 });
 
 
+test('merge modes on structures', function () {
+	$schema = Expect::structure([
+		'foo1' => Expect::structure([
+			'key' => Expect::string(),
+			0 => Expect::string(),
+		])->mergeMode(MergeMode::Replace),
+		'foo2' => Expect::structure([
+			'key' => Expect::string(),
+			0 => Expect::string(),
+		])->mergeMode(MergeMode::OverwriteKeys),
+		'foo3' => Expect::structure([
+			'key' => Expect::string(),
+			0 => Expect::string(),
+		])->mergeMode(MergeMode::AppendKeys)->otherItems('string'),
+	]);
+
+	Assert::equal(
+		(object) [
+			'foo1' => (object) [null, 'key' => 'new'],
+			'foo2' => (object) ['new', 'key' => 'new'],
+			'foo3' => (object) ['old', 'new', 'key' => 'new'],
+		],
+		(new Processor)->processMultiple($schema, [
+			[
+				'foo1' => ['old', 'key' => '1'],
+				'foo2' => ['old', 'key' => '1'],
+				'foo3' => ['old', 'key' => '1'],
+			],
+			[
+				'foo1' => ['key' => 'new'],
+				'foo2' => ['new', 'key' => 'new'],
+				'foo3' => ['new', 'key' => 'new'],
+			],
+		]),
+	);
+});
+
+
+test('structure appends numeric keys only with otherItems (derived mode)', function () {
+	$schema = Expect::structure([
+		'key' => Expect::string(),
+		0 => Expect::string(),
+	])->otherItems('string');
+
+	Assert::equal(
+		(object) ['old', 'key' => 'new', 'new'],
+		(new Processor)->processMultiple($schema, [
+			['old', 'key' => '1'],
+			['new', 'key' => 'new'],
+		]),
+	);
+});
+
+
+test('unknown structure item colliding as arrays reports error', function () {
+	$schema = Expect::structure([
+		'known' => Expect::string(),
+	]);
+
+	checkValidationErrors(function () use ($schema) {
+		(new Processor)->processMultiple($schema, [
+			['extra' => ['a' => 1]],
+			['extra' => ['b' => 2]],
+		]);
+	}, ["Cannot merge 'extra': the schema does not describe the item, use otherItems() or mergeMode()."]);
+});
+
+
 test('null layer does not overwrite an array but overwrites a scalar', function () {
 	$schema = Expect::structure([
 		'arr' => Expect::array(),
