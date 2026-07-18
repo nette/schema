@@ -177,7 +177,7 @@ final class Type implements Schema
 	}
 
 
-	public function merge(mixed $value, mixed $base): mixed
+	public function merge(mixed $value, mixed $base, Context $context): mixed
 	{
 		if (is_array($value) && isset($value[Helpers::PreventMerging])) {
 			unset($value[Helpers::PreventMerging]);
@@ -190,10 +190,12 @@ final class Type implements Schema
 				if ($key === $index) {
 					$base[] = $val;
 					$index++;
+				} elseif (array_key_exists($key, $base)) {
+					$context->path[] = $key;
+					$base[$key] = $this->itemsValue->merge($val, $base[$key], $context);
+					array_pop($context->path);
 				} else {
-					$base[$key] = array_key_exists($key, $base)
-						? $this->itemsValue->merge($val, $base[$key])
-						: $val;
+					$base[$key] = $val;
 				}
 			}
 

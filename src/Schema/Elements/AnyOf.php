@@ -110,7 +110,7 @@ final class AnyOf implements Schema
 	}
 
 
-	public function merge(mixed $value, mixed $base): mixed
+	public function merge(mixed $value, mixed $base, Context $context): mixed
 	{
 		if (is_array($value) && isset($value[Helpers::PreventMerging])) {
 			unset($value[Helpers::PreventMerging]);
