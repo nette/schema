@@ -150,4 +150,18 @@ final class Expect
 	{
 		return (new Type('list'))->items($type);
 	}
+
+
+	/**
+	 * Creates a fixed-size array where each position has its own schema; a later layer replaces the tuple wholesale.
+	 * @param  Schema[]  $shape
+	 */
+	public static function tuple(array $shape): Structure
+	{
+		if (!array_is_list($shape)) {
+			throw new Nette\InvalidArgumentException('Tuple shape must be indexed array.');
+		}
+
+		return (new Structure($shape))->castTo('array')->mergeMode(MergeMode::Replace);
+	}
 }
