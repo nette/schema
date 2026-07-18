@@ -25,7 +25,7 @@ final class Type implements Schema
 	/** @var array{?float, ?float} */
 	private array $range = [null, null];
 	private ?string $pattern = null;
-	private bool $merge = true;
+	private bool $merge = false;
 
 
 	public function __construct(string $type)
@@ -46,11 +46,12 @@ final class Type implements Schema
 	}
 
 
-	/**
-	 * Controls whether the default value is merged with the input array (enabled by default).
-	 */
+	#[\Deprecated('mergeDefaults is disabled by default')]
 	public function mergeDefaults(bool $state = true): self
 	{
+		if ($state === true) {
+			trigger_error(__METHOD__ . '() is deprecated and will be removed in the next major version.', E_USER_DEPRECATED);
+		}
 		$this->merge = $state;
 		return $this;
 	}
