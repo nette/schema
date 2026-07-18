@@ -10,6 +10,7 @@ namespace Nette\Schema\Elements;
 use Nette;
 use Nette\Schema\Context;
 use Nette\Schema\Helpers;
+use Nette\Schema\MergeMode;
 use Nette\Schema\Schema;
 use function array_diff_key, array_fill_keys, array_key_exists, array_keys, array_map, array_merge, array_pop, array_values, is_array, is_object, strval;
 
@@ -140,17 +141,34 @@ final class Structure implements Schema
 			$base = null;
 		}
 
+		if ($this->mergeWith) {
+			return ($this->mergeWith)($value, $base);
+		}
+
+		$mode = $this->mergeMode ?? ($this->otherItems === null ? MergeMode::OverwriteKeys : MergeMode::AppendKeys);
+		if ($mode === MergeMode::Replace) {
+			return $value;
+		}
+
 		if (is_array($value) && is_array($base)) {
-			$index = $this->otherItems === null ? null : 0;
+			$index = $mode === MergeMode::OverwriteKeys ? null : 0;
 			foreach ($value as $key => $val) {
 				if ($key === $index) {
 					$base[] = $val;
 					$index++;
-				} elseif (array_key_exists($key, $base) && ($itemSchema = $this->items[$key] ?? $this->otherItems)) {
+				} elseif (!array_key_exists($key, $base)) {
+					$base[$key] = $val;
+				} elseif ($itemSchema = $this->items[$key] ?? $this->otherItems) {
 					$context->path[] = $key;
 					$base[$key] = $itemSchema->merge($val, $base[$key], $context);
 					array_pop($context->path);
 				} else {
+					if (is_array($val) && is_array($base[$key]) && $this->mergeMode === null) {
+						$context->addError(
+							'Cannot merge %path%: the schema does not describe the item, use otherItems() or mergeMode().',
+							Nette\Schema\Message::CannotMerge,
+						)->path[] = $key;
+					}
 					$base[$key] = $val;
 				}
 			}
@@ -158,7 +176,7 @@ final class Structure implements Schema
 			return $base;
 		}
 
-		return $value ?? $base;
+		return $value === null && is_array($base) ? $base : $value;
 	}
 
 
