@@ -11,7 +11,7 @@ use Nette;
 use Nette\Schema\Elements\AnyOf;
 use Nette\Schema\Elements\Structure;
 use Nette\Schema\Elements\Type;
-use function is_object;
+use function array_is_list, is_array, is_object, is_subclass_of;
 
 
 /**
@@ -163,5 +163,16 @@ final class Expect
 		}
 
 		return (new Structure($shape))->castTo('array')->mergeMode(MergeMode::Replace);
+	}
+
+
+	/**
+	 * Creates a list where a single value is also accepted and normalized to a one-element list.
+	 */
+	public static function listable(string|Schema $type): Type
+	{
+		return (new Type('list'))
+			->items($type)
+			->before(fn($value) => is_array($value) || $value === null ? $value : [$value]);
 	}
 }
