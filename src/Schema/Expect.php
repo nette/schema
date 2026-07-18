@@ -175,4 +175,19 @@ final class Expect
 			->items($type)
 			->before(fn($value) => is_array($value) || $value === null ? $value : [$value]);
 	}
+
+
+	/**
+	 * Creates a schema for a backed enum case, given as the case itself or its backing value.
+	 * @param  class-string<\BackedEnum>  $class
+	 */
+	public static function enum(string $class): Type
+	{
+		if (!is_subclass_of($class, \BackedEnum::class)) {
+			throw new Nette\InvalidArgumentException("Class '$class' is not a backed enum.");
+		}
+
+		$backing = (string) (new \ReflectionEnum($class))->getBackingType();
+		return (new Type("$backing|$class"))->castTo($class);
+	}
 }

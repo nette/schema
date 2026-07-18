@@ -125,7 +125,7 @@ final class Helpers
 		} elseif (is_subclass_of($type, \BackedEnum::class)) {
 			return static function ($value, Context $context) use ($type) {
 				try {
-					return $type::from($value);
+					return $value === null || $value instanceof $type ? $value : $type::from($value);
 				} catch (\TypeError | \ValueError) {
 					$context->addError(
 						'The %label% %path% expects to be %expected%, %value% given.',
