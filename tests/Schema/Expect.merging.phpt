@@ -228,3 +228,79 @@ test('null layer does not overwrite an array but overwrites a scalar', function 
 		]),
 	);
 });
+
+
+test('layers matching the same anyOf alternative merge by it (nette/database#223)', function () {
+	$connection = Expect::structure([
+		'dsn' => Expect::string()->required(),
+		'user' => Expect::string(),
+		'options' => Expect::array(),
+	]);
+	$schema = Expect::anyOf($connection, Expect::arrayOf($connection));
+
+	Assert::equal(
+		(object) ['options' => ['lazy' => true], 'dsn' => 'sqlite:', 'user' => 'x'],
+		(new Processor)->processMultiple($schema, [
+			['options' => ['lazy' => true]],
+			['dsn' => 'sqlite:', 'user' => 'x'],
+		]),
+	);
+});
+
+
+test('anyOf layers matching different alternatives cannot merge arrays', function () {
+	$schema = Expect::anyOf(
+		Expect::structure(['a' => Expect::string()]),
+		Expect::listOf('string'),
+	);
+
+	checkValidationErrors(function () use ($schema) {
+		(new Processor)->processMultiple($schema, [
+			['a' => 'x'],
+			['s1', 's2'],
+		]);
+	}, ['Cannot merge: layers do not match the same alternative.']);
+});
+
+
+test('scalar anyOf layer replaces array and vice versa (proxy case)', function () {
+	$schema = Expect::anyOf(Expect::string(), Expect::arrayOf('string'));
+
+	Assert::same(['5.6.7.8'], (new Processor)->processMultiple($schema, ['1.2.3.4', ['5.6.7.8']]));
+	Assert::same('1.2.3.4', (new Processor)->processMultiple($schema, [['5.6.7.8'], '1.2.3.4']));
+	Assert::same(['a', 'b'], (new Processor)->processMultiple($schema, [['a'], ['b']]));
+});
+
+
+test('explicit Replace and mergeWith() on anyOf', function () {
+	$schema = Expect::anyOf(Expect::arrayOf('string'), Expect::bool())
+		->mergeMode(MergeMode::Replace);
+
+	Assert::same(['c'], (new Processor)->processMultiple($schema, [['a', 'b'], ['c']]));
+
+	$schema = Expect::anyOf(Expect::int(), Expect::bool())
+		->mergeWith(fn($value, $base) => $value + $base);
+
+	Assert::same(5, (new Processor)->processMultiple($schema, [2, 3]));
+});
+
+
+test('null layer in anyOf follows the null rule', function () {
+	$schema = Expect::anyOf(Expect::arrayOf('string'), Expect::string())->nullable();
+
+	Assert::same(['a'], (new Processor)->processMultiple($schema, [['a'], null]));
+
+	// no array variant, otherwise findAlternative would coerce the merged null to []
+	$schema = Expect::anyOf(Expect::string(), Expect::bool())->nullable();
+
+	Assert::same(null, (new Processor)->processMultiple($schema, ['s', null]));
+});
+
+
+test('variant reshaping in before() merges as replace (documented limitation)', function () {
+	$variant = Expect::arrayOf('string')
+		->before(fn($v) => is_string($v) ? explode(',', $v) : $v);
+	$schema = Expect::anyOf($variant, Expect::bool());
+
+	Assert::same(['c', 'd'], (new Processor)->processMultiple($schema, ['a,b', 'c,d']));
+});
