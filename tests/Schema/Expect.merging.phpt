@@ -230,6 +230,28 @@ test('null layer does not overwrite an array but overwrites a scalar', function 
 });
 
 
+test('removed _prevent_merging key is rejected loudly', function () {
+	$schema = Expect::array();
+
+	checkValidationErrors(function () use ($schema) {
+		(new Processor)->process($schema, ['_prevent_merging' => true, 'a' => 1]);
+	}, ["The key '_prevent_merging' is no longer supported, use mergeMode() instead."]);
+
+	checkValidationErrors(function () use ($schema) {
+		(new Processor)->processMultiple($schema, [
+			['a' => ['_prevent_merging' => true, 'b' => 1]],
+		]);
+	}, ["The key 'a\u{a0}›\u{a0}_prevent_merging' is no longer supported, use mergeMode() instead."]);
+
+	checkValidationErrors(function () {
+		$schema = Expect::structure(['a' => Expect::array()]);
+		(new Processor)->processMultiple($schema, [
+			(object) ['a' => ['_prevent_merging' => true, 'x' => 1]],
+		]);
+	}, ["The key 'a\u{a0}›\u{a0}_prevent_merging' is no longer supported, use mergeMode() instead."]);
+});
+
+
 test('layers matching the same anyOf alternative merge by it (nette/database#223)', function () {
 	$connection = Expect::structure([
 		'dsn' => Expect::string()->required(),

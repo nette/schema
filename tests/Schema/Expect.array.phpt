@@ -1,7 +1,6 @@
 <?php declare(strict_types=1);
 
 use Nette\Schema\Expect;
-use Nette\Schema\Helpers;
 use Nette\Schema\Processor;
 use Tester\Assert;
 
@@ -94,38 +93,6 @@ test('merging default value', function () {
 		]),
 	);
 
-	Assert::same(
-		[
-			'key1' => 'newval',
-			'key3' => 'newval',
-			'newval3',
-			'arr' => ['newitem'],
-		],
-		(new Processor)->process($schema, [
-			Helpers::PreventMerging => true,
-			'key1' => 'newval',
-			'key3' => 'newval',
-			'newval3',
-			'arr' => ['newitem'],
-		]),
-	);
-
-	Assert::same(
-		[
-			'key1' => 'newval',
-			'key2' => 'val2',
-			'val3',
-			'arr' => ['newitem'],
-			'key3' => 'newval',
-			'newval3',
-		],
-		(new Processor)->process($schema, [
-			'key1' => 'newval',
-			'key3' => 'newval',
-			'newval3',
-			'arr' => [Helpers::PreventMerging => true, 'newitem'],
-		]),
-	);
 });
 
 

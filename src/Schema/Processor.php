@@ -37,6 +37,7 @@ final class Processor
 	public function process(Schema $schema, mixed $data): mixed
 	{
 		$this->createContext();
+		$this->rejectPreventMerging($data);
 		$data = $schema->normalize($data, $this->context);
 		$this->throwsErrors();
 		$data = $schema->complete($data, $this->context);
@@ -56,6 +57,7 @@ final class Processor
 		$flatten = null;
 		$first = true;
 		foreach ($dataset as $data) {
+			$this->rejectPreventMerging($data);
 			$data = $schema->normalize($data, $this->context);
 			$this->throwsErrors();
 			$flatten = $first ? $data : $schema->merge($data, $flatten, $this->context);
@@ -81,6 +83,32 @@ final class Processor
 		}
 
 		return $res;
+	}
+
+
+	/**
+	 * Transitional guard: the magic key was removed in 2.0 and must fail loudly, not flow through as data.
+	 */
+	private function rejectPreventMerging(mixed $data): void
+	{
+		if ($data instanceof \stdClass) {
+			$data = (array) $data;
+		}
+
+		if (is_array($data)) {
+			if (array_key_exists('_prevent_merging', $data)) {
+				$this->context->addError(
+					'The key %path% is no longer supported, use mergeMode() instead.',
+					Message::CannotMerge,
+				)->path[] = '_prevent_merging';
+			}
+
+			foreach ($data as $key => $val) {
+				$this->context->path[] = $key;
+				$this->rejectPreventMerging($val);
+				array_pop($this->context->path);
+			}
+		}
 	}
 
 
