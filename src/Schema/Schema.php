@@ -19,9 +19,9 @@ interface Schema
 	function normalize(mixed $value, Context $context): mixed;
 
 	/**
-	 * Merges two normalized values, with $value taking priority over $base.
+	 * Merges two normalized values, with $value taking priority over $base. Merge errors are reported via Context.
 	 */
-	function merge(mixed $value, mixed $base): mixed;
+	function merge(mixed $value, mixed $base, Context $context): mixed;
 
 	/**
 	 * Validates the value and applies defaults, transforms, and assertions.

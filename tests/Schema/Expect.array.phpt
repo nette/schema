@@ -169,6 +169,7 @@ test('merging & other items validation', function () {
 
 test('merging & other items validation', function () {
 	$schema = Expect::array()->items('string');
+	$context = new Nette\Schema\Context;
 
 	Assert::same([
 		'key1' => 'val1',
@@ -178,7 +179,7 @@ test('merging & other items validation', function () {
 		'key1' => 'val1',
 		'key2' => 'val2',
 		'val3',
-	], null));
+	], null, $context));
 
 	Assert::same(
 		[
@@ -196,7 +197,7 @@ test('merging & other items validation', function () {
 			'key1' => 'val1',
 			'key2' => 'val2',
 			'val3',
-		]),
+		], $context),
 	);
 });
 
