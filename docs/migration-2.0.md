@@ -54,3 +54,7 @@ works but is deprecated and will be removed in the next major version.
   between layers; canonicalize a layer's shape in `before()` instead).
 - `Expect::tuple([...])`: fixed-size array with per-position schemas; layers
   replace the tuple wholesale.
+- `Expect::listable(type)`: accepts a single value or a list of values,
+  normalizes to a list — and layers therefore merge by appending.
+- `Expect::enum(SomeBackedEnum::class)`: accepts a case or its backing value,
+  yields the case instance; `castTo()` now supports backed enums in general.

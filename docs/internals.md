@@ -209,12 +209,14 @@ by validating dynamics eagerly.
   `value` (higher priority) merged over the accumulated `base`, so later configs
   override earlier ones (details in "Schema-driven merging" above).
 - **`castTo` forks by target** (`Helpers::getCastStrategy`): builtin →
-  `settype`; class **with** constructor → named args from the array/stdClass
-  (a scalar is passed as a single argument); anything else → property assignment
-  via `Arrays::toObject((array) $value, new $type)`. There is **no enum branch**:
-  an enum has no constructor, falls into the `new $type` path and dies with a
-  PHP `Error`. This fork is the mechanism behind both `castTo(Class::class)`
-  and Structure's object output.
+  `settype`; **backed enum** → `::from()` (null and a ready instance pass
+  through; an invalid value adds a `TypeMismatch` error listing the allowed
+  backing values; a pure enum throws `InvalidStateException` at schema build
+  time); class **with** constructor → named args from the array/stdClass
+  (a scalar is passed as a single argument); anything else → property
+  assignment via `Arrays::toObject((array) $value, new $type)`. This fork is
+  the mechanism behind `castTo(Class::class)`, `Expect::enum()` and
+  Structure's object output.
 - **`min`/`max` mean different things by type** (`validateRange`): item count for
   arrays, character length (`unicode` type) or byte length (otherwise) for
   strings, the value itself for numbers.
