@@ -26,6 +26,7 @@ trait Base
 	/** @var list<\Closure(mixed, Context): mixed> */
 	private array $transforms = [];
 	private ?string $deprecated = null;
+	private ?string $description = null;
 
 
 	public function default(mixed $value): self
@@ -100,6 +101,16 @@ trait Base
 	public function deprecated(string $message = 'The item %path% is deprecated.'): self
 	{
 		$this->deprecated = $message;
+		return $this;
+	}
+
+
+	/**
+	 * Sets a human-readable description of the item; it does not affect validation.
+	 */
+	public function description(string $description): self
+	{
+		$this->description = $description;
 		return $this;
 	}
 
