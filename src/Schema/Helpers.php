@@ -78,6 +78,10 @@ final class Helpers
 	 */
 	public static function validateRange(mixed $value, array $range, Context $context, string $types = ''): void
 	{
+		if ($context->isPartial) {
+			return; // a layer is only a part of the result, so the bounds apply to the merged value
+		}
+
 		if (is_array($value) || is_string($value)) {
 			[$length, $label] = is_array($value)
 				? [count($value), 'items']
