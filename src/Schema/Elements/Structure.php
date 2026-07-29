@@ -183,11 +183,19 @@ final class Structure implements Schema
 				if ($key === $index) {
 					$base[] = $val;
 					$index++;
-				} elseif (array_key_exists($key, $base) && ($itemSchema = $this->items[$key] ?? $this->otherItems)) {
+				} elseif (!array_key_exists($key, $base)) {
+					$base[$key] = $val;
+				} elseif ($itemSchema = $this->items[$key] ?? $this->otherItems) {
 					$context->path[] = $key;
 					$base[$key] = $itemSchema->merge($val, $base[$key], $context);
 					array_pop($context->path);
 				} else {
+					if (is_array($val) && is_array($base[$key]) && $this->mergeMode === null) {
+						$context->addError(
+							'Cannot merge %path%: the schema does not describe the item, use otherItems() or mergeMode().',
+							Nette\Schema\Message::CannotMerge,
+						)->path[] = $key;
+					}
 					$base[$key] = $val;
 				}
 			}
@@ -195,7 +203,7 @@ final class Structure implements Schema
 			return $base;
 		}
 
-		return $value ?? $base;
+		return $value === null && is_array($base) ? $base : $value;
 	}
 
 
