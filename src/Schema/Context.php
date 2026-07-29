@@ -23,6 +23,9 @@ final class Context
 	 */
 	public ?array $keepNullAt = null;
 
+	/** @internal probe mode: validation-only completion, tolerant to missing required items, transforms are skipped */
+	public bool $isPartial = false;
+
 	/** @var list<int|string> */
 	public array $path = [];
 
@@ -62,5 +65,21 @@ final class Context
 	{
 		$count = count($this->errors);
 		return fn(): bool => $count === count($this->errors);
+	}
+
+
+	/**
+	 * Returns a throwaway context for trying an alternative: the same mode and path, none of the results.
+	 * @internal
+	 */
+	public function fork(): self
+	{
+		$dolly = new self;
+		$dolly->skipDefaults = $this->skipDefaults;
+		$dolly->keepNullAt = $this->keepNullAt;
+		$dolly->isPartial = $this->isPartial;
+		$dolly->path = $this->path;
+		$dolly->isKey = $this->isKey;
+		return $dolly;
 	}
 }
