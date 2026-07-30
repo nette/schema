@@ -8,7 +8,7 @@
 namespace Nette\Schema\Elements;
 
 use Nette;
-use Nette\Schema\{Context, Helpers, Schema};
+use Nette\Schema\{Context, Helpers, Kind, Schema};
 use function array_key_exists, is_array, is_object;
 
 
@@ -95,6 +95,25 @@ final class Structure implements Schema
 	public function getShape(): array
 	{
 		return $this->items;
+	}
+
+
+	/********************* inspection ****************d*g**/
+
+
+	/**
+	 * @return array<string, mixed>
+	 * @internal
+	 */
+	public function describe(): array
+	{
+		return [
+			'kind' => Kind::Structure,
+			'shape' => $this->items,
+			'otherItems' => $this->otherItems,
+			'min' => $this->range[0],
+			'max' => $this->range[1],
+		] + $this->describeBase();
 	}
 
 
