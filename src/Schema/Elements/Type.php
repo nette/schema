@@ -10,7 +10,9 @@ namespace Nette\Schema\Elements;
 use Nette\Schema\Context;
 use Nette\Schema\DynamicParameter;
 use Nette\Schema\Helpers;
+use Nette\Schema\Kind;
 use Nette\Schema\Schema;
+use Nette\Schema\TypeExpression;
 use Nette\Utils\Validators;
 use function array_key_exists, is_array;
 
@@ -103,6 +105,56 @@ final class Type implements Schema
 	{
 		$this->pattern = $pattern;
 		return $this;
+	}
+
+
+	/********************* inspection ****************d*g**/
+
+
+	/**
+	 * Reports what the type accepts as a plain array (see TypeExpression::parse()); min(), max(), pattern()
+	 * and items() narrow every variant they apply to, child schemas are reported as they are.
+	 * @return array<string, mixed>
+	 * @internal
+	 */
+	public function describe(): array
+	{
+		return $this->narrow($this->getParsed()) + $this->describeBase();
+	}
+
+
+	/**
+	 * The parsed expression; 'kind', 'nullable', 'dynamic' and the keys of the kind.
+	 * @return array<string, mixed>
+	 */
+	protected function getParsed(): array
+	{
+		return TypeExpression::parse($this->type);
+	}
+
+
+	/**
+	 * Puts min(), max(), pattern() and items() into every variant of the parsed expression that has the key.
+	 * @param  array<string, mixed>  $item
+	 * @return array<string, mixed>
+	 */
+	private function narrow(array $item): array
+	{
+		if ($item['kind'] === Kind::Union) {
+			$item['variants'] = array_map($this->narrow(...), $item['variants']);
+		}
+		if (array_key_exists('min', $item)) { // both bounds are checked, so the tighter one holds
+			$item['min'] = $this->range[0] === null ? $item['min'] : max($this->range[0], $item['min'] ?? -INF);
+			$item['max'] = $this->range[1] === null ? $item['max'] : min($this->range[1], $item['max'] ?? INF);
+		}
+		if (array_key_exists('pattern', $item)) {
+			$item['pattern'] = $this->pattern ?? $item['pattern'];
+		}
+		if (array_key_exists('items', $item)) {
+			$item['items'] = $this->itemsValue ?? $item['items'];
+			$item['keys'] = $this->itemsKey ?? $item['keys'];
+		}
+		return $item;
 	}
 
 
