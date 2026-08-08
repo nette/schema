@@ -215,8 +215,17 @@ final class Structure implements Schema
 
 	public function completeDefault(Context $context): mixed
 	{
-		return $this->required
-			? $this->complete([], $context)
-			: null;
+		if (!$this->required) {
+			return null;
+		}
+
+		// the item is missing in the input, do not report it as used deprecated
+		$deprecated = $this->deprecated;
+		$this->deprecated = null;
+		try {
+			return $this->complete([], $context);
+		} finally {
+			$this->deprecated = $deprecated;
+		}
 	}
 }

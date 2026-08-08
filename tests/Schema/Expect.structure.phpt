@@ -471,6 +471,22 @@ test('deprecated item', function () {
 });
 
 
+test('deprecated structure does not warn when not provided', function () {
+	$schema = Expect::structure([
+		'old' => Expect::structure([
+			'x' => Expect::string(),
+		])->deprecated(),
+	]);
+
+	$processor = new Processor;
+	$processor->process($schema, []);
+	Assert::same([], $processor->getWarnings());
+
+	$processor->process($schema, ['old' => []]);
+	Assert::same(["The item 'old' is deprecated."], $processor->getWarnings());
+});
+
+
 test('deprecated other items', function () {
 	$schema = Expect::structure([
 		'key' => Expect::string(),
