@@ -100,10 +100,13 @@ final class AnyOf implements Schema
 		foreach ($this->set as $item) {
 			if ($item instanceof Schema) {
 				$dolly = new Context;
+				$dolly->skipDefaults = $context->skipDefaults;
+				$dolly->isKey = $context->isKey;
 				$dolly->path = $context->path;
 				$res = $item->complete($item->normalize($value, $dolly), $dolly);
 				if (!$dolly->errors) {
 					$context->warnings = array_merge($context->warnings, $dolly->warnings);
+					$context->dynamics = array_merge($context->dynamics, $dolly->dynamics);
 					return $res;
 				}
 

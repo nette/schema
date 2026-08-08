@@ -73,3 +73,27 @@ test('', function () {
 		$context->dynamics,
 	);
 });
+
+
+test('dynamic parameter inside anyOf alternative is registered', function () {
+	$schema = Expect::anyOf(
+		Expect::structure([
+			'n' => Expect::int()->dynamic(),
+		]),
+		false,
+	);
+
+	$context = new Context;
+	$schema->complete(['n' => new DynamicParameter("\$this->parameters['n']")], $context);
+
+	Assert::equal(
+		[
+			[
+				new DynamicParameter("\$this->parameters['n']"),
+				'int',
+				['n'],
+			],
+		],
+		$context->dynamics,
+	);
+});

@@ -235,6 +235,26 @@ testException(
 );
 
 
+test('skipDefaults is inherited by alternatives', function () {
+	$schema = Expect::structure([
+		'inner' => Expect::anyOf(
+			Expect::structure([
+				'a' => Expect::string('def'),
+				'b' => Expect::string(),
+			]),
+			false,
+		),
+	]);
+
+	$processor = new Processor;
+	$processor->skipDefaults();
+	Assert::equal(
+		(object) ['inner' => (object) ['b' => 'x']],
+		$processor->process($schema, ['inner' => ['b' => 'x']]),
+	);
+});
+
+
 test('normalization', function () {
 	$schema = Expect::anyOf(
 		Expect::string()->before(fn($v) => (string) $v),
