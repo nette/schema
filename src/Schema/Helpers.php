@@ -9,7 +9,7 @@ namespace Nette\Schema;
 
 use Nette;
 use Nette\Utils\Reflection;
-use function count, explode, get_debug_type, implode, in_array, is_array, is_float, is_int, is_object, is_scalar, is_string, method_exists, preg_match, preg_quote, preg_replace, preg_replace_callback, settype, str_replace, strlen, trim, var_export;
+use function array_map, count, explode, get_debug_type, implode, in_array, is_array, is_float, is_int, is_object, is_scalar, is_string, is_subclass_of, method_exists, preg_match, preg_quote, preg_replace, preg_replace_callback, settype, str_replace, strlen, trim, var_export;
 
 
 /**
@@ -185,8 +185,8 @@ final class Helpers
 
 
 	/**
-	 * Returns a closure that casts a value to the given type (built-in, class with constructor, or plain class).
-	 * @return \Closure(mixed): mixed
+	 * Returns a closure that casts a value to the given type (built-in, backed enum, class with constructor, or plain class).
+	 * @return \Closure(mixed, Context): mixed
 	 */
 	public static function getCastStrategy(string $type): \Closure
 	{
@@ -195,6 +195,24 @@ final class Helpers
 				settype($value, $type);
 				return $value;
 			};
+
+		} elseif (is_subclass_of($type, \BackedEnum::class)) {
+			return static function ($value, Context $context) use ($type) {
+				try {
+					return $type::from($value);
+				} catch (\TypeError | \ValueError) {
+					$context->addError(
+						'The %label% %path% expects to be %expected%, %value% given.',
+						Message::TypeMismatch,
+						['value' => $value, 'expected' => implode('|', array_map(fn(\BackedEnum $case) => self::formatValue($case->value), $type::cases()))],
+					);
+					return null;
+				}
+			};
+
+		} elseif (is_subclass_of($type, \UnitEnum::class)) {
+			throw new Nette\InvalidStateException("Cannot cast value to pure enum $type.");
+
 		} elseif (method_exists($type, '__construct')) {
 			return static fn($value) => is_array($value) || $value instanceof \stdClass
 				? new $type(...(array) $value)
