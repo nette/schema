@@ -7,6 +7,7 @@
 
 namespace Nette\Schema\Elements;
 
+use Nette;
 use Nette\Schema\Context;
 use Nette\Schema\DynamicParameter;
 use Nette\Schema\Helpers;
@@ -17,7 +18,7 @@ use Nette\Utils\Validators;
 use function array_key_exists, is_array;
 
 
-final class Type implements Schema
+class Type implements Schema
 {
 	use Base;
 
@@ -42,7 +43,7 @@ final class Type implements Schema
 	/**
 	 * Allows the value to be null in addition to the declared type.
 	 */
-	public function nullable(): self
+	public function nullable(): static
 	{
 		$this->type = 'null|' . $this->type;
 		return $this;
@@ -52,8 +53,9 @@ final class Type implements Schema
 	/**
 	 * Controls whether the default value is merged with the input array (enabled by default).
 	 */
-	public function mergeDefaults(bool $state = true): self
+	public function mergeDefaults(bool $state = true): static
 	{
+		$this->unionDeprecated('mergeDefaults');
 		$this->merge = $state;
 		return $this;
 	}
@@ -62,22 +64,24 @@ final class Type implements Schema
 	/**
 	 * Allows the value to be a DynamicParameter, which is recorded for deferred validation.
 	 */
-	public function dynamic(): self
+	public function dynamic(): static
 	{
 		$this->type = DynamicParameter::class . '|' . $this->type;
 		return $this;
 	}
 
 
-	public function min(?float $min): self
+	public function min(?float $min): static
 	{
+		$this->unionDeprecated('min');
 		$this->range[0] = $min;
 		return $this;
 	}
 
 
-	public function max(?float $max): self
+	public function max(?float $max): static
 	{
+		$this->unionDeprecated('max');
 		$this->range[1] = $max;
 		return $this;
 	}
@@ -86,14 +90,15 @@ final class Type implements Schema
 	/**
 	 * @internal  use arrayOf() or listOf()
 	 */
-	public function items(string|Schema $valueType = 'mixed', string|Schema|null $keyType = null): self
+	public function items(string|Schema $valueType = 'mixed', string|Schema|null $keyType = null): static
 	{
+		$this->unionDeprecated('items');
 		$this->itemsValue = $valueType instanceof Schema
 			? $valueType
-			: new self($valueType);
+			: Nette\Schema\Expect::type($valueType);
 		$this->itemsKey = $keyType instanceof Schema || $keyType === null
 			? $keyType
-			: new self($keyType);
+			: Nette\Schema\Expect::type($keyType);
 		return $this;
 	}
 
@@ -101,10 +106,23 @@ final class Type implements Schema
 	/**
 	 * Sets a regex pattern the string value must match entirely (anchored to start and end).
 	 */
-	public function pattern(?string $pattern): self
+	public function pattern(?string $pattern): static
 	{
+		$this->unionDeprecated('pattern');
 		$this->pattern = $pattern;
 		return $this;
+	}
+
+
+	/**
+	 * A union of kinds ('int|string') becomes anyOf() in the next major and takes no options of its own;
+	 * they belong to the variants: anyOf(Expect::int()->min(1), Expect::string()->min(1)).
+	 */
+	private function unionDeprecated(string $option): void
+	{
+		if (static::class === self::class && $this->getParsed()['kind'] === Kind::Union) {
+			trigger_error("$option() on the union '$this->type' is deprecated, give it to the variants of anyOf() instead.", E_USER_DEPRECATED);
+		}
 	}
 
 

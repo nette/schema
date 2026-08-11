@@ -16,6 +16,9 @@ use function count, is_bool, is_float, is_int, is_string;
  */
 final class JsonSchema
 {
+	private const Formats = ['email' => 'email', 'url' => 'uri', 'uri' => 'uri'];
+
+
 	/**
 	 * @return array<string, mixed>|\stdClass
 	 * @throws Nette\NotSupportedException  when the schema contains a class type or another PHP-only type
@@ -112,8 +115,9 @@ final class JsonSchema
 		if ($item['pattern'] !== null) {
 			$res['pattern'] = '^(?:' . $item['pattern'] . ')$';
 		}
-		if ($item['format'] !== null) {
-			$res['format'] = $item['format'];
+		// only the formats JSON Schema knows; the others are checked by PHP alone, like assert()
+		if ($format = self::Formats[$item['format'] ?? ''] ?? null) {
+			$res['format'] = $format;
 		}
 		return $res;
 	}

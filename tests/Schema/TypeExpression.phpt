@@ -127,6 +127,18 @@ test('T[] is any iterable of T, as Validators::is() sees it', function () {
 });
 
 
+test('string formats', function () {
+	foreach (['unicode', 'email', 'uri', 'url', 'identifier', 'class', 'interface', 'file', 'directory', 'alnum', 'alpha', 'digit', 'lower', 'upper', 'space', 'xdigit'] as $name) {
+		$d = TypeExpression::parse($name);
+		Assert::same(Kind::String, $d['kind'], $name);
+		Assert::same($name, $d['format']);
+	}
+
+	Assert::null(TypeExpression::parse('string')['format']);
+	Assert::same(3.0, TypeExpression::parse('url:3..')['min']);
+});
+
+
 test('an unknown name is a class name, a legacy validator is Other', function () {
 	$d = TypeExpression::parse(DateTime::class);
 	Assert::same(Kind::Instance, $d['kind']);
@@ -135,7 +147,7 @@ test('an unknown name is a class name, a legacy validator is Other', function ()
 	Assert::same(Kind::Instance, TypeExpression::parse('foo')['kind']);
 	Assert::same([Kind::Instance, Kind::Instance], kinds(TypeExpression::parse('DateTime|DateTimeInterface')));
 
-	foreach (['numeric', 'numericint', 'file', 'directory', 'url', 'uri', 'identifier', 'alnum', 'alpha', 'digit', 'lower', 'upper', 'space', 'xdigit', 'class', 'interface', 'resource', 'none'] as $name) {
+	foreach (['numeric', 'numericint', 'resource', 'none'] as $name) {
 		$d = TypeExpression::parse($name);
 		Assert::same(Kind::Other, $d['kind'], $name);
 		Assert::same($name, $d['type']);

@@ -68,7 +68,7 @@ final class Structure implements Schema
 	 */
 	public function otherItems(string|Schema $type = 'mixed'): self
 	{
-		$this->otherItems = $type instanceof Schema ? $type : new Type($type);
+		$this->otherItems = $type instanceof Schema ? $type : Nette\Schema\Expect::type($type);
 		return $this;
 	}
 

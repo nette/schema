@@ -192,6 +192,26 @@ The result is a `Structure` with `castTo($class)` **stacked after** the
 constructor's built-in `castTo('object')`, so a completed value travels
 array → `stdClass` → instance through the cast fork above.
 
+## `Type` and its kind-specific subclasses
+
+`Type` is no longer final: `StringType`, `NumberType` and `ArrayType` extend it
+and **add no behavior of their own** in 1.x. They exist so that `Expect::string()`,
+`Expect::int()`, `Expect::listOf()` and `Expect::type('email')` return a class
+that says what kind of value it is (for users, PHPStan and `describe()`), while
+every `instanceof Type`, every type hint and every method called by name from a
+NEON `parametersSchema` keeps working. The classification is done once, in
+`Expect::type()`, from `TypeExpression::parse()`: an expression whose variants are
+all strings (`'email'`, `'?string'`, `'url|uri'`) is a `StringType`, all numbers
+(`'int'`, `'number'`) a `NumberType`, all array-like (`'list'`, `'int[]'`) an
+`ArrayType`; anything else (`'bool'`, `'int|string'`, a class, `'numeric'`) stays a
+plain `Type`. **String formats are the Validators pseudo-types** (`email`, `url`,
+`identifier`, `digit`, ...): `Expect::type('url')` is a `StringType` validated by
+`Validators::isUrl()` exactly as before. The subclasses deprecate the methods that
+make no sense for their kind (`NumberType::pattern()`, `ArrayType::pattern()`,
+`items()` outside arrays) with an `E_USER_DEPRECATED` notice; on a plain `Type` the
+same methods stay silent, a union may well hold a string. The fluent setters in
+`Base` and `Type` return `static` for the same reason.
+
 ## Inspection: `describe()`, `TypeExpression` (`@internal`) and the JSON Schema export
 
 `Type`, `Structure` and `AnyOf` report what they accept as a **plain array**:
@@ -208,9 +228,10 @@ string language** (`|`, `?`, `[]`, `name:range`, `pattern:regex`) into that arra
 It follows what `Validators::is()` accepts, not what the author probably meant:
 `'int[]'` is `Kind::Iterable` of ints (any iterable, keys unchecked),
 `'number'`/`'scalar'` expand to unions, `'?x'`/`'null|x'` set `nullable`,
-`DynamicParameter` sets `dynamic`, **an unknown name is a class name**
-(`Kind::Instance`, decided by exclusion, never by `class_exists`), and only the
-fixed list of legacy validator names (`numeric`, `file`, `url`, ...) plus
+`DynamicParameter` sets `dynamic`, the string pseudo-types of Validators (`email`,
+`url`, `identifier`, `digit`, ...) are `Kind::String` with the name under `format`,
+**an unknown name is a class name** (`Kind::Instance`, decided by exclusion, never
+by `class_exists`), and only `numeric`, `numericint`, `none`, `resource` and
 intersections `A&B` become `Kind::Other` with the raw expression under `type`.
 That table is also the migration table for the day the string notation is reduced
 to BC sugar. `Type::describe()` = parse, then **narrow every variant** the
@@ -220,7 +241,9 @@ to. `null` and `DynamicParameter` are flags, never variants, and `min`/`max` kee
 the type-relative meaning of `validateRange`, so they live on the variants.
 
 `JsonSchema::export()` emits shape only (`description` yes; defaults, casts and
-transforms no), anchors `pattern` as `^(?:…)$`, maps `Kind::Array` to a JSON
+transforms no), passes on only the string formats JSON Schema knows (`email`,
+`uri`; the rest is checked by PHP alone, like `assert()`), anchors `pattern` as
+`^(?:…)$`, maps `Kind::Array` to a JSON
 object unless the key type is `Kind::Int`, narrows `Kind::Iterable` to a JSON
 array, and **throws `NotSupportedException` for `Instance`, `Object`, `Callable`
 and `Other`** rather than emitting a schema the `Processor` would then reject.
@@ -244,4 +267,5 @@ export the only supported way out.
 | Error message rendering | `Message::toString`, `Message::*` code constants |
 | Key schemas, `isKey` | `Type::normalize`/`validateItems`, `Context::isKey` |
 | Object-to-schema mapping | `Expect::from`, `Helpers::getPropertyType` |
+| Kind-specific subclasses of `Type` | `Expect::type`, `StringType`, `NumberType`, `ArrayType` |
 | Inspection, JSON Schema export | `Elements/*::describe`, `Kind`, `TypeExpression::parse`, `JsonSchema::export` |

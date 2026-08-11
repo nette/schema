@@ -17,9 +17,24 @@ use function count, in_array;
  */
 final class TypeExpression
 {
-	private const Legacy = [
-		'resource', 'none', 'numeric', 'numericint', 'alnum', 'alpha', 'digit', 'lower', 'upper', 'space',
-		'xdigit', 'identifier', 'uri', 'url', 'class', 'interface', 'directory', 'file',
+	/**
+	 * The names Validators::is() knows and what kind of value they are; 'scalar' is a union handled apart,
+	 * any other name is a class.
+	 */
+	private const Names = [
+		'mixed' => Kind::Any,
+		'bool' => Kind::Bool, 'boolean' => Kind::Bool,
+		'int' => Kind::Int, 'integer' => Kind::Int,
+		'float' => Kind::Float, 'number' => Kind::Number,
+		'string' => Kind::String,
+		'unicode' => Kind::String, 'email' => Kind::String, 'uri' => Kind::String, 'url' => Kind::String,
+		'identifier' => Kind::String, 'class' => Kind::String, 'interface' => Kind::String,
+		'file' => Kind::String, 'directory' => Kind::String, 'alnum' => Kind::String, 'alpha' => Kind::String,
+		'digit' => Kind::String, 'lower' => Kind::String, 'upper' => Kind::String, 'space' => Kind::String,
+		'xdigit' => Kind::String, 'pattern' => Kind::String,
+		'array' => Kind::Array, 'list' => Kind::List, 'iterable' => Kind::Iterable,
+		'object' => Kind::Object, 'callable' => Kind::Callable,
+		'resource' => Kind::Other, 'none' => Kind::Other, 'numeric' => Kind::Other, 'numericint' => Kind::Other,
 	];
 
 
@@ -92,24 +107,16 @@ final class TypeExpression
 		$string = fn(?string $format = null, ?string $pattern = null) => ['kind' => Kind::String, 'min' => $min, 'max' => $max, 'pattern' => $pattern, 'format' => $format];
 		$collection = fn(Kind $kind) => ['kind' => $kind, 'items' => null, 'keys' => null, 'min' => $min, 'max' => $max];
 
-		return match ($name) {
-			'mixed' => [['kind' => Kind::Any]],
-			'bool', 'boolean' => [['kind' => Kind::Bool]],
-			'object' => [['kind' => Kind::Object]],
-			'callable' => [['kind' => Kind::Callable]],
-			'int', 'integer' => [$number(Kind::Int)],
-			'float' => [$number(Kind::Float)],
-			'number' => [$number(Kind::Int), $number(Kind::Float)],
-			'string', 'unicode' => [$string()],
-			'email' => [$string(format: 'email')],
-			'pattern' => [$string(pattern: $arg)],
-			'scalar' => [['kind' => Kind::Bool], $number(Kind::Int), $number(Kind::Float), $string()],
-			'array' => [$collection(Kind::Array)],
-			'list' => [$collection(Kind::List)],
-			'iterable' => [$collection(Kind::Iterable)],
-			default => [in_array($name, self::Legacy, strict: true)
-				? ['kind' => Kind::Other, 'type' => $part]
-				: ['kind' => Kind::Instance, 'type' => $name]],
+		$kind = self::Names[$name] ?? Kind::Instance;
+		return match (true) {
+			$name === 'scalar' => [['kind' => Kind::Bool], $number(Kind::Number), $string()],
+			$name === 'pattern' => [$string(pattern: $arg)],
+			$kind === Kind::String => [$string(format: $name === 'string' ? null : $name)],
+			$kind === Kind::Int, $kind === Kind::Float, $kind === Kind::Number => [$number($kind)],
+			$kind === Kind::Array, $kind === Kind::List, $kind === Kind::Iterable => [$collection($kind)],
+			$kind === Kind::Instance => [['kind' => $kind, 'type' => $name]],
+			$kind === Kind::Other => [['kind' => $kind, 'type' => $part]],
+			default => [['kind' => $kind]],
 		};
 	}
 
