@@ -48,7 +48,7 @@ test('ranges', function () {
 	);
 	Assert::same(
 		['anyOf' => [['type' => 'integer', 'minimum' => 3], ['type' => 'string', 'minLength' => 3]]],
-		JsonSchema::export(Expect::type('int|string')->min(3)),
+		JsonSchema::export(Expect::anyOf(Expect::int()->min(3), Expect::string()->min(3))),
 	);
 });
 
@@ -56,6 +56,8 @@ test('ranges', function () {
 test('pattern is anchored, format is passed on', function () {
 	Assert::same(['type' => 'string', 'pattern' => '^(?:\d+)$'], JsonSchema::export(Expect::string()->pattern('\d+')));
 	Assert::same(['type' => 'string', 'format' => 'email'], JsonSchema::export(Expect::email()));
+	Assert::same(['type' => 'string', 'format' => 'uri'], JsonSchema::export(Expect::type('url')));
+	Assert::same(['type' => 'string'], JsonSchema::export(Expect::type('identifier'))); // checked by PHP alone
 });
 
 

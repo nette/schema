@@ -8,30 +8,30 @@
 namespace Nette\Schema;
 
 use Nette;
-use Nette\Schema\Elements\{AnyOf, Structure, Type};
-use function array_key_exists, is_object;
+use Nette\Schema\Elements\{AnyOf, ArrayType, NumberType, StringType, Structure, Type};
+use function array_key_exists, count, is_object;
 
 
 /**
  * Schema generator.
  *
  * @method static Type scalar($default = null)
- * @method static Type string($default = null)
- * @method static Type int($default = null)
- * @method static Type float($default = null)
+ * @method static StringType string($default = null)
+ * @method static NumberType int($default = null)
+ * @method static NumberType float($default = null)
  * @method static Type bool($default = null)
  * @method static Type null()
- * @method static Type list($default = [])
+ * @method static ArrayType list($default = [])
  * @method static Type mixed($default = null)
- * @method static Type email($default = null)
- * @method static Type unicode($default = null)
+ * @method static StringType email($default = null)
+ * @method static StringType unicode($default = null)
  */
 final class Expect
 {
 	/** @param  array<int|string, mixed>  $args */
 	public static function __callStatic(string $name, array $args): Type
 	{
-		$type = new Type($name);
+		$type = self::type($name);
 		if ($args) {
 			$type->default(array_key_exists('default', $args) ? $args['default'] : $args[0]);
 		}
@@ -41,11 +41,33 @@ final class Expect
 
 
 	/**
-	 * Creates a schema for a custom type expression (e.g., 'int|string', 'null|float').
+	 * Creates a schema for a type expression (e.g., 'int|string', 'null|float', 'email'); an expression
+	 * of a single kind of value gets its dedicated StringType, NumberType or ArrayType.
 	 */
 	public static function type(string $type): Type
 	{
-		return new Type($type);
+		$class = self::typeClass(TypeExpression::parse($type));
+		return new $class($type);
+	}
+
+
+	/**
+	 * The subclass of Type that Expect::type() returns for a parsed expression: the dedicated one when
+	 * every variant is of its kind, the plain Type otherwise.
+	 * @param  array<string, mixed>  $item
+	 * @return class-string<Type>
+	 * @internal
+	 */
+	public static function typeClass(array $item): string
+	{
+		$variants = $item['kind'] === Kind::Union ? $item['variants'] : [$item];
+		$classes = array_unique(array_map(fn(array $variant) => match ($variant['kind']) {
+			Kind::String => StringType::class,
+			Kind::Int, Kind::Float, Kind::Number => NumberType::class,
+			Kind::Array, Kind::List, Kind::Iterable => ArrayType::class,
+			default => Type::class,
+		}, $variants));
+		return count($classes) === 1 ? reset($classes) : Type::class;
 	}
 
 
@@ -85,7 +107,7 @@ final class Expect
 				throw new Nette\InvalidArgumentException("Variadic parameter \$$name of {$ro->getName()}::__construct() is not supported by Expect::from().");
 			} elseif (!isset($items[$name])) {
 				$type = Helpers::getPropertyType($prop) ?? 'mixed';
-				$item = new Type($type);
+				$item = self::type($type);
 				if ($prop instanceof \ReflectionProperty ? $prop->isInitialized($object) : $prop->isOptional()) {
 					$def = ($prop instanceof \ReflectionProperty ? $prop->getValue($object) : $prop->getDefaultValue());
 					if (is_object($def)) {
@@ -111,29 +133,29 @@ final class Expect
 	 * Without Schema elements, creates a plain array type with the given default value.
 	 * @param  mixed[]  $shape
 	 */
-	public static function array(?array $shape = []): Structure|Type
+	public static function array(?array $shape = []): Structure|ArrayType
 	{
 		$shape ??= [];
 		return Nette\Utils\Arrays::first($shape) instanceof Schema
 			? (new Structure($shape))->castTo('array')
-			: (new Type('array'))->default($shape);
+			: (new ArrayType('array'))->default($shape);
 	}
 
 
 	/**
 	 * Creates an associative or indexed array schema where every value matches the given type.
 	 */
-	public static function arrayOf(string|Schema $valueType, string|Schema|null $keyType = null): Type
+	public static function arrayOf(string|Schema $valueType, string|Schema|null $keyType = null): ArrayType
 	{
-		return (new Type('array'))->items($valueType, $keyType);
+		return (new ArrayType('array'))->items($valueType, $keyType);
 	}
 
 
 	/**
 	 * Creates a list schema (sequentially indexed from 0) where every element matches the given type.
 	 */
-	public static function listOf(string|Schema $type): Type
+	public static function listOf(string|Schema $type): ArrayType
 	{
-		return (new Type('list'))->items($type);
+		return (new ArrayType('list'))->items($type);
 	}
 }

@@ -52,7 +52,7 @@ test('min(), max() and pattern() narrow the type, a range in the expression too'
 	Assert::same(3.0, $d['min']);
 	Assert::same(10.0, $d['max']);
 
-	$d = Expect::type('int|string')->min(3)->pattern('\d+')->describe();
+	$d = @Expect::type('int|string')->min(3)->pattern('\d+')->describe(); // @ options on a union are deprecated
 	Assert::same(3.0, $d['variants'][0]['min']);
 	Assert::same(3.0, $d['variants'][1]['min']);
 	Assert::null($d['variants'][0]['pattern'] ?? null);
@@ -83,7 +83,7 @@ test('collections report their children as schemas', function () {
 	Assert::same(Kind::Int, $d['items']['kind']); // from the expression, not a schema
 	Assert::same(3.0, $d['max']);
 
-	$d = Expect::type('array|string')->items('int')->describe();
+	$d = @Expect::type('array|string')->items('int')->describe(); // @ options on a union are deprecated
 	Assert::type(Elements\Type::class, $d['variants'][0]['items']);
 	Assert::false(isset($d['variants'][1]['items']));
 });

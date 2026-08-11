@@ -29,14 +29,14 @@ trait Base
 	private ?string $description = null;
 
 
-	public function default(mixed $value): self
+	public function default(mixed $value): static
 	{
 		$this->default = $value;
 		return $this;
 	}
 
 
-	public function required(bool $state = true): self
+	public function required(bool $state = true): static
 	{
 		$this->required = $state;
 		return $this;
@@ -47,7 +47,7 @@ trait Base
 	 * Sets a pre-normalization callback applied to the raw input value before any validation.
 	 * @param  callable(mixed): mixed  $handler
 	 */
-	public function before(callable $handler): self
+	public function before(callable $handler): static
 	{
 		$this->before = $handler(...);
 		return $this;
@@ -57,7 +57,7 @@ trait Base
 	/**
 	 * Casts the validated value to a built-in type or instantiates the given class.
 	 */
-	public function castTo(string $type): self
+	public function castTo(string $type): static
 	{
 		return $this->transform(Helpers::getCastStrategy($type));
 	}
@@ -67,7 +67,7 @@ trait Base
 	 * Adds a post-validation transformation callback. The handler may also report errors via Context.
 	 * @param  callable(mixed, Context): mixed  $handler
 	 */
-	public function transform(callable $handler): self
+	public function transform(callable $handler): static
 	{
 		$this->transforms[] = $handler(...);
 		return $this;
@@ -78,7 +78,7 @@ trait Base
 	 * Adds a custom validation assertion; optionally describe it for error messages.
 	 * @param  callable(mixed): bool  $handler
 	 */
-	public function assert(callable $handler, ?string $description = null): self
+	public function assert(callable $handler, ?string $description = null): static
 	{
 		$expected = $description ?? (is_string($handler) ? "$handler()" : '#' . count($this->transforms));
 		return $this->transform(function ($value, Context $context) use ($handler, $description, $expected) {
@@ -98,7 +98,7 @@ trait Base
 	/**
 	 * Marks the item as deprecated; emits a warning with the given message when the item is used.
 	 */
-	public function deprecated(string $message = 'The item %path% is deprecated.'): self
+	public function deprecated(string $message = 'The item %path% is deprecated.'): static
 	{
 		$this->deprecated = $message;
 		return $this;
@@ -108,7 +108,7 @@ trait Base
 	/**
 	 * Sets a human-readable description of the item; it does not affect validation.
 	 */
-	public function description(string $description): self
+	public function description(string $description): static
 	{
 		$this->description = $description;
 		return $this;
