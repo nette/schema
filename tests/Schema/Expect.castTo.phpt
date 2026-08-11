@@ -58,6 +58,33 @@ test('object with constructor', function () {
 });
 
 
+test('constructor mismatch reports target class', function () {
+	$schema = Expect::array()->castTo(Foo2::class);
+
+	Assert::exception(
+		fn() => (new Processor)->process($schema, ['c' => 1]),
+		Nette\InvalidStateException::class,
+		'Unable to cast value to Foo2: %a%',
+	);
+});
+
+
+test('property mismatch reports target class', function () {
+	class Foo3
+	{
+		public int $a;
+	}
+
+	$schema = Expect::array()->castTo(Foo3::class);
+
+	Assert::exception(
+		fn() => (new Processor)->process($schema, ['a' => 'text']),
+		Nette\InvalidStateException::class,
+		'Unable to cast value to Foo3: %a%',
+	);
+});
+
+
 test('DateTime', function () {
 	$schema = Expect::string()->castTo(DateTime::class);
 	Assert::equal(

@@ -212,13 +212,20 @@ final class Helpers
 
 		} elseif (is_subclass_of($type, \UnitEnum::class)) {
 			throw new Nette\InvalidStateException("Cannot cast value to pure enum $type.");
-
-		} elseif (method_exists($type, '__construct')) {
-			return static fn($value) => is_array($value) || $value instanceof \stdClass
-				? new $type(...(array) $value)
-				: new $type($value);
-		} else {
-			return static fn($value) => Nette\Utils\Arrays::toObject((array) $value, new $type);
 		}
+
+		$factory = method_exists($type, '__construct')
+			? static fn($value) => is_array($value) || $value instanceof \stdClass
+				? new $type(...(array) $value)
+				: new $type($value)
+			: static fn($value) => Nette\Utils\Arrays::toObject((array) $value, new $type);
+
+		return static function ($value) use ($factory, $type) {
+			try {
+				return $factory($value);
+			} catch (\Error $e) {
+				throw new Nette\InvalidStateException("Unable to cast value to $type: " . $e->getMessage(), 0, $e);
+			}
+		};
 	}
 }
