@@ -38,9 +38,9 @@ final class Processor
 	{
 		$this->createContext();
 		$data = $schema->normalize($data, $this->context);
-		$this->throwsErrors();
+		$this->throwErrors();
 		$data = $schema->complete($data, $this->context);
-		$this->throwsErrors();
+		$this->throwErrors();
 		return $data;
 	}
 
@@ -57,13 +57,13 @@ final class Processor
 		$first = true;
 		foreach ($dataset as $data) {
 			$data = $schema->normalize($data, $this->context);
-			$this->throwsErrors();
+			$this->throwErrors();
 			$flatten = $first ? $data : $schema->merge($data, $flatten);
 			$first = false;
 		}
 
 		$data = $schema->complete($flatten, $this->context);
-		$this->throwsErrors();
+		$this->throwErrors();
 		return $data;
 	}
 
@@ -83,7 +83,7 @@ final class Processor
 	}
 
 
-	private function throwsErrors(): void
+	private function throwErrors(): void
 	{
 		if ($this->context->errors) {
 			throw new ValidationException(null, $this->context->errors);
