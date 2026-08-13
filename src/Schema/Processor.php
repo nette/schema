@@ -75,8 +75,10 @@ final class Processor
 	public function getWarnings(): array
 	{
 		$res = [];
-		foreach ($this->context->warnings as $message) {
-			$res[] = $message->toString();
+		if (isset($this->context)) {
+			foreach ($this->context->warnings as $message) {
+				$res[] = $message->toString();
+			}
 		}
 
 		return $res;

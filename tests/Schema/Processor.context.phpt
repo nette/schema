@@ -9,6 +9,11 @@ use Tester\Assert;
 require __DIR__ . '/../bootstrap.php';
 
 
+test('getWarnings() before processing', function () {
+	Assert::same([], (new Processor)->getWarnings());
+});
+
+
 test('', function () {
 	$schema = Expect::structure([
 		'r' => Expect::string()->required(),
