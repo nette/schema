@@ -202,7 +202,7 @@ final class Type implements Schema
 	/** @param  array<mixed>  $value */
 	private function validateItems(array &$value, Context $context): void
 	{
-		if (!$this->itemsValue) {
+		if (!($itemsValue = $this->itemsValue)) {
 			return;
 		}
 
@@ -210,9 +210,15 @@ final class Type implements Schema
 		foreach ($value as $key => $val) {
 			$context->path[] = $key;
 			$context->isKey = true;
+			$isKeyOk = $context->createChecker();
 			$key = $this->itemsKey ? $this->itemsKey->complete($key, $context) : $key;
 			$context->isKey = false;
-			$res[$key ?? ''] = $this->itemsValue->complete($val, $context);
+			$keyOk = $isKeyOk();
+			$val = $itemsValue->complete($val, $context);
+			if ($keyOk) {
+				$res[$key] = $val;
+			}
+
 			array_pop($context->path);
 		}
 		$value = $res;
