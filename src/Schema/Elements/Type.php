@@ -11,6 +11,7 @@ use Nette\Schema\Context;
 use Nette\Schema\DynamicParameter;
 use Nette\Schema\Helpers;
 use Nette\Schema\Schema;
+use Nette\Utils\Validators;
 use function array_key_exists, array_pop, implode, is_array, str_replace, strpos;
 
 
@@ -174,7 +175,7 @@ final class Type implements Schema
 			$merge = false;
 		}
 
-		if ($value === null && is_array($this->default)) {
+		if ($value === null && is_array($this->default) && !Validators::is(null, $this->type)) {
 			$value = []; // is unable to distinguish null from array in NEON
 		}
 
@@ -185,7 +186,7 @@ final class Type implements Schema
 		$isOk() && Helpers::validateRange($value, $this->range, $context, $this->type);
 		$isOk() && $value !== null && $this->pattern !== null && Helpers::validatePattern($value, $this->pattern, $context);
 		$isOk() && is_array($value) && $this->validateItems($value, $context);
-		$isOk() && $merge && $value = Helpers::merge($value, $this->default);
+		$isOk() && $merge && $value !== null && $value = Helpers::merge($value, $this->default);
 		$isOk() && $value = $this->doTransform($value, $context);
 		if (!$isOk()) {
 			return null;

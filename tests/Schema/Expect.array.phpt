@@ -34,6 +34,21 @@ test('without default value', function () {
 });
 
 
+test('nullable array accepts null', function () {
+	$schema = Expect::array()->nullable();
+	Assert::null((new Processor)->process($schema, null));
+	Assert::same([], (new Processor)->process($schema, []));
+	Assert::same([1, 2], (new Processor)->process($schema, [1, 2]));
+
+	$schema = Expect::arrayOf('string')->nullable();
+	Assert::null((new Processor)->process($schema, null));
+	Assert::same(['a'], (new Processor)->process($schema, ['a']));
+
+	$schema = Expect::listOf('string')->nullable();
+	Assert::null((new Processor)->process($schema, null));
+});
+
+
 test('not merging', function () {
 	$schema = Expect::array([
 		'key1' => 'val1',
