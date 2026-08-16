@@ -7,7 +7,7 @@
 
 namespace Nette\Schema;
 
-use function implode, preg_replace_callback;
+use function array_key_exists, implode, preg_replace_callback;
 
 
 /**
@@ -89,7 +89,9 @@ final class Message
 
 		return preg_replace_callback('~( ?)%(\w+)%~', function ($m) use ($vars) {
 			[, $space, $key] = $m;
-			return $vars[$key] === null ? '' : $space . $vars[$key];
+			return array_key_exists($key, $vars)
+				? ($vars[$key] === null ? '' : $space . $vars[$key])
+				: $m[0];
 		}, $this->message);
 	}
 }
