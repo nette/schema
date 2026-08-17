@@ -10,9 +10,11 @@ namespace Nette\Schema\Elements;
 use Nette\Schema\Context;
 use Nette\Schema\DynamicParameter;
 use Nette\Schema\Helpers;
+use Nette\Schema\Kind;
 use Nette\Schema\Schema;
+use Nette\Schema\TypeExpression;
 use Nette\Utils\Validators;
-use function array_key_exists, array_pop, implode, is_array, str_replace, strpos;
+use function array_key_exists, array_map, array_pop, implode, in_array, is_array, max, min, str_replace, strpos;
 
 
 final class Type implements Schema
@@ -103,6 +105,41 @@ final class Type implements Schema
 	{
 		$this->pattern = $pattern;
 		return $this;
+	}
+
+
+	/********************* inspection ****************d*g**/
+
+
+	/**
+	 * Reports what the type accepts as a plain array (see TypeExpression::parse()); min(), max(), pattern()
+	 * and items() narrow every variant they apply to, child schemas are reported as they are.
+	 * @return array<string, mixed>
+	 */
+	public function describe(): array
+	{
+		$narrow = function (array $item) use (&$narrow): array {
+			if ($item['kind'] === Kind::Union) {
+				$item['variants'] = array_map($narrow, $item['variants']);
+				return $item;
+			}
+
+			$arrayLike = in_array($item['kind'], [Kind::Array, Kind::List, Kind::Iterable], strict: true);
+			if ($arrayLike || in_array($item['kind'], [Kind::Int, Kind::Float, Kind::String], strict: true)) {
+				$item['min'] = $this->range[0] === null ? $item['min'] : max($this->range[0], $item['min'] ?? -INF);
+				$item['max'] = $this->range[1] === null ? $item['max'] : min($this->range[1], $item['max'] ?? INF);
+			}
+			if ($item['kind'] === Kind::String && $this->pattern !== null) {
+				$item['pattern'] = $this->pattern;
+			}
+			if ($arrayLike && $this->itemsValue) {
+				$item['items'] = $this->itemsValue;
+				$item['keys'] = $this->itemsKey;
+			}
+			return $item;
+		};
+
+		return $narrow(TypeExpression::parse($this->type)) + $this->describeBase();
 	}
 
 

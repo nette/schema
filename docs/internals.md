@@ -192,6 +192,40 @@ The result is a `Structure` with `castTo($class)` **stacked after** the
 constructor's built-in `castTo('object')`, so a completed value travels
 array → `stdClass` → instance through the cast fork above.
 
+## Inspection: `describe()`, `TypeExpression` and the JSON Schema export (`@internal`)
+
+`Type`, `Structure` and `AnyOf` report what they accept as a **plain array**:
+`describe()` returns `'kind' => Kind` (a closed vocabulary), `required`,
+`description` and the keys of the kind (`min`, `max`, `pattern`, `format`,
+`items`, `keys`, `shape`, `otherItems`, `values`, `variants`, `type`, plus
+`nullable`/`dynamic` on `Type` and `AnyOf`). **Child schemas are reported as they
+are, not expanded**; only the variants of a `Type` union and the items of `'int[]'`
+are arrays, because there is no element behind them. The array is exactly what
+`JsonSchema::export()` needs and nothing more; there is no descriptor class.
+
+**`TypeExpression::parse()` is the single translator of the `Expect::type()`
+string language** (`|`, `?`, `[]`, `name:range`, `pattern:regex`) into that array.
+It follows what `Validators::is()` accepts, not what the author probably meant:
+`'int[]'` is `Kind::Iterable` of ints (any iterable, keys unchecked),
+`'number'`/`'scalar'` expand to unions, `'?x'`/`'null|x'` set `nullable`,
+`DynamicParameter` sets `dynamic`, **an unknown name is a class name**
+(`Kind::Instance`, decided by exclusion, never by `class_exists`), and only the
+fixed list of legacy validator names (`numeric`, `file`, `url`, ...) plus
+intersections `A&B` become `Kind::Other` with the raw expression under `type`.
+That table is also the migration table for the day the string notation is reduced
+to BC sugar. `Type::describe()` = parse, then **narrow every variant** the
+element's own `min()`/`max()` (intersected with a range from the expression),
+`pattern()` (string variants only) and `items()` (array-like variants only) apply
+to. `null` and `DynamicParameter` are flags, never variants, and `min`/`max` keep
+the type-relative meaning of `validateRange`, so they live on the variants.
+
+`JsonSchema::export()` emits shape only (`description` yes; defaults, casts and
+transforms no), anchors `pattern` as `^(?:…)$`, maps `Kind::Array` to a JSON
+object unless the key type is `Kind::Int`, narrows `Kind::Iterable` to a JSON
+array, and **throws `NotSupportedException` for `Instance`, `Object`, `Callable`
+and `Other`** rather than emitting a schema the `Processor` would then reject.
+Everything here is `@internal` so the vocabulary can still change.
+
 ## Navigation map
 
 | Concern | Where |
@@ -208,3 +242,4 @@ array → `stdClass` → instance through the cast fork above.
 | Error message rendering | `Message::toString`, `Message::*` code constants |
 | Key schemas, `isKey` | `Type::normalize`/`validateItems`, `Context::isKey` |
 | Object-to-schema mapping | `Expect::from`, `Helpers::getPropertyType` |
+| Inspection, JSON Schema export | `Elements/*::describe`, `Kind`, `TypeExpression::parse`, `JsonSchema::export` |

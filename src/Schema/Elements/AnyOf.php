@@ -10,6 +10,7 @@ namespace Nette\Schema\Elements;
 use Nette;
 use Nette\Schema\Context;
 use Nette\Schema\Helpers;
+use Nette\Schema\Kind;
 use Nette\Schema\Schema;
 use function array_merge, array_unique, implode, is_array;
 
@@ -62,6 +63,41 @@ final class AnyOf implements Schema
 	{
 		$this->set[] = new Type(Nette\Schema\DynamicParameter::class);
 		return $this;
+	}
+
+
+	/********************* inspection ****************d*g**/
+
+
+	/**
+	 * Scalar variants are reported as 'values', schema variants as 'variants'; scalars alone make an Enum,
+	 * anything with a schema variant a Union.
+	 * @return array<string, mixed>
+	 */
+	public function describe(): array
+	{
+		$values = $variants = [];
+		$nullable = false;
+		foreach ($this->set as $item) {
+			if ($item === null) {
+				$nullable = true;
+			} elseif (!$item instanceof Schema) {
+				$values[] = $item;
+			} elseif (!($item instanceof Type && ($d = $item->describe())['kind'] === Kind::Any && $d['dynamic'])) {
+				$variants[] = $item; // the variant dynamic() adds accepts a DynamicParameter only, that is not a shape
+			}
+		}
+
+		return [
+			'kind' => match (true) {
+				(bool) $variants => Kind::Union,
+				(bool) $values => Kind::Enum,
+				default => $nullable ? Kind::Null : Kind::Any,
+			},
+			'values' => $values,
+			'variants' => $variants,
+			'nullable' => $nullable,
+		] + $this->describeBase();
 	}
 
 

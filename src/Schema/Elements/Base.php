@@ -116,6 +116,16 @@ trait Base
 	}
 
 
+	/**
+	 * The metadata every element reports from describe(); the element adds its own keys.
+	 * @return array{required: bool, description: ?string}
+	 */
+	protected function describeBase(): array
+	{
+		return ['required' => $this->required, 'description' => $this->description];
+	}
+
+
 	public function completeDefault(Context $context): mixed
 	{
 		if ($this->required) {
