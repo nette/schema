@@ -21,6 +21,7 @@ final class AnyOf implements Schema
 
 	/** @var mixed[] */
 	private array $set;
+	private bool $dynamic = false;
 
 
 	public function __construct(mixed ...$set)
@@ -58,7 +59,7 @@ final class AnyOf implements Schema
 	 */
 	public function dynamic(): self
 	{
-		$this->set[] = new Type(Nette\Schema\DynamicParameter::class);
+		$this->dynamic = true;
 		return $this;
 	}
 
@@ -81,8 +82,8 @@ final class AnyOf implements Schema
 				$nullable = true;
 			} elseif (!$item instanceof Schema) {
 				$values[] = $item;
-			} elseif (!($item instanceof Type && ($d = $item->describe())['kind'] === Kind::Any && $d['dynamic'])) {
-				$variants[] = $item; // the variant dynamic() adds accepts a DynamicParameter only, that is not a shape
+			} else {
+				$variants[] = $item;
 			}
 		}
 
@@ -95,6 +96,7 @@ final class AnyOf implements Schema
 			'values' => $values,
 			'variants' => $variants,
 			'nullable' => $nullable,
+			'dynamic' => $this->dynamic,
 		] + $this->describeBase();
 	}
 
@@ -163,6 +165,10 @@ final class AnyOf implements Schema
 
 				$expecteds[] = Nette\Schema\Helpers::formatValue($item);
 			}
+		}
+
+		if ($this->dynamic && $value instanceof Nette\Schema\DynamicParameter) {
+			return $value;
 		}
 
 		if ($innerErrors) {
