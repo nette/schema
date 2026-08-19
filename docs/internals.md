@@ -212,6 +212,14 @@ make no sense for their kind (`NumberType::pattern()`, `ArrayType::pattern()`,
 same methods stay silent, a union may well hold a string. The fluent setters in
 `Base` and `Type` return `static` for the same reason.
 
+`EnumType` (`Expect::enum()`, and what `Expect::from()` hands out for an
+enum-typed property) is the one subclass that changes behavior, and only by
+widening: a `before()` hook installed in its constructor turns a backing value
+into the case, the validation itself is still `Type`'s `instanceof`, so a wrong
+value still reads "expects to be Suit". An enum class in `Expect::type()` keeps
+meaning plain `instanceof`, as for any other class. `Expect::from()` treats an
+enum default as a value, not as an object to recurse into.
+
 ## Inspection: `describe()`, `TypeExpression` (`@internal`) and the JSON Schema export
 
 `Type`, `Structure` and `AnyOf` report what they accept as a **plain array**:
@@ -267,5 +275,5 @@ export the only supported way out.
 | Error message rendering | `Message::toString`, `Message::*` code constants |
 | Key schemas, `isKey` | `Type::normalize`/`validateItems`, `Context::isKey` |
 | Object-to-schema mapping | `Expect::from`, `Helpers::getPropertyType` |
-| Kind-specific subclasses of `Type` | `Expect::type`, `StringType`, `NumberType`, `ArrayType` |
+| Kind-specific subclasses of `Type` | `Expect::type`, `StringType`, `NumberType`, `ArrayType`, `EnumType` |
 | Inspection, JSON Schema export | `Elements/*::describe`, `Kind`, `TypeExpression::parse`, `JsonSchema::export` |

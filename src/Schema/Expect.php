@@ -10,10 +10,12 @@ namespace Nette\Schema;
 use Nette;
 use Nette\Schema\Elements\AnyOf;
 use Nette\Schema\Elements\ArrayType;
+use Nette\Schema\Elements\EnumType;
 use Nette\Schema\Elements\NumberType;
 use Nette\Schema\Elements\StringType;
 use Nette\Schema\Elements\Structure;
 use Nette\Schema\Elements\Type;
+use function count, is_object, is_string;
 
 
 /**
@@ -46,7 +48,7 @@ final class Expect
 
 	/**
 	 * Creates a schema for a type expression (e.g., 'int|string', 'null|float', 'email'); an expression
-	 * of a single kind of value gets its dedicated StringType, NumberType or ArrayType.
+	 * of a single kind of value gets its dedicated StringType, NumberType, ArrayType or EnumType.
 	 */
 	public static function type(string $type): Type
 	{
@@ -72,6 +74,16 @@ final class Expect
 			default => Type::class,
 		}, $variants));
 		return count($classes) === 1 ? reset($classes) : Type::class;
+	}
+
+
+	/**
+	 * Creates a schema for a backed enum: a case or its backing value is accepted, the case is returned.
+	 * @param  class-string<\BackedEnum>  $enum
+	 */
+	public static function enum(string $enum): EnumType
+	{
+		return new EnumType($enum);
 	}
 
 
@@ -109,10 +121,15 @@ final class Expect
 			$name = $prop->getName();
 			if (!isset($items[$name])) {
 				$type = Helpers::getPropertyType($prop) ?? 'mixed';
-				$item = self::type($type);
+				if (is_subclass_of($enum = ltrim($type, '?'), \BackedEnum::class)) {
+					$item = self::enum($enum);
+					$enum === $type || $item->nullable();
+				} else {
+					$item = self::type($type);
+				}
 				if ($prop instanceof \ReflectionProperty ? $prop->isInitialized($object) : $prop->isOptional()) {
 					$def = ($prop instanceof \ReflectionProperty ? $prop->getValue($object) : $prop->getDefaultValue());
-					if (is_object($def)) {
+					if (is_object($def) && !$def instanceof \UnitEnum) {
 						$item = static::from($def);
 					} elseif ($def === null && !Nette\Utils\Validators::is(null, $type)) {
 						$item->required();
