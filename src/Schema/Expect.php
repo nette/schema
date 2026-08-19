@@ -8,7 +8,7 @@
 namespace Nette\Schema;
 
 use Nette;
-use Nette\Schema\Elements\{AnyOf, ArrayType, NumberType, StringType, Structure, Type};
+use Nette\Schema\Elements\{AnyOf, ArrayType, EnumType, NumberType, StringType, Structure, Type};
 use function array_key_exists, count, is_object;
 
 
@@ -42,7 +42,8 @@ final class Expect
 
 	/**
 	 * Creates a schema for a type expression (e.g., 'int|string', 'null|float', 'email'); an expression
-	 * of a single kind of value gets its dedicated StringType, NumberType or ArrayType.
+	 * of a single kind of value gets its dedicated StringType, NumberType or ArrayType. An enum class means
+	 * instanceof, as any class; Expect::enum() accepts its backing values.
 	 */
 	public static function type(string $type): Type
 	{
@@ -68,6 +69,16 @@ final class Expect
 			default => Type::class,
 		}, $variants));
 		return count($classes) === 1 ? reset($classes) : Type::class;
+	}
+
+
+	/**
+	 * Creates a schema for a backed enum: a case or its backing value is accepted, the case is returned.
+	 * @param  class-string<\BackedEnum>  $enum
+	 */
+	public static function enum(string $enum): EnumType
+	{
+		return new EnumType($enum);
 	}
 
 
@@ -107,10 +118,15 @@ final class Expect
 				throw new Nette\InvalidArgumentException("Variadic parameter \$$name of {$ro->getName()}::__construct() is not supported by Expect::from().");
 			} elseif (!isset($items[$name])) {
 				$type = Helpers::getPropertyType($prop) ?? 'mixed';
-				$item = self::type($type);
+				if (is_subclass_of($enum = ltrim($type, '?'), \BackedEnum::class)) {
+					$item = self::enum($enum);
+					$enum === $type || $item->nullable();
+				} else {
+					$item = self::type($type);
+				}
 				if ($prop instanceof \ReflectionProperty ? $prop->isInitialized($object) : $prop->isOptional()) {
 					$def = ($prop instanceof \ReflectionProperty ? $prop->getValue($object) : $prop->getDefaultValue());
-					if (is_object($def)) {
+					if (is_object($def) && !$def instanceof \UnitEnum) {
 						$item = static::from($def);
 					} elseif ($def === null && !Nette\Utils\Validators::is(null, $type)) {
 						$item->required();
