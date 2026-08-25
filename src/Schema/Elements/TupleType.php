@@ -114,6 +114,7 @@ final class TupleType extends Type
 			return $value;
 		}
 
+		Helpers::rejectPreventMerging($value, $context);
 		foreach ($value as $key => $val) {
 			if ($itemSchema = $this->items[$key] ?? $this->otherItems) {
 				$context->path[] = $key;

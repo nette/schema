@@ -133,16 +133,13 @@ final class Structure implements Schema
 
 	public function normalize(mixed $value, Context $context): mixed
 	{
-		if ($prevent = (is_array($value) && isset($value[Helpers::PreventMerging]))) {
-			unset($value[Helpers::PreventMerging]);
-		}
-
 		$value = $this->doNormalize($value, $context);
 		if (is_object($value)) {
 			$value = (array) $value;
 		}
 
 		if (is_array($value)) {
+			Helpers::rejectPreventMerging($value, $context);
 			foreach ($value as $key => $val) {
 				$itemSchema = $this->items[$key] ?? $this->otherItems;
 				if ($itemSchema) {
@@ -150,10 +147,6 @@ final class Structure implements Schema
 					$value[$key] = $itemSchema->normalize($val, $context);
 					array_pop($context->path);
 				}
-			}
-
-			if ($prevent) {
-				$value[Helpers::PreventMerging] = true;
 			}
 		}
 
@@ -163,11 +156,6 @@ final class Structure implements Schema
 
 	public function merge(mixed $value, mixed $base, Context $context): mixed
 	{
-		if (is_array($value) && isset($value[Helpers::PreventMerging])) {
-			unset($value[Helpers::PreventMerging]);
-			return $value;
-		}
-
 		if ($this->mergeWith) {
 			return ($this->mergeWith)($value, $base);
 		}
@@ -209,12 +197,6 @@ final class Structure implements Schema
 
 	public function complete(mixed $value, Context $context): mixed
 	{
-		// the marker travels with the value through normalize() and merge() consumes it; the layer that has
-		// nothing under it keeps it, and it is not an item of the shape
-		if (is_array($value)) {
-			unset($value[Helpers::PreventMerging]);
-		}
-
 		if ($value === null && $context->keepNullAt !== $context->path) {
 			$value = []; // is unable to distinguish null from array in NEON
 		}
