@@ -175,17 +175,7 @@ class Type implements Schema
 
 	public function normalize(mixed $value, Context $context): mixed
 	{
-		if ($prevent = (is_array($value) && isset($value[Helpers::PreventMerging]))) {
-			unset($value[Helpers::PreventMerging]);
-		}
-
-		$value = $this->normalizeValue($this->doNormalize($value, $context), $context);
-
-		if ($prevent && is_array($value)) {
-			$value[Helpers::PreventMerging] = true;
-		}
-
-		return $value;
+		return $this->normalizeValue($this->doNormalize($value, $context), $context);
 	}
 
 
@@ -197,11 +187,6 @@ class Type implements Schema
 
 	public function merge(mixed $value, mixed $base, Context $context): mixed
 	{
-		if (is_array($value) && isset($value[Helpers::PreventMerging])) {
-			unset($value[Helpers::PreventMerging]);
-			return $value;
-		}
-
 		if ($this->mergeWith) {
 			return ($this->mergeWith)($value, $base);
 		}
@@ -251,12 +236,6 @@ class Type implements Schema
 
 	public function complete(mixed $value, Context $context): mixed
 	{
-		$merge = true;
-		if (is_array($value) && isset($value[Helpers::PreventMerging])) {
-			unset($value[Helpers::PreventMerging]);
-			$merge = false;
-		}
-
 		if ($value !== null || $context->keepNullAt !== $context->path) {
 			$value = $this->coerce($value);
 		}
@@ -265,7 +244,7 @@ class Type implements Schema
 
 		$isOk = $context->createChecker();
 		$value = $this->validate($value, $context);
-		$isOk() && $merge && $value !== null && $value = $this->mergeDefault($value);
+		$isOk() && $value !== null && $value = $this->mergeDefault($value);
 		$isOk() && $value = $this->doTransform($value, $context);
 		if (!$isOk()) {
 			return null;
@@ -377,8 +356,11 @@ class Type implements Schema
 	}
 
 
+	/**
+	 * The default value is not a layer and does not merge; ArrayType overrides this for the deprecated mergeDefaults().
+	 */
 	protected function mergeDefault(mixed $value): mixed
 	{
-		return Helpers::merge($value, $this->default);
+		return $value;
 	}
 }

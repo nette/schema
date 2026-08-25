@@ -8,7 +8,7 @@
 namespace Nette\Schema;
 
 use Nette;
-use function count, in_array, is_array, is_float, is_int, is_object, is_scalar, is_string, strlen;
+use function array_key_exists, count, in_array, is_array, is_float, is_int, is_object, is_scalar, is_string, strlen;
 
 
 /**
@@ -17,41 +17,6 @@ use function count, in_array, is_array, is_float, is_int, is_object, is_scalar, 
 final class Helpers
 {
 	use Nette\StaticClass;
-
-	public const PreventMerging = '_prevent_merging';
-
-
-	/**
-	 * Merges dataset. Left has higher priority than right one.
-	 */
-	public static function merge(mixed $value, mixed $base): mixed
-	{
-		if (is_array($value) && isset($value[self::PreventMerging])) {
-			unset($value[self::PreventMerging]);
-			return $value;
-		}
-
-		if (is_array($value) && is_array($base)) {
-			$index = 0;
-			foreach ($value as $key => $val) {
-				if ($key === $index) {
-					$base[] = $val;
-					$index++;
-				} else {
-					$base[$key] = static::merge($val, $base[$key] ?? null);
-				}
-			}
-
-			return $base;
-
-		} elseif ($value === null && is_array($base)) {
-			return $base;
-
-		} else {
-			return $value;
-		}
-	}
-
 
 	/**
 	 * Formats a value for use in error messages (e.g., 'hello', true, object stdClass).
@@ -114,6 +79,21 @@ final class Helpers
 	{
 		return ($range[0] === null || $value >= $range[0])
 			&& ($range[1] === null || $value <= $range[1]);
+	}
+
+
+	/**
+	 * Transitional guard: the magic key of 1.x was removed and must fail loudly, not flow through as data.
+	 * @param  array<mixed>  $value
+	 */
+	public static function rejectPreventMerging(array $value, Context $context): void
+	{
+		if (array_key_exists('_prevent_merging', $value)) {
+			$context->addError(
+				'The key %path% is no longer supported, use mergeMode() instead.',
+				Message::CannotMerge,
+			)->path[] = '_prevent_merging';
+		}
 	}
 
 

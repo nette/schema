@@ -8,7 +8,7 @@
 namespace Nette\Schema\Elements;
 
 use Nette;
-use Nette\Schema\{Context, DynamicParameter, Helpers, Kind, Schema};
+use Nette\Schema\{Context, DynamicParameter, Kind, Schema};
 use function is_array;
 
 
@@ -160,11 +160,6 @@ final class AnyOf implements Schema
 
 	public function merge(mixed $value, mixed $base, Context $context): mixed
 	{
-		if (is_array($value) && isset($value[Helpers::PreventMerging])) {
-			unset($value[Helpers::PreventMerging]);
-			return $value;
-		}
-
 		if ($this->mergeWith) {
 			return ($this->mergeWith)($value, $base);
 		}
