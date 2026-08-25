@@ -36,17 +36,8 @@ final class TupleType extends Type
 
 		(function (Schema ...$items) {})(...$shape);
 		parent::__construct('list');
-		parent::default(null); // a tuple of nothing is not a value, so null is not coerced to one
+		$this->default(null); // a missing tuple is null like a missing scalar, not an empty list
 		$this->items = $shape;
-	}
-
-
-	/**
-	 * Not supported for tuples; always throws.
-	 */
-	public function default(mixed $value): static
-	{
-		throw new Nette\InvalidStateException('Tuple cannot have default value.');
 	}
 
 
