@@ -88,11 +88,13 @@ test('scalar items', function () {
 });
 
 
-testException(
-	'default value must be readonly',
-	fn() => Expect::tuple([])->default([]),
-	Nette\InvalidStateException::class,
-);
+test('default value', function () {
+	$schema = Expect::structure(['t' => Expect::tuple([Expect::int(), Expect::string()])->default([1, 'a'])])->castTo('array');
+	Assert::same(['t' => [1, 'a']], (new Processor)->process($schema, []));
+
+	// the default is not merged into a given tuple
+	Assert::same(['t' => [2, null]], (new Processor)->process($schema, ['t' => [2]]));
+});
 
 
 test('a missing tuple is null, like a missing scalar', function () {
