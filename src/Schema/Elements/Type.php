@@ -12,7 +12,7 @@ use Nette\Schema\DynamicParameter;
 use Nette\Schema\Helpers;
 use Nette\Schema\Schema;
 use Nette\Utils\Validators;
-use function array_key_exists, array_pop, implode, is_array, str_replace, strpos;
+use function array_key_exists, is_array;
 
 
 final class Type implements Schema
