@@ -18,7 +18,7 @@ subtler than it looks.
 **Nette Schema** validates and normalizes data structures (config files, API
 inputs) through a fluent `Expect::` builder and a `Processor`.
 
-- **PHP Version**: 8.1 - 8.5
+- **PHP Version**: 8.1 - 8.6
 - **Package**: `nette/schema` (dep: `nette/utils`); `master` = 2.0-dev,
   maintenance lives on `v1.x` branches
 
