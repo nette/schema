@@ -1,5 +1,24 @@
 # Upgrading nette/schema
 
+## 1.4.0
+
+- **Deprecated** `Nette\Schema\Elements\Base::before()` called repeatedly on the same schema: merge the handlers into one; a later call still replaces the previous handler, while in 2.0 the handlers will be chained; using the old name triggers E_USER_DEPRECATED (4f8c06f2)
+- **Deprecated** `Nette\Schema\Elements\Type::min()` on a union type such as `int|string` or `scalar`: give `min()` to the variants of `Nette\Schema\Expect::anyOf()` instead; using the old name triggers E_USER_DEPRECATED (943174e0)
+- **Deprecated** `Nette\Schema\Elements\Type::max()` on a union type such as `int|string` or `scalar`: give `max()` to the variants of `Nette\Schema\Expect::anyOf()` instead; using the old name triggers E_USER_DEPRECATED (943174e0)
+- **Deprecated** `Nette\Schema\Elements\Type::pattern()` on a union type such as `int|string` or `scalar`: give `pattern()` to the string variant of `Nette\Schema\Expect::anyOf()` instead; using the old name triggers E_USER_DEPRECATED (943174e0)
+- **Deprecated** `Nette\Schema\Elements\Type::items()` (marked @internal) on a union type such as `int|string` or `scalar`: give `items()` to the array variant of `Nette\Schema\Expect::anyOf()` instead (deprecated since 1.0.3); using the old name triggers E_USER_DEPRECATED (943174e0)
+- **Deprecated** `Nette\Schema\Elements\Type::mergeDefaults()` on a union type such as `int|string` or `scalar`: give `mergeDefaults()` to the variants of `Nette\Schema\Expect::anyOf()` instead; using the old name triggers E_USER_DEPRECATED (943174e0)
+- **Deprecated** `Nette\Schema\Elements\NumberType::pattern()`: a number has no pattern, remove the call from `Nette\Schema\Expect::int()`, `Nette\Schema\Expect::float()` and other number schemas; using the old name triggers E_USER_DEPRECATED (943174e0)
+- **Deprecated** `Nette\Schema\Elements\ArrayType::pattern()`: an array has no pattern, remove the call from `Nette\Schema\Expect::array()`, `Nette\Schema\Expect::arrayOf()`, `Nette\Schema\Expect::listOf()` and other array schemas; using the old name triggers E_USER_DEPRECATED (943174e0)
+- **Deprecated** `Nette\Schema\Elements\StringType::items()`: a string has no items, remove the call from `Nette\Schema\Expect::string()` and other string schemas (deprecated since 1.0.3); using the old name triggers E_USER_DEPRECATED (943174e0)
+- **Deprecated** `Nette\Schema\Elements\NumberType::items()`: a number has no items, remove the call from `Nette\Schema\Expect::int()`, `Nette\Schema\Expect::float()` and other number schemas (deprecated since 1.0.3); using the old name triggers E_USER_DEPRECATED (943174e0)
+- **Deprecated** `Nette\Schema\Elements\StringType::mergeDefaults()`: a string has no default merging, remove the call from `Nette\Schema\Expect::string()` and other string schemas; using the old name triggers E_USER_DEPRECATED (943174e0)
+- **Deprecated** `Nette\Schema\Elements\NumberType::mergeDefaults()`: a number has no default merging, remove the call from `Nette\Schema\Expect::int()`, `Nette\Schema\Expect::float()` and other number schemas; using the old name triggers E_USER_DEPRECATED (943174e0)
+- **Changed** `Nette\Schema\Elements\ArrayType::items()` is no longer deprecated and is supported again on the schemas of `Nette\Schema\Expect::array()`, `Nette\Schema\Expect::arrayOf()` and `Nette\Schema\Expect::listOf()` (deprecated since 1.0.3) (943174e0)
+- **Changed** `Nette\Schema\Elements\Base::castTo()` now keeps `null` as `null` when the target is a class, an enum or a `?type`; previously a class without constructor was instantiated with its defaults, a class with constructor threw `Nette\InvalidStateException` and an enum reported a validation error; give the item a default or handle `null` if you relied on getting an object (335f4cc0)
+- **Changed** `Nette\Schema\Expect::anyOf()` now returns `null` for a `null` value whenever the set accepts `null`; previously a structure or array variant listed before `null` coerced it to an empty value or a structure of defaults (93824b6b)
+- **Changed** `Nette\Schema\Elements\Base::deprecated()` called on `Nette\Schema\Expect::anyOf()` now reports its deprecation warning when the item is used; previously the anyOf schema ignored it and reported nothing (42e70c75)
+
 ## 1.3.7
 
 - **Changed** `Nette\Schema\Expect::from()` now throws `Nette\InvalidArgumentException` for a class whose constructor has a variadic parameter; previously `ReflectionException` escaped; affects code catching it (9bb50bcf)

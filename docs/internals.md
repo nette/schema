@@ -11,7 +11,7 @@ four phases. `Processor` has two public entry points and calls only two of them
 per run:
 
 - `process()` → `normalize()` then `complete()` (each followed by
-  `throwsErrors()`).
+  `throwErrors()`).
 - `processMultiple()` → `normalize()` each dataset item, `merge()` them
   left-to-right, then a single `complete()`.
 
@@ -29,10 +29,9 @@ run once** on the already-merged result (inside the single `complete`). So a
 
 ## Error accumulation is the control-flow spine
 
-Errors are **collected in `Context`, never thrown mid-validation** (`Context`,
-`Processor::throwsErrors` — yes, with the typo — fires only between phases).
-The mechanism that makes this
-work is `Context::createChecker()`: it snapshots the current error count and
+Errors are **collected in `Context`, never thrown mid-validation**
+(`Processor::throwErrors` fires only between phases). The mechanism that makes
+this work is `Context::createChecker()`: it snapshots the current error count and
 returns a closure that is `true` only while no new error has been added.
 
 Every element's `complete()` is a chain guarded by that closure:
@@ -59,13 +58,13 @@ Reshaping `Context` or `createContext` breaks them invisibly.
 
 `Context::addError(template, code, variables)` stores a `Message`; rendering is
 deferred to `Message::toString()`. Templates use `%placeholder%` substitution:
-`label`, `path` and `value` are filled in automatically (`addError` injects
-`isKey`, which flips `%label%` between "item" and "key of item"; `addWarning`
-does not). A placeholder whose value is `null` vanishes together with the space
+`label`, `path` and `value` are filled in automatically (`addError` and
+`addWarning` inject `isKey`, which flips `%label%` between "item" and "key of
+item"). A placeholder whose value is `null` vanishes together with the space
 before it — that is how `%path%` disappears at the root. Codes are the
 `Message::*` string constants, whose docblocks list the expected variables; a
-placeholder with no matching variable triggers an undefined-array-key warning
-in `toString()`, so keep template and variables in sync.
+placeholder with no matching variable is left in the text verbatim (`%foo%`),
+so a template/variables mismatch shows up only in the rendered message.
 
 ## `PreventMerging`: in-band metadata, handled in many places
 
@@ -82,16 +81,17 @@ it** — and they do so in subtly different ways:
 
 This is the package's sharpest trap: a piece of control state travelling through
 the payload, replicated across five sites. Any new `Schema` element must reproduce
-the strip-and-honor dance or merging silently misbehaves. (There is a standing
-idea to replace it with a declarative `MergeMode::Replace`; DI carries its own
-parallel `PREVENT_MERGING` constant.)
+the strip-and-honor dance or merging silently misbehaves. DI carries its own
+parallel `PREVENT_MERGING` constant, so the key name is a cross-package contract.
 
 ## One transform pipeline; `assert`/`castTo` are sugar over `transform`
 
 `before()`, `transform()`, `assert()`, and `castTo()` are **not** independent
-stages. `before` runs in `normalize` (pre-validation) and has a **single slot**:
-a second `before()` call silently replaces the first. Everything else
-appends to a single `$transforms` list (`Base`): `castTo` is
+stages. `before` runs in `normalize` (pre-validation); a repeated call replaces
+the handler and is deprecated, because 2.0 chains them (`Base::$before`).
+`EnumType` maps the backing value in its own `doNormalize()` after the handler,
+never through `before()`, so the handler sees the raw input.
+Everything else appends to a single `$transforms` list (`Base`): `castTo` is
 `transform(getCastStrategy(...))` (a null follows PHP casts for a built-in type
 unless written `?type`, and stays null for a class or an enum, as PHP has no such
 cast), `assert` is a `transform` that reports an error
@@ -105,20 +105,24 @@ one `doTransform` pass, after type/range/pattern validation. Reordering
   `nullable()` was called — which works by prepending `'null|'` to the type
   string (`Type::nullable`), not by a flag. `dynamic()` similarly prepends
   `DynamicParameter::class . '|'`.
-- **null-to-empty-array coercion:** `complete()` turns a `null` value into `[]`
-  whenever the default is an array, with the comment "NEON cannot distinguish null
-  from an empty array". The check is **unconditional — it fires even after
-  `nullable()`**, so a nullable array-typed item never yields `null`, and a NEON
-  key written bare (`key:`) validates as an empty array.
+- **null-to-empty-array coercion:** `Type::complete()` turns a `null` value into
+  `[]` when the default is an array **and the type does not accept null** ("NEON
+  cannot distinguish null from an empty array"), so a NEON key written bare
+  (`key:`) validates as an empty array, while after `nullable()` the `null` is
+  kept. `Structure` coerces always (it has no `nullable()`), `TupleType` never,
+  its default is `null`. Both `Type` and `Structure` skip it at
+  `Context::$keepNullAt`, where an enclosing `anyOf()` accepts the null (see
+  AnyOf).
 
-## Keys validate like values — and collapse on failure
+## Keys validate like values
 
 `arrayOf(value, key)` runs the key schema through the same
 `normalize`/`complete` cycle as values, with `Context::isKey` set around the
 call (`Type::normalize`, `Type::validateItems`); `Message::toString` renders
-such errors as "key of item". The trap: a key that fails `complete()` comes
-back as `null` and lands in `$res[$key ?? '']`, so **all invalid keys silently
-collapse into a single `''` entry**, later ones overwriting earlier ones.
+such errors as "key of item". An item whose key fails `complete()` is **dropped
+from the result** (`validateItems` keeps it only while the key's own checker
+stays clean); its value is still completed first, so errors in both key and
+value are reported.
 
 ## Structure specifics
 
@@ -127,21 +131,39 @@ collapse into a single `''` entry**, later ones overwriting earlier ones.
   `stdClass` and `default()` **throws** — it cannot have one.
 - **A missing required structure still fills nested defaults.**
   `completeDefault` completes `[]` through the normal path (recursively producing
-  every child's default). That path includes `doDeprecation`, so a deprecated
-  structure emits its warning even when merely absent from the input.
+  every child's default), with `deprecated` suspended for the call, so an absent
+  deprecated structure does not warn; a present one does.
 - **`skipDefaults` has two independent switches** — the `Processor`
   (`Context::skipDefaults`) and the `Structure` — and `validateItems` fills in a
   default only when **neither** asks to skip it.
+- **A null value becomes the defaults** (`Structure::complete`): an empty block
+  in NEON is null, which is the same as writing no key at all.
+
+## TupleType specifics
+
+- **A `Type('list')` whose items are given by position.** `Type` checks the
+  list, its length (`min()`, `max()`) and the merging marker; the tuple
+  overrides only the item hooks `normalizeItems()` and `validateItems()`. Each
+  position goes through its own schema, positions beyond the shape through
+  `otherItems()` (the rest elements) or fail as unexpected, and missing
+  trailing positions get their defaults.
+- **`mergeValues()` keeps the later layer wholesale** — mixing positions of two
+  tuples is nonsense, so a tuple has no `mergeMode()`.
+- **No default and no coercion of null.** The default is `null` and `default()`
+  throws, so a missing tuple is `null` like a missing scalar, and a `null` value
+  fails the list check: the positions of a tuple carry meaning and a tuple of
+  nothing is not a value.
+- It reports `Kind::Tuple`, which JSON Schema exports as `prefixItems` with
+  `otherItems` as the rest schema (or `false`), and `extend()` appends positions
+  and returns a tuple.
 
 ## AnyOf: first clean variant wins, in a throwaway context
 
 `findAlternative` tries each variant **in order**. Schema variants are run
-against a **fresh throwaway `Context` (`$dolly`)** that copies only `path`; the
-first variant that completes with **no errors** wins, and only then are its
-`warnings` merged back into the real context. The dolly does **not** inherit
-`skipDefaults`/`isKey`, and even the winning variant's `dynamics` are **not**
-merged back — a dynamic parameter nested inside an `anyOf` variant silently loses
-its deferred validation. Scalar variants are matched with strict `===`.
+against a **fresh throwaway `Context` (`$dolly`)** that copies `path`,
+`skipDefaults` and `isKey`; the first variant that completes with **no errors**
+wins, and only then are its `warnings` and `dynamics` merged back into the real
+context. Scalar variants are matched with strict `===`.
 
 Two consequences: **order matters**, and the **errors, warnings and dynamics of
 losing variants are discarded** with their dolly context. Side effects of their
@@ -149,6 +171,22 @@ callbacks (a transform, a constructor called by `castTo()`) are not: they have
 already happened and nothing undoes them. On total failure, inner
 errors (different path) are surfaced if any exist; otherwise a single aggregated
 "expects to be A|B|C" error is produced.
+
+**An accepted `null` beats coercion, not the order:** a variant that turns null
+into an empty value of its own (a structure, an array) would otherwise claim it
+before the null in the set was reached, and `nullable()` appends the null at the
+end, so it could never win. When the set contains a null, `findAlternative` sets
+`Context::$keepNullAt` to the current path in each dolly, and `Structure` and
+`Type` skip the null-to-empty coercion at exactly that path, so such a variant
+fails and the null wins. A variant that accepts null by itself (a nullable type,
+`mixed`, a `before()` mapping it) still wins in order with its transforms. The
+path pins the rule to the value of the anyOf itself, never to nested items.
+
+`AnyOf::dynamic()` is a **flag, not a variant**, but it acts as the last one: a
+`DynamicParameter` value is first offered to the variants in order, so one that
+is itself `dynamic()` records its deferred type in `dynamics`. Only when none
+takes it does it pass through to the transforms, with nothing recorded, as
+there is no single expected type to defer.
 
 `completeDefault` has one extra fork: when the default is itself a `Schema`
 (`firstIsDefault()` with a schema variant), it delegates to that schema's
@@ -177,12 +215,13 @@ by validating dynamics eagerly.
   `Type::mergeValues()` otherwise falls back to the deep `Helpers::merge`.
   `mergeWith()` (`Base`) wins over any mode; only the merging marker comes first.
 - **`castTo` forks by target** (`Helpers::getCastStrategy`): builtin →
-  `settype`; class **with** constructor → named args from the array/stdClass
+  `settype`; backed enum → `from()`, a wrong value reports `TypeMismatch`
+  listing the cases (a pure enum throws `InvalidStateException` when the schema
+  is built); class **with** constructor → named args from the array/stdClass
   (a scalar is passed as a single argument); anything else → property assignment
-  via `Arrays::toObject((array) $value, new $type)`. There is **no enum branch**:
-  an enum has no constructor, falls into the `new $type` path and dies with a
-  PHP `Error`. This fork is the mechanism behind both `castTo(Class::class)`
-  and Structure's object output.
+  via `Arrays::toObject((array) $value, new $type)`. A failing instantiation is
+  rethrown as `InvalidStateException` naming the target class. This fork is the
+  mechanism behind both `castTo(Class::class)` and Structure's object output.
 - **`min`/`max` mean different things by type** (`validateRange`): item count for
   arrays, character length (`unicode` type) or byte length (otherwise) for
   strings, the value itself for numbers.
@@ -202,7 +241,7 @@ array → `stdClass` → instance through the cast fork above.
 
 ## `Type` and its kind-specific subclasses
 
-`Type` is no longer final: `StringType`, `NumberType` and `ArrayType` extend it
+`Type` is not final: `StringType`, `NumberType` and `ArrayType` extend it
 and **add no behavior of their own** in 1.x. They exist so that `Expect::string()`,
 `Expect::int()`, `Expect::listOf()` and `Expect::type('email')` return a class
 that says what kind of value it is (for users, PHPStan and `describe()`), while
@@ -216,9 +255,13 @@ plain `Type`. **String formats are the Validators pseudo-types** (`email`, `url`
 `identifier`, `digit`, ...): `Expect::type('url')` is a `StringType` validated by
 `Validators::isUrl()` exactly as before. The subclasses deprecate the methods that
 make no sense for their kind (`NumberType::pattern()`, `ArrayType::pattern()`,
-`items()` outside arrays) with an `E_USER_DEPRECATED` notice; on a plain `Type` the
-same methods stay silent, a union may well hold a string. The fluent setters in
-`Base` and `Type` return `static` for the same reason.
+`items()` outside arrays) with an `E_USER_DEPRECATED` notice. On a plain `Type`
+they stay silent when the expression is a single kind (`'bool'`, a class); when it
+is a union (`'int|string'`, `'scalar'`), `min()`, `max()`, `pattern()` and `items()`
+raise a deprecation too (`Type::unionDeprecated`): a union takes no options of its
+own, they belong to the variants of `anyOf()`. A union of one kind (`'int|float'`)
+gets the kind's subclass and stays silent. The fluent setters in `Base` and `Type`
+return `static` so the subclass survives chaining.
 
 `EnumType` (`Expect::enum()`, and what `Expect::from()` hands out for an
 enum-typed property) is the one subclass that changes behavior, and only by
@@ -233,17 +276,21 @@ enum default as a value, not as an object to recurse into.
 `Type`, `Structure` and `AnyOf` report what they accept as a **plain array**:
 `describe()` returns `'kind' => Kind` (a closed vocabulary), `required`,
 `description` and the keys of the kind (`min`, `max`, `pattern`, `format`,
-`items`, `keys`, `shape`, `otherItems`, `values`, `variants`, `type`, plus
-`nullable`/`dynamic` on `Type` and `AnyOf`). **Child schemas are reported as they
+`items`, `keys`, `wrap`, `shape`, `otherItems`, `values`, `variants`, `type`,
+plus `nullable`/`dynamic` on `Type` and `AnyOf`). **Child schemas are reported as they
 are, not expanded**; only the variants of a `Type` union and the items of `'int[]'`
 are arrays, because there is no element behind them. The array is exactly what
 `JsonSchema::export()` needs and nothing more; there is no descriptor class.
+`AnyOf::describe()` sorts its set: scalars into `values`, schemas into
+`variants`, `null` into the `nullable` flag; the kind is `Union` if any schema
+variant exists, `Enum` if only scalars do, `Null` for a lone `null`.
 
 **`TypeExpression::parse()` is the single translator of the `Expect::type()`
 string language** (`|`, `?`, `[]`, `name:range`, `pattern:regex`) into that array.
 It follows what `Validators::is()` accepts, not what the author probably meant:
 `'int[]'` is `Kind::Iterable` of ints (any iterable, keys unchecked),
-`'number'`/`'scalar'` expand to unions, `'?x'`/`'null|x'` set `nullable`,
+`'number'` is `Kind::Number` (a kind of its own, not a union), `'scalar'` expands
+to a union of bool, number and string, `'?x'`/`'null|x'` set `nullable`,
 `DynamicParameter` sets `dynamic`, the string pseudo-types of Validators (`email`,
 `url`, `identifier`, `digit`, ...) are `Kind::String` with the name under `format`,
 **an unknown name is a class name** (`Kind::Instance`, decided by exclusion, never
@@ -262,7 +309,9 @@ transforms no), passes on only the string formats JSON Schema knows (`email`,
 `^(?:…)$`, maps `Kind::Array` to a JSON
 object unless the key type is `Kind::Int`, narrows `Kind::Iterable` to a JSON
 array, and **throws `NotSupportedException` for `Instance`, `Object`, `Callable`
-and `Other`** rather than emitting a schema the `Processor` would then reject.
+and `Other`** rather than emitting a schema the `Processor` would then reject. An
+`Expect::array()` without an item or key type throws too: nothing says whether
+it is a JSON array or object.
 `JsonSchema::export()` is public API; the vocabulary it is built on — `describe()`,
 `Kind`, `TypeExpression` — stays `@internal` and can still change, so keep the
 export the only supported way out.
