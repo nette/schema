@@ -60,11 +60,16 @@ composer phpstan
 - **`assert`/`castTo` are sugar over `transform`** - one `$transforms` list running
   in declaration order, so `->assert()->castTo()` differs from `->castTo()->assert()`.
 - **`default` null is not `nullable`** (`nullable()` prepends `'null|'` to the type
-  string); a `null` value coerces to `[]` when the default is an array. **`Structure`
-  is required-by-default and casts to `object`, so `default()` throws on it.**
+  string); a `null` value coerces to `[]` when the default is an array and the type
+  is not nullable. **`Structure` is required-by-default and casts to `object`, so
+  `default()` throws on it.**
 - **`AnyOf` tries variants in order in a throwaway `Context` clone** - losing
   variants' side effects (including transforms) are discarded. `DynamicParameter`
   values get **deferred** validation (recorded in `Context::dynamics` for DI) -
   don't validate them eagerly.
+- **`Expect::type()` classifies the type expression once** (`TypeExpression::parse()`)
+  into `StringType`/`NumberType`/`ArrayType`/`EnumType` or a plain `Type`; validation
+  itself is still `Validators::is()`. `describe()`, `Kind` and `TypeExpression` are
+  `@internal`, `JsonSchema::export()` is the only public way out - keep it that way.
 - User-facing how-to (the `Expect::` API, castTo/`Expect::from` object mapping,
   building complex schemas) is manual material and lives in the public web docs.
