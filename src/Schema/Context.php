@@ -17,6 +17,9 @@ final class Context
 {
 	public bool $skipDefaults = false;
 
+	/** @internal probe mode: validation-only completion, tolerant to missing required items, transforms are skipped */
+	public bool $isPartial = false;
+
 	/** @var list<int|string> */
 	public array $path = [];
 
