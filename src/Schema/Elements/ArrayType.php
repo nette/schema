@@ -7,7 +7,11 @@
 
 namespace Nette\Schema\Elements;
 
+use Nette;
+use Nette\Schema\Context;
+use Nette\Schema\Helpers;
 use Nette\Schema\Schema;
+use function array_key_exists, is_array;
 
 
 /**
@@ -15,19 +19,164 @@ use Nette\Schema\Schema;
  */
 final class ArrayType extends Type
 {
+	private ?Schema $items = null;
+	private ?Schema $keys = null;
+
+	/** @var array{?float, ?float} */
+	private array $range = [null, null];
+	private bool $mergeDefaults = true;
+
+
+	public function __construct(string $type)
+	{
+		parent::__construct($type);
+		$this->default([]);
+	}
+
+
+	public function min(?float $min): static
+	{
+		$this->range[0] = $min;
+		return $this;
+	}
+
+
+	public function max(?float $max): static
+	{
+		$this->range[1] = $max;
+		return $this;
+	}
+
+
 	/**
 	 * Sets the schema of items and optionally of keys.
 	 */
 	public function items(string|Schema $valueType = 'mixed', string|Schema|null $keyType = null): static
 	{
-		return parent::items($valueType, $keyType);
+		$this->items = $valueType instanceof Schema ? $valueType : Nette\Schema\Expect::type($valueType);
+		$this->keys = $keyType instanceof Schema || $keyType === null ? $keyType : Nette\Schema\Expect::type($keyType);
+		return $this;
 	}
 
 
-	/** @deprecated  an array has no pattern */
-	public function pattern(?string $pattern): static
+	/**
+	 * Controls whether the default value is merged with the input array (enabled by default).
+	 */
+	public function mergeDefaults(bool $state = true): static
 	{
-		trigger_error(__METHOD__ . '() is deprecated, an array has no pattern.', E_USER_DEPRECATED);
-		return parent::pattern($pattern);
+		$this->mergeDefaults = $state;
+		return $this;
+	}
+
+
+	public function describe(): array
+	{
+		return array_merge(
+			parent::describe(),
+			$this->describeRange($this->range),
+			$this->items === null ? [] : ['items' => $this->items, 'keys' => $this->keys],
+		);
+	}
+
+
+	protected function getExpression(bool $withRange = false): string
+	{
+		return parent::getExpression() . ($withRange && $this->range !== [null, null] ? ':' . implode('..', $this->range) : '');
+	}
+
+
+	/********************* processing ****************d*g**/
+
+
+	protected function normalizeValue(mixed $value, Context $context): mixed
+	{
+		if (!is_array($value) || !$this->items) {
+			return $value;
+		}
+
+		$res = [];
+		foreach ($value as $key => $val) {
+			$context->path[] = $key;
+			$context->isKey = true;
+			$key = $this->keys ? $this->keys->normalize($key, $context) : $key;
+			$context->isKey = false;
+			$res[$key] = $this->items->normalize($val, $context);
+			array_pop($context->path);
+		}
+
+		return $res;
+	}
+
+
+	protected function mergeValues(mixed $value, mixed $base): mixed
+	{
+		if (is_array($value) && is_array($base) && $this->items) {
+			$index = 0;
+			foreach ($value as $key => $val) {
+				if ($key === $index) {
+					$base[] = $val;
+					$index++;
+				} else {
+					$base[$key] = array_key_exists($key, $base)
+						? $this->items->merge($val, $base[$key])
+						: $val;
+				}
+			}
+
+			return $base;
+		}
+
+		return Helpers::merge($value, $base);
+	}
+
+
+	protected function coerce(mixed $value): mixed
+	{
+		return $value === null && !$this->getParsed()['nullable']
+			? [] // is unable to distinguish null from array in NEON
+			: $value;
+	}
+
+
+	protected function validate(mixed $value, Context $context): mixed
+	{
+		$isOk = $context->createChecker();
+		parent::validate($value, $context);
+		$isOk() && is_array($value) && Helpers::validateRange($value, $this->range, $context);
+		// items of a Traversable cannot be replaced by their completed form
+		$isOk() && is_array($value) && $this->items !== null && $value = $this->completeItems($value, $this->items, $context);
+		return $value;
+	}
+
+
+	/**
+	 * @param  array<mixed>  $value
+	 * @return array<mixed>
+	 */
+	private function completeItems(array $value, Schema $items, Context $context): array
+	{
+		$res = [];
+		foreach ($value as $key => $val) {
+			$context->path[] = $key;
+			$context->isKey = true;
+			$isKeyOk = $context->createChecker();
+			$key = $this->keys ? $this->keys->complete($key, $context) : $key;
+			$context->isKey = false;
+			$keyOk = $isKeyOk();
+			$val = $items->complete($val, $context);
+			if ($keyOk) {
+				$res[$key] = $val;
+			}
+
+			array_pop($context->path);
+		}
+
+		return $res;
+	}
+
+
+	protected function mergeDefault(mixed $value): mixed
+	{
+		return $this->mergeDefaults ? parent::mergeDefault($value) : $value;
 	}
 }

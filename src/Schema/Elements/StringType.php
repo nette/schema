@@ -7,7 +7,9 @@
 
 namespace Nette\Schema\Elements;
 
-use Nette\Schema\Schema;
+use Nette\Schema\Context;
+use Nette\Schema\Helpers;
+use function is_string;
 
 
 /**
@@ -15,18 +17,57 @@ use Nette\Schema\Schema;
  */
 final class StringType extends Type
 {
-	/** @deprecated  a string has no items */
-	public function items(string|Schema $valueType = 'mixed', string|Schema|null $keyType = null): static
+	/** @var array{?float, ?float} */
+	private array $range = [null, null];
+	private ?string $pattern = null;
+
+
+	public function min(?float $min): static
 	{
-		trigger_error(__METHOD__ . '() is deprecated, a string has no items.', E_USER_DEPRECATED);
-		return parent::items($valueType, $keyType);
+		$this->range[0] = $min;
+		return $this;
 	}
 
 
-	/** @deprecated  a string has no default merging */
-	public function mergeDefaults(bool $state = true): static
+	public function max(?float $max): static
 	{
-		trigger_error(__METHOD__ . '() is deprecated, a string has no default merging.', E_USER_DEPRECATED);
-		return parent::mergeDefaults($state);
+		$this->range[1] = $max;
+		return $this;
+	}
+
+
+	/**
+	 * Sets a regex pattern the whole string must match (anchored to start and end).
+	 */
+	public function pattern(?string $pattern): static
+	{
+		$this->pattern = $pattern;
+		return $this;
+	}
+
+
+	public function describe(): array
+	{
+		return array_merge(
+			parent::describe(),
+			$this->describeRange($this->range),
+			$this->pattern === null ? [] : ['pattern' => $this->pattern],
+		);
+	}
+
+
+	protected function getExpression(bool $withRange = false): string
+	{
+		return parent::getExpression() . ($withRange && $this->range !== [null, null] ? ':' . implode('..', $this->range) : '');
+	}
+
+
+	protected function validate(mixed $value, Context $context): mixed
+	{
+		$isOk = $context->createChecker();
+		parent::validate($value, $context);
+		$isOk() && is_string($value) && Helpers::validateRange($value, $this->range, $context, $this->getExpression());
+		$isOk() && is_string($value) && $this->pattern !== null && Helpers::validatePattern($value, $this->pattern, $context);
+		return $value;
 	}
 }

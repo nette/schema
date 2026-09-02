@@ -7,7 +7,8 @@
 
 namespace Nette\Schema\Elements;
 
-use Nette\Schema\Schema;
+use Nette\Schema\Context;
+use Nette\Schema\Helpers;
 
 
 /**
@@ -15,26 +16,41 @@ use Nette\Schema\Schema;
  */
 final class NumberType extends Type
 {
-	/** @deprecated  a number has no pattern */
-	public function pattern(?string $pattern): static
+	/** @var array{?float, ?float} */
+	private array $range = [null, null];
+
+
+	public function min(?float $min): static
 	{
-		trigger_error(__METHOD__ . '() is deprecated, a number has no pattern.', E_USER_DEPRECATED);
-		return parent::pattern($pattern);
+		$this->range[0] = $min;
+		return $this;
 	}
 
 
-	/** @deprecated  a number has no items */
-	public function items(string|Schema $valueType = 'mixed', string|Schema|null $keyType = null): static
+	public function max(?float $max): static
 	{
-		trigger_error(__METHOD__ . '() is deprecated, a number has no items.', E_USER_DEPRECATED);
-		return parent::items($valueType, $keyType);
+		$this->range[1] = $max;
+		return $this;
 	}
 
 
-	/** @deprecated  a number has no default merging */
-	public function mergeDefaults(bool $state = true): static
+	public function describe(): array
 	{
-		trigger_error(__METHOD__ . '() is deprecated, a number has no default merging.', E_USER_DEPRECATED);
-		return parent::mergeDefaults($state);
+		return array_merge(parent::describe(), $this->describeRange($this->range));
+	}
+
+
+	protected function getExpression(bool $withRange = false): string
+	{
+		return parent::getExpression() . ($withRange && $this->range !== [null, null] ? ':' . implode('..', $this->range) : '');
+	}
+
+
+	protected function validate(mixed $value, Context $context): mixed
+	{
+		$isOk = $context->createChecker();
+		parent::validate($value, $context);
+		$isOk() && Helpers::validateRange($value, $this->range, $context);
+		return $value;
 	}
 }

@@ -16,7 +16,7 @@ use Nette\Schema\Schema;
 use Nette\Schema\TypeExpression;
 use Nette\Utils\Arrays;
 use Nette\Utils\Validators;
-use function array_key_exists, count, is_array, is_bool, is_float, is_int, is_object, is_string, strlen;
+use function count, is_array, is_bool, is_float, is_int, is_object, is_string, strlen;
 
 
 class Type implements Schema
@@ -24,13 +24,6 @@ class Type implements Schema
 	use Base;
 
 	private string $type;
-	private ?Schema $itemsValue = null;
-	private ?Schema $itemsKey = null;
-
-	/** @var array{?float, ?float} */
-	private array $range = [null, null];
-	private ?string $pattern = null;
-	private bool $merge = true;
 
 
 	public function __construct(string $type)
@@ -75,17 +68,6 @@ class Type implements Schema
 
 
 	/**
-	 * Controls whether the default value is merged with the input array (enabled by default).
-	 */
-	public function mergeDefaults(bool $state = true): static
-	{
-		$this->unionDeprecated('mergeDefaults');
-		$this->merge = $state;
-		return $this;
-	}
-
-
-	/**
 	 * Allows the value to be a DynamicParameter, which is recorded for deferred validation.
 	 */
 	public function dynamic(): static
@@ -95,58 +77,38 @@ class Type implements Schema
 	}
 
 
+	#[\Deprecated('bounds belong to NumberType, StringType and ArrayType')]
 	public function min(?float $min): static
 	{
-		$this->unionDeprecated('min');
-		$this->range[0] = $min;
-		return $this;
+		throw new Nette\DeprecatedException("min() is not available on '$this->type', only a number, a string or an array has it; a union takes it per variant in anyOf().");
 	}
 
 
+	#[\Deprecated('bounds belong to NumberType, StringType and ArrayType')]
 	public function max(?float $max): static
 	{
-		$this->unionDeprecated('max');
-		$this->range[1] = $max;
-		return $this;
+		throw new Nette\DeprecatedException("max() is not available on '$this->type', only a number, a string or an array has it; a union takes it per variant in anyOf().");
 	}
 
 
-	/**
-	 * @internal  use arrayOf() or listOf()
-	 */
-	public function items(string|Schema $valueType = 'mixed', string|Schema|null $keyType = null): static
-	{
-		$this->unionDeprecated('items');
-		$this->itemsValue = $valueType instanceof Schema
-			? $valueType
-			: Nette\Schema\Expect::type($valueType);
-		$this->itemsKey = $keyType instanceof Schema || $keyType === null
-			? $keyType
-			: Nette\Schema\Expect::type($keyType);
-		return $this;
-	}
-
-
-	/**
-	 * Sets a regex pattern the string value must match entirely (anchored to start and end).
-	 */
+	#[\Deprecated('a pattern belongs to StringType')]
 	public function pattern(?string $pattern): static
 	{
-		$this->unionDeprecated('pattern');
-		$this->pattern = $pattern;
-		return $this;
+		throw new Nette\DeprecatedException("pattern() is not available on '$this->type', only a string has it; a union takes it per variant in anyOf().");
 	}
 
 
-	/**
-	 * A union of kinds ('int|string') becomes anyOf() in the next major and takes no options of its own;
-	 * they belong to the variants: anyOf(Expect::int()->min(1), Expect::string()->min(1)).
-	 */
-	private function unionDeprecated(string $option): void
+	#[\Deprecated('items belong to ArrayType')]
+	public function items(string|Schema $valueType = 'mixed', string|Schema|null $keyType = null): static
 	{
-		if (static::class === self::class && $this->getParsed()['kind'] === Kind::Union) {
-			trigger_error("$option() on the union '$this->type' is deprecated, give it to the variants of anyOf() instead.", E_USER_DEPRECATED);
-		}
+		throw new Nette\DeprecatedException("items() is not available on '$this->type', only an array has it; a union takes it per variant in anyOf().");
+	}
+
+
+	#[\Deprecated('belongs to ArrayType')]
+	public function mergeDefaults(bool $state = true): static
+	{
+		throw new Nette\DeprecatedException("mergeDefaults() is not available on '$this->type', only an array has it; a union takes it per variant in anyOf().");
 	}
 
 
@@ -154,14 +116,14 @@ class Type implements Schema
 
 
 	/**
-	 * Reports what the type accepts as a plain array (see TypeExpression::parse()); min(), max(), pattern()
-	 * and items() narrow every variant they apply to, child schemas are reported as they are.
+	 * Reports what the type accepts as a plain array (see TypeExpression::parse()); a subclass adds its
+	 * options, child schemas are reported as they are.
 	 * @return array<string, mixed>
 	 * @internal
 	 */
 	public function describe(): array
 	{
-		return $this->narrow($this->getParsed()) + $this->describeBase();
+		return $this->getParsed() + $this->describeBase();
 	}
 
 
@@ -176,39 +138,27 @@ class Type implements Schema
 
 
 	/**
-	 * The expression as messages report it; with the range appended for deferred DI validation.
+	 * The expression as messages report it; a subclass appends its range for deferred DI validation.
 	 */
 	protected function getExpression(bool $withRange = false): string
 	{
-		$expr = str_replace(DynamicParameter::class . '|', '', $this->type);
-		return $withRange && $this->range !== [null, null]
-			? $expr . ':' . implode('..', $this->range)
-			: $expr;
+		return str_replace(DynamicParameter::class . '|', '', $this->type);
 	}
 
 
 	/**
-	 * Puts min(), max(), pattern() and items() into every variant of the parsed expression that has the key.
-	 * @param  array<string, mixed>  $item
-	 * @return array<string, mixed>
+	 * The bounds of a subclass tightened by the deprecated range in the expression; both are checked,
+	 * so the tighter one holds.
+	 * @param  array{?float, ?float}  $range
+	 * @return array{min: ?float, max: ?float}
 	 */
-	private function narrow(array $item): array
+	protected function describeRange(array $range): array
 	{
-		if ($item['kind'] === Kind::Union) {
-			$item['variants'] = array_map($this->narrow(...), $item['variants']);
-		}
-		if (array_key_exists('min', $item)) { // both bounds are checked, so the tighter one holds
-			$item['min'] = $this->range[0] === null ? $item['min'] : max($this->range[0], $item['min'] ?? -INF);
-			$item['max'] = $this->range[1] === null ? $item['max'] : min($this->range[1], $item['max'] ?? INF);
-		}
-		if (array_key_exists('pattern', $item)) {
-			$item['pattern'] = $this->pattern ?? $item['pattern'];
-		}
-		if (array_key_exists('items', $item)) {
-			$item['items'] = $this->itemsValue ?? $item['items'];
-			$item['keys'] = $this->itemsKey ?? $item['keys'];
-		}
-		return $item;
+		$parsed = $this->getParsed();
+		return [
+			'min' => $range[0] === null ? ($parsed['min'] ?? null) : max($range[0], $parsed['min'] ?? -INF),
+			'max' => $range[1] === null ? ($parsed['max'] ?? null) : min($range[1], $parsed['max'] ?? INF),
+		];
 	}
 
 
@@ -221,27 +171,18 @@ class Type implements Schema
 			unset($value[Helpers::PreventMerging]);
 		}
 
-		$value = $this->doNormalize($value, $context);
-		if (is_array($value) && $this->itemsValue) {
-			$res = [];
-			foreach ($value as $key => $val) {
-				$context->path[] = $key;
-				$context->isKey = true;
-				$key = $this->itemsKey
-					? $this->itemsKey->normalize($key, $context)
-					: $key;
-				$context->isKey = false;
-				$res[$key] = $this->itemsValue->normalize($val, $context);
-				array_pop($context->path);
-			}
-
-			$value = $res;
-		}
+		$value = $this->normalizeValue($this->doNormalize($value, $context), $context);
 
 		if ($prevent && is_array($value)) {
 			$value[Helpers::PreventMerging] = true;
 		}
 
+		return $value;
+	}
+
+
+	protected function normalizeValue(mixed $value, Context $context): mixed
+	{
 		return $value;
 	}
 
@@ -253,51 +194,30 @@ class Type implements Schema
 			return $value;
 		}
 
-		if (is_array($value) && is_array($base) && $this->itemsValue) {
-			$index = 0;
-			foreach ($value as $key => $val) {
-				if ($key === $index) {
-					$base[] = $val;
-					$index++;
-				} else {
-					$base[$key] = array_key_exists($key, $base)
-						? $this->itemsValue->merge($val, $base[$key])
-						: $val;
-				}
-			}
+		return $this->mergeValues($value, $base);
+	}
 
-			return $base;
-		}
 
+	protected function mergeValues(mixed $value, mixed $base): mixed
+	{
 		return Helpers::merge($value, $base);
 	}
 
 
 	public function complete(mixed $value, Context $context): mixed
 	{
-		$merge = $this->merge;
+		$merge = true;
 		if (is_array($value) && isset($value[Helpers::PreventMerging])) {
 			unset($value[Helpers::PreventMerging]);
 			$merge = false;
 		}
 
-		if (
-			$value === null
-			&& is_array($this->default)
-			&& !$this->getParsed()['nullable']
-			&& !self::matches(null, $this->getParsed())
-		) {
-			$value = []; // is unable to distinguish null from array in NEON
-		}
-
+		$value = $this->coerce($value);
 		$this->doDeprecation($context);
 
 		$isOk = $context->createChecker();
 		$value = $this->validate($value, $context);
-		$isOk() && Helpers::validateRange($value, $this->range, $context, $this->type);
-		$isOk() && $value !== null && $this->pattern !== null && Helpers::validatePattern($value, $this->pattern, $context);
-		$isOk() && is_array($value) && $this->validateItems($value, $context);
-		$isOk() && $merge && $value !== null && $value = Helpers::merge($value, $this->default);
+		$isOk() && $merge && $value !== null && $value = $this->mergeDefault($value);
 		$isOk() && $value = $this->doTransform($value, $context);
 		if (!$isOk()) {
 			return null;
@@ -306,6 +226,15 @@ class Type implements Schema
 		if ($value instanceof DynamicParameter && $this->type !== DynamicParameter::class) {
 			$context->dynamics[] = [$value, $this->getExpression(withRange: true), $context->path];
 		}
+		return $value;
+	}
+
+
+	/**
+	 * Adjusts the value before validation; arrays turn null into an empty array here.
+	 */
+	protected function coerce(mixed $value): mixed
+	{
 		return $value;
 	}
 
@@ -322,7 +251,8 @@ class Type implements Schema
 
 
 	/**
-	 * Reports an error for a value that is not of the declared type and returns it.
+	 * Reports an error for a value that is not of the declared type and returns it,
+	 * in a subclass narrowed by the options and with completed items.
 	 */
 	protected function validate(mixed $value, Context $context): mixed
 	{
@@ -399,28 +329,8 @@ class Type implements Schema
 	}
 
 
-	/** @param  array<mixed>  $value */
-	private function validateItems(array &$value, Context $context): void
+	protected function mergeDefault(mixed $value): mixed
 	{
-		if (!($itemsValue = $this->itemsValue)) {
-			return;
-		}
-
-		$res = [];
-		foreach ($value as $key => $val) {
-			$context->path[] = $key;
-			$context->isKey = true;
-			$isKeyOk = $context->createChecker();
-			$key = $this->itemsKey ? $this->itemsKey->complete($key, $context) : $key;
-			$context->isKey = false;
-			$keyOk = $isKeyOk();
-			$val = $itemsValue->complete($val, $context);
-			if ($keyOk) {
-				$res[$key] = $val;
-			}
-
-			array_pop($context->path);
-		}
-		$value = $res;
+		return Helpers::merge($value, $this->default);
 	}
 }
