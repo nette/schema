@@ -8,7 +8,7 @@
 namespace Nette\Schema\Elements;
 
 use Nette;
-use Nette\Schema\{Context, Helpers, Kind, Schema};
+use Nette\Schema\{Context, DynamicParameter, Helpers, Kind, Schema};
 use function is_array;
 
 
@@ -169,7 +169,57 @@ final class AnyOf implements Schema
 			return ($this->mergeWith)($value, $base);
 		}
 
-		return Helpers::merge($value, $base);
+		if ($value instanceof DynamicParameter
+			|| $base instanceof DynamicParameter
+			|| $base === null
+		) {
+			return $value;
+		}
+
+		if ($value === null) {
+			return is_array($base) ? $base : $value;
+		}
+
+		// the alternative is the one the upper layer and the merged result both fit, the lower layer alone need not:
+		// the upper layer may overwrite its invalid parts
+		$mergeErrors = null;
+		foreach ($this->set as $item) {
+			if (!$item instanceof Schema) {
+				if ($item === $value && $item === $base) {
+					return $value;
+				}
+			} elseif ($this->matchesAlternative($value, $item, $context)) {
+				$dolly = $context->fork();
+				$merged = $item->merge($value, $base, $dolly);
+				if (!$dolly->errors && $this->matchesAlternative($merged, $item, $context)) {
+					return $merged;
+				}
+				$mergeErrors ??= $dolly->errors ?: null;
+			}
+		}
+
+		if ($mergeErrors) { // the first alternative the upper layer fits knows best where the merge failed
+			array_push($context->errors, ...$mergeErrors);
+		} elseif (is_array($value) && is_array($base)) {
+			$context->addError(
+				'Cannot merge %path%: layers do not match the same alternative.',
+				Nette\Schema\Message::CannotMerge,
+			);
+		}
+
+		return $value;
+	}
+
+
+	/**
+	 * Checks whether the (possibly partial) layer would validate against the given alternative.
+	 */
+	private function matchesAlternative(mixed $value, Schema $schema, Context $context): bool
+	{
+		$dolly = $context->fork();
+		$dolly->isPartial = true;
+		$schema->complete($schema->normalize($value, $dolly), $dolly);
+		return !$dolly->errors;
 	}
 
 
@@ -192,10 +242,7 @@ final class AnyOf implements Schema
 		$expecteds = $innerErrors = [];
 		foreach ($this->set as $item) {
 			if ($item instanceof Schema) {
-				$dolly = new Context;
-				$dolly->skipDefaults = $context->skipDefaults;
-				$dolly->isKey = $context->isKey;
-				$dolly->path = $context->path;
+				$dolly = $context->fork();
 				$dolly->keepNullAt = $keepNullAt;
 				$res = $item->complete($item->normalize($value, $dolly), $dolly);
 				if (!$dolly->errors) {
@@ -246,7 +293,7 @@ final class AnyOf implements Schema
 
 	public function completeDefault(Context $context): mixed
 	{
-		if ($this->required) {
+		if ($this->required && !$context->isPartial) {
 			$context->addError(
 				'The mandatory item %path% is missing.',
 				Nette\Schema\Message::MissingItem,
