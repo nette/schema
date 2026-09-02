@@ -179,7 +179,7 @@ final class Structure implements Schema
 
 	public function complete(mixed $value, Context $context): mixed
 	{
-		if ($value === null) {
+		if ($value === null && $context->keepNullAt !== $context->path) {
 			$value = []; // is unable to distinguish null from array in NEON
 		}
 

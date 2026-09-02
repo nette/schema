@@ -130,6 +130,10 @@ final class AnyOf implements Schema
 
 	private function findAlternative(mixed $value, Context $context): mixed
 	{
+		$keepNullAt = $value === null && in_array(null, $this->set, true)
+			? $context->path
+			: $context->keepNullAt;
+
 		$expecteds = $innerErrors = [];
 		foreach ($this->set as $item) {
 			if ($item instanceof Schema) {
@@ -137,6 +141,7 @@ final class AnyOf implements Schema
 				$dolly->skipDefaults = $context->skipDefaults;
 				$dolly->isKey = $context->isKey;
 				$dolly->path = $context->path;
+				$dolly->keepNullAt = $keepNullAt;
 				$res = $item->complete($item->normalize($value, $dolly), $dolly);
 				if (!$dolly->errors) {
 					$context->warnings = [...$context->warnings, ...$dolly->warnings];

@@ -269,7 +269,7 @@ class Type implements Schema
 			$merge = false;
 		}
 
-		if ($value === null && is_array($this->default) && !Validators::is(null, $this->type)) {
+		if ($value === null && is_array($this->default) && !Validators::is(null, $this->type) && $context->keepNullAt !== $context->path) {
 			$value = []; // is unable to distinguish null from array in NEON
 		}
 

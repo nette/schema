@@ -17,6 +17,12 @@ final class Context
 {
 	public bool $skipDefaults = false;
 
+	/**
+	 * @internal path at which a null is not coerced to an empty value, because the enclosing anyOf() accepts it
+	 * @var ?list<int|string>
+	 */
+	public ?array $keepNullAt = null;
+
 	/** @var list<int|string> */
 	public array $path = [];
 
