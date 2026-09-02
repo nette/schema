@@ -78,14 +78,14 @@ final class AnyOf implements Schema
 
 
 	#[\Deprecated('options belong to the variants')]
-	public function min(?float $min): self
+	public function min(int|float|null $min): self
 	{
 		throw new Nette\DeprecatedException('min() is not available on anyOf(), give it to the variants.');
 	}
 
 
 	#[\Deprecated('options belong to the variants')]
-	public function max(?float $max): self
+	public function max(int|float|null $max): self
 	{
 		throw new Nette\DeprecatedException('max() is not available on anyOf(), give it to the variants.');
 	}

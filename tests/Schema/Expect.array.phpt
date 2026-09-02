@@ -1,6 +1,6 @@
 <?php declare(strict_types=1);
 
-use Nette\Schema\{Expect, Helpers, Processor};
+use Nette\Schema\{Expect, Helpers, Processor, Schema};
 use Tester\Assert;
 
 require __DIR__ . '/../bootstrap.php';
@@ -43,6 +43,23 @@ test('nullable array accepts null', function () {
 
 	$schema = Expect::listOf('string')->nullable();
 	Assert::null((new Processor)->process($schema, null));
+});
+
+
+test('null is the same as a missing key', function () {
+	$process = fn(Schema $item, array $data) => (new Processor)->process(Expect::structure(['x' => $item])->castTo('array'), $data)['x'];
+
+	Assert::same(['a' => 1], $process(Expect::array(['a' => 1]), ['x' => null]));
+	Assert::same([1], $process(Expect::type('iterable')->default([1]), ['x' => null]));
+
+	// without an array default, null is not an array
+	Assert::null($process(Expect::type('iterable'), []));
+	Assert::null($process(Expect::array()->default(null), []));
+	checkValidationErrors(fn() => $process(Expect::type('iterable'), ['x' => null]), ["The item 'x' expects to be iterable, null given."]);
+	checkValidationErrors(
+		fn() => $process(Expect::array()->default(null), ['x' => null]),
+		["The item 'x' expects to be array, null given."],
+	);
 });
 
 

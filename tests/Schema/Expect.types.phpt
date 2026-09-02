@@ -97,47 +97,38 @@ test('callable is checked by syntax, the target need not exist yet', function ()
 });
 
 
-test('methods that make no sense for the kind are deprecated', function () {
-	Assert::error(
-		fn() => Expect::int()->pattern('\d+'),
-		E_USER_DEPRECATED,
-		'Nette\Schema\Elements\NumberType::pattern() is deprecated, a number has no pattern.',
+test('options exist only where they mean something', function () {
+	// the exception is the point, not the deprecation
+	Assert::exception(
+		fn() => @Expect::int()->pattern('\d+'), // @ the method is deprecated on this type
+		Nette\DeprecatedException::class,
+		"pattern() is not available on 'int', only a string has it; a union takes it per variant in anyOf().",
 	);
-	Assert::error(
-		fn() => Expect::int()->items('string'),
-		E_USER_DEPRECATED,
-		'Nette\Schema\Elements\NumberType::items() is deprecated, a number has no items.',
+	Assert::exception(
+		fn() => @Expect::string()->items('string'), // @ the method is deprecated on this type
+		Nette\DeprecatedException::class,
+		"items() is not available on 'string', only an array has it; a union takes it per variant in anyOf().",
 	);
-	Assert::error(
-		fn() => Expect::string()->items('string'),
-		E_USER_DEPRECATED,
-		'Nette\Schema\Elements\StringType::items() is deprecated, a string has no items.',
+	Assert::exception(
+		fn() => @Expect::bool()->min(1), // @ the method is deprecated on this type
+		Nette\DeprecatedException::class,
+		"min() is not available on 'bool', only a number, a string or an array has it; a union takes it per variant in anyOf().",
 	);
-	Assert::error(
-		fn() => Expect::list()->pattern('\d+'),
-		E_USER_DEPRECATED,
-		'Nette\Schema\Elements\ArrayType::pattern() is deprecated, an array has no pattern.',
+	Assert::exception(
+		fn() => @Expect::int()->mergeDefaults(), // @ the method is deprecated on this type
+		Nette\DeprecatedException::class,
+		"mergeDefaults() is not available on 'int', only an array has it; a union takes it per variant in anyOf().",
 	);
-	Assert::error(
-		fn() => Expect::int()->mergeDefaults(),
-		E_USER_DEPRECATED,
-		'Nette\Schema\Elements\NumberType::mergeDefaults() is deprecated, a number has no default merging.',
+	Assert::exception(
+		fn() => @(new Type('int|string'))->min(3), // @ the method is deprecated on a directly constructed union Type too
+		Nette\DeprecatedException::class,
+		"min() is not available on 'int|string', only a number, a string or an array has it; a union takes it per variant in anyOf().",
 	);
-	Assert::error(
-		fn() => Expect::string()->mergeDefaults(),
-		E_USER_DEPRECATED,
-		'Nette\Schema\Elements\StringType::mergeDefaults() is deprecated, a string has no default merging.',
+	Assert::exception(
+		fn() => @Expect::type('int|string')->min(3), // @ the method is deprecated on anyOf(), whose variants take it instead
+		Nette\DeprecatedException::class,
+		'min() is not available on anyOf(), give it to the variants.',
 	);
-	Assert::noError(fn() => Expect::array()->mergeDefaults());
-
-	// a union from Expect::type() is an AnyOf without options; a directly constructed union Type keeps the notice
-	Assert::error(
-		fn() => (new Type('int|string'))->pattern('\d+'),
-		E_USER_DEPRECATED,
-		"pattern() on the union 'int|string' is deprecated, give it to the variants of anyOf() instead.",
-	);
-	Assert::error(fn() => (new Type('array|string'))->items('int'), E_USER_DEPRECATED);
-	Assert::error(fn() => (new Type('int|string'))->mergeDefaults(), E_USER_DEPRECATED);
 	Assert::noError(fn() => Expect::type('email|url')->min(3)); // one kind of value, a StringType
 	Assert::noError(fn() => Expect::type('int|string')->required()->nullable()); // no option of the kind
 });
