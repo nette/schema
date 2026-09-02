@@ -239,7 +239,28 @@ test('a missing nested structure is required only when it cannot be created from
 });
 
 
+test('a tuple exports its size and required positions', function () {
+	Assert::same(
+		['type' => 'array', 'prefixItems' => [['type' => 'integer'], ['type' => 'string']], 'items' => false, 'minItems' => 1],
+		JsonSchema::export(Expect::tuple([Expect::int()->required(), Expect::string()])),
+	);
+	Assert::same(
+		[
+			'type' => 'array',
+			'prefixItems' => [['type' => 'integer'], ['type' => 'string']],
+			'items' => ['type' => 'integer'],
+			'minItems' => 2,
+			'maxItems' => 4,
+		],
+		JsonSchema::export(Expect::tuple([Expect::int(), Expect::string()->required()])->otherItems('int')->min(1)->max(4)),
+	);
+});
+
+
 test('the output is a valid JSON Schema document', function () {
+	// prefixItems must not be empty
+	Assert::same(['type' => 'array', 'items' => false], JsonSchema::export(Expect::tuple([])));
+
 	// no duplicate type
 	Assert::same(['type' => 'null'], JsonSchema::export(Expect::anyOf(null)));
 

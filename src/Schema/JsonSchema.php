@@ -53,6 +53,7 @@ final class JsonSchema
 				+ self::countRange($item, 'minItems', 'maxItems'),
 			Kind::Array => self::buildArray($item),
 			Kind::Structure => self::buildStructure($item),
+			Kind::Tuple => self::buildTuple($item),
 			Kind::Enum => self::buildEnum($item['values']),
 			Kind::Union => self::buildUnion($item),
 			Kind::Instance, Kind::Other, Kind::Object, Kind::Callable => throw new Nette\NotSupportedException(
@@ -178,6 +179,28 @@ final class JsonSchema
 			'required' => $required,
 			'additionalProperties' => $item['otherItems'] ? self::build($item['otherItems']) : false,
 		] + self::countRange($item, 'minProperties', 'maxProperties');
+	}
+
+
+	/**
+	 * A required position makes all positions before it present too.
+	 * @param  array<string, mixed>  $item
+	 * @return array<string, mixed>
+	 */
+	private static function buildTuple(array $item): array
+	{
+		$res = ['type' => 'array'];
+		if ($item['shape']) { // prefixItems must not be empty
+			$res['prefixItems'] = array_map(self::build(...), $item['shape']);
+		}
+		$res['items'] = $item['otherItems'] ? self::build($item['otherItems']) : false;
+
+		$range = self::countRange($item, 'minItems', 'maxItems');
+		$positions = array_keys(array_filter($item['shape'], self::isRequired(...)));
+		if ($positions) {
+			$range['minItems'] = max($range['minItems'] ?? 0, max($positions) + 1);
+		}
+		return $res + $range;
 	}
 
 

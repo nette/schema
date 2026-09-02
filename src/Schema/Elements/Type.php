@@ -184,31 +184,8 @@ class Type implements Schema
 		}
 
 		$value = $this->doNormalize($value, $context);
-		if (is_array($value) && $this->itemsValue) {
-			$res = [];
-			foreach ($value as $key => $val) {
-				$context->path[] = $key;
-				$context->isKey = true;
-				$key = $this->itemsKey
-					? $this->itemsKey->normalize($key, $context)
-					: $key;
-				if (!is_int($key) && !is_string($key)) {
-					$context->addError(
-						'The %label% %path% expects to be int|string, %value% given.',
-						Message::TypeMismatch,
-						['value' => $key, 'expected' => 'int|string'],
-					);
-					$context->isKey = false;
-					array_pop($context->path);
-					continue;
-				}
-
-				$context->isKey = false;
-				$res[$key] = $this->itemsValue->normalize($val, $context);
-				array_pop($context->path);
-			}
-
-			$value = $res;
+		if (is_array($value)) {
+			$value = $this->normalizeItems($value, $context);
 		}
 
 		if ($prevent && is_array($value)) {
@@ -216,6 +193,44 @@ class Type implements Schema
 		}
 
 		return $value;
+	}
+
+
+	/**
+	 * @param  array<mixed>  $value
+	 * @return array<mixed>
+	 * @internal
+	 */
+	protected function normalizeItems(array $value, Context $context): array
+	{
+		if (!$this->itemsValue) {
+			return $value;
+		}
+
+		$res = [];
+		foreach ($value as $key => $val) {
+			$context->path[] = $key;
+			$context->isKey = true;
+			$key = $this->itemsKey
+				? $this->itemsKey->normalize($key, $context)
+				: $key;
+			if (!is_int($key) && !is_string($key)) {
+				$context->addError(
+					'The %label% %path% expects to be int|string, %value% given.',
+					Message::TypeMismatch,
+					['value' => $key, 'expected' => 'int|string'],
+				);
+				$context->isKey = false;
+				array_pop($context->path);
+				continue;
+			}
+
+			$context->isKey = false;
+			$res[$key] = $this->itemsValue->normalize($val, $context);
+			array_pop($context->path);
+		}
+
+		return $res;
 	}
 
 
@@ -279,8 +294,11 @@ class Type implements Schema
 	}
 
 
-	/** @param  array<mixed>  $value */
-	private function validateItems(array &$value, Context $context): void
+	/**
+	 * @param  array<mixed>  $value
+	 * @internal
+	 */
+	protected function validateItems(array &$value, Context $context): void
 	{
 		if (!($itemsValue = $this->itemsValue)) {
 			return;
