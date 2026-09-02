@@ -108,7 +108,7 @@ final class ArrayType extends Type
 	}
 
 
-	protected function mergeValues(mixed $value, mixed $base): mixed
+	protected function mergeValues(mixed $value, mixed $base, Context $context): mixed
 	{
 		if (is_array($value) && is_array($base) && $this->items) {
 			$index = 0;
@@ -116,10 +116,12 @@ final class ArrayType extends Type
 				if ($key === $index) {
 					$base[] = $val;
 					$index++;
+				} elseif (array_key_exists($key, $base)) {
+					$context->path[] = $key;
+					$base[$key] = $this->items->merge($val, $base[$key], $context);
+					array_pop($context->path);
 				} else {
-					$base[$key] = array_key_exists($key, $base)
-						? $this->items->merge($val, $base[$key])
-						: $val;
+					$base[$key] = $val;
 				}
 			}
 

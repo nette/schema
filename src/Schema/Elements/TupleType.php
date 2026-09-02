@@ -31,7 +31,7 @@ final class TupleType extends Structure
 	}
 
 
-	public function merge(mixed $value, mixed $base): mixed
+	public function merge(mixed $value, mixed $base, Nette\Schema\Context $context): mixed
 	{
 		if (is_array($value) && isset($value[Helpers::PreventMerging])) {
 			unset($value[Helpers::PreventMerging]);

@@ -18,7 +18,7 @@ class MySchema implements Schema
 	}
 
 
-	public function merge(mixed $value, mixed $base): mixed
+	public function merge(mixed $value, mixed $base, Context $context): mixed
 	{
 		return $base . $value;
 	}
