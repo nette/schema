@@ -186,30 +186,4 @@ trait Base
 		}
 		return $value;
 	}
-
-
-	#[\Deprecated('use Nette\Schema\Helpers::validateType()')]
-	private function doValidate(mixed $value, string $expected, Context $context): bool
-	{
-		$isOk = $context->createChecker();
-		Helpers::validateType($value, $expected, $context);
-		return $isOk();
-	}
-
-
-	/** @param array{int|float|null, int|float|null} $range */
-	#[\Deprecated('use Nette\Schema\Helpers::validateRange()')]
-	private static function doValidateRange(mixed $value, array $range, Context $context, string $types = ''): bool
-	{
-		$isOk = $context->createChecker();
-		Helpers::validateRange($value, $range, $context, $types);
-		return $isOk();
-	}
-
-
-	#[\Deprecated('use doTransform()')]
-	private function doFinalize(mixed $value, Context $context): mixed
-	{
-		return $this->doTransform($value, $context);
-	}
 }

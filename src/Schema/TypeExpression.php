@@ -28,7 +28,7 @@ final class TypeExpression
 		'float' => Kind::Float, 'number' => Kind::Number,
 		'string' => Kind::String,
 		'unicode' => Kind::String, 'email' => Kind::String, 'uri' => Kind::String, 'url' => Kind::String,
-		'identifier' => Kind::String, 'class' => Kind::String, 'interface' => Kind::String,
+		'identifier' => Kind::String, 'class' => Kind::String, 'interface' => Kind::String, 'type' => Kind::String,
 		'file' => Kind::String, 'directory' => Kind::String, 'alnum' => Kind::String, 'alpha' => Kind::String,
 		'digit' => Kind::String, 'lower' => Kind::String, 'upper' => Kind::String, 'space' => Kind::String,
 		'xdigit' => Kind::String, 'pattern' => Kind::String,
@@ -66,6 +66,11 @@ final class TypeExpression
 			} else {
 				array_push($variants, ...self::parseAlternative($part));
 			}
+		}
+
+		if (!$variants && $dynamic && !$nullable) { // the marker interface alone is a class like any other
+			$variants[] = ['kind' => Kind::Instance, 'type' => DynamicParameter::class];
+			$dynamic = false;
 		}
 
 		$item = match (count($variants)) {
@@ -115,6 +120,7 @@ final class TypeExpression
 		$kind = self::Names[$name] ?? Kind::Instance;
 		return match (true) {
 			$name === 'scalar' => [['kind' => Kind::Bool], $number(Kind::Number), $string()],
+			$name === 'null' => [['kind' => Kind::Null]], // as an item, 'null[]'
 			$name === 'pattern' => [$string(pattern: $arg)],
 			$kind === Kind::String => [$string(format: $name === 'string' ? null : $name)],
 			$kind === Kind::Int, $kind === Kind::Float, $kind === Kind::Number => [$number($kind)],
