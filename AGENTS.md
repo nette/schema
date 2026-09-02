@@ -54,9 +54,18 @@ composer phpstan
   `complete()` is an `$isOk = $context->createChecker(); $isOk() && nextStep()`
   short-circuit chain - thread any new validation step through the checker or it
   runs on already-rejected values.
-- **`PreventMerging` (`'_prevent_merging'`) is in-band control metadata** injected
-  into the data and stripped-and-honored differently in ~5 places (Type/Structure/
-  AnyOf/Helpers). Any new element must reproduce the dance or merging misbehaves.
+- **Merging is schema-driven** (2.0): `Schema::merge()` takes a `Context`,
+  strategy resolves as `mergeWith(closure)` → `MergeMode` (setter on ArrayType/
+  Structure/AnyOf) → recursion **only through item schemas**. Ambiguous merges
+  (colliding arrays with no schema guidance) add a `Message::CannotMerge` error,
+  never a silent guess. `AnyOf` probes which alternative both layers match
+  (`Context::isPartial` = validation-only completion) and delegates to it.
+- **`PreventMerging` (`'_prevent_merging'`) was removed** (BC break) —
+  `Processor::rejectPreventMerging()` reports the key as an error; use
+  `mergeMode(MergeMode::Replace)` instead.
+- **Defaults are not merged into supplied arrays** (`ArrayType::$mergeDefaults
+  = false`; `mergeDefaults()` is deprecated) - a partial input array stays
+  partial.
 - **`assert`/`castTo` are sugar over `transform`** - one `$transforms` list running
   in declaration order, so `->assert()->castTo()` differs from `->castTo()->assert()`.
 - **`default` null is not `nullable`** (`nullable()` prepends `'null|'` to the type
@@ -68,8 +77,12 @@ composer phpstan
   values get **deferred** validation (recorded in `Context::dynamics` for DI) -
   don't validate them eagerly.
 - **`Expect::type()` classifies the type expression once** (`TypeExpression::parse()`)
-  into `StringType`/`NumberType`/`ArrayType`/`EnumType` or a plain `Type`; validation
-  itself is still `Validators::is()`. `describe()`, `Kind` and `TypeExpression` are
-  `@internal`, `JsonSchema::export()` is the only public way out - keep it that way.
+  into `StringType`/`NumberType`/`ArrayType`/`EnumType`, an `AnyOf` for a union
+  of different kinds, or a plain `Type`. Since 2.0 `Type` validates by itself
+  (`matches()`); `Validators::is()` serves only string formats and the
+  deprecated legacy notation (expression ranges, `numeric` & co.), which works
+  with a notice until 2.1 refuses it. `describe()`, `Kind` and `TypeExpression`
+  are `@internal`, `JsonSchema::export()` is the only public way out - keep it
+  that way.
 - User-facing how-to (the `Expect::` API, castTo/`Expect::from` object mapping,
   building complex schemas) is manual material and lives in the public web docs.

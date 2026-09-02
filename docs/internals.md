@@ -66,24 +66,73 @@ before it — that is how `%path%` disappears at the root. Codes are the
 placeholder with no matching variable is left in the text verbatim (`%foo%`),
 so a template/variables mismatch shows up only in the rendered message.
 
-## `PreventMerging`: in-band metadata, handled in many places
+## Schema-driven merging (2.0)
 
-The magic array key `Helpers::PreventMerging` (`'_prevent_merging'`) is
-injected **directly into the data** to mean "replace, don't merge with the base /
-default". Because it rides inside the value, **every element must detect and strip
-it** — and they do so in subtly different ways:
+`Schema::merge(mixed $value, mixed $base, Context $context)` combines two
+normalized layers, `$value` (later, higher priority) over `$base`. Errors
+accumulate in the Context like everywhere else (`Processor::processMultiple`
+throws after each merge, before `complete()`), and recursion maintains
+`$context->path`, so merge errors carry a path.
 
-- `Type::normalize` strips it, then **re-adds** it after recursing into items (so
-  it survives normalization).
-- `Type::complete` strips it and forces `$merge = false` (default not merged in).
-- `Type::merge` / `AnyOf::merge` / `Helpers::merge` strip it and return the value
-  as-is (no merge).
-- `Structure::merge` strips it and sets `$base = null` (full replace).
+Every element resolves its strategy in the same order:
 
-This is the package's sharpest trap: a piece of control state travelling through
-the payload, replicated across five sites. Any new `Schema` element must reproduce
-the strip-and-honor dance or merging silently misbehaves. DI carries its own
-parallel `PREVENT_MERGING` constant, so the key name is a cross-package contract.
+1. **`mergeWith(closure)`** (`Base`) wins outright — a user-supplied **pure
+   combiner** `fn($value, $base): mixed`. It runs only *between* layers (n−1
+   times; the sole layer of a single-layer dataset never passes through it), so
+   it must combine, never canonicalize shape — that belongs to `before()`.
+   Legitimate for scalars too (bool OR, max, concatenation) and doubles as the
+   escape hatch for blind deep merge of free-form trees.
+2. **`MergeMode`** lives only where every value of the enum means something:
+   `ArrayType` and `Structure`, each with its own private state and
+   `mergeMode()` setter. `Replace` returns `$value` wholesale; `OverwriteKeys`
+   merges by keys with numeric keys overwritten positionally; `AppendKeys`
+   additionally appends new numeric elements. Defaults: `ArrayType` →
+   `AppendKeys`; `Structure` → `AppendKeys` with `otherItems`, else
+   `OverwriteKeys`. `TupleType` pins `Replace` in its constructor and its
+   `mergeMode()` throws. An `AnyOf` has no mode; skipping the probe is
+   `mergeWith(fn($value, $base) => $value)`. A plain `Type` (`mixed`, `bool`,
+   instances) has no mode either: arrays that reach it merge conservatively
+   (numeric keys append, colliding arrays are an error).
+3. **Recursion follows the schema only** — the walk lives in
+   `Type::mergeValues`/`ArrayType::mergeValues` with the per-key collision
+   delegated to `mergeItem()`, which `ArrayType` overrides to recurse through
+   its items schema; `Structure` recurses through `items[key] ?? otherItems`.
+   A colliding key whose both sides are arrays but whose schema gives no
+   guidance (no items schema, no explicit `mergeMode()`) adds a
+   **`Message::CannotMerge` error** instead of silently picking a depth —
+   explicit `mergeMode()` is the declared opt-out (colliding value then
+   overwrites). Scalar collisions overwrite silently.
+4. **Null rule (uniform):** a `null` layer value loses to an array and beats
+   a scalar (`$value === null && is_array($base) ? $base : $value`) — NEON
+   `key:` means "no opinion" against arrays.
+
+**`AnyOf::merge` probes instead of merging blindly:** it finds the first
+variant (declaration order) that **both** layers match and delegates to its
+`merge()`. Matching runs each layer through `normalize` + `complete` in a
+throwaway Context with **`Context::isPartial`** set — a validation-only mode
+where `completeDefault` doesn't report missing required items (a layer is
+legally partial), `doTransform` is skipped (a `castTo` constructor would
+crash on a partial layer), and deprecations stay silent. No common variant:
+two arrays → `CannotMerge` error; otherwise the later value wins (scalar
+`proxy: string|array` overrides keep working). `DynamicParameter` on either
+side → plain replace. **Known limitation:** the probe matches layers through
+the variant's `normalize()`, but delegation merges the AnyOf-level values —
+a variant whose `before()` reshapes layers therefore merges as plain replace
+(v1-compatible). Re-normalizing for the merge is not an option: `complete()`
+would then run the variant's `before()` a second time on the merged result.
+
+## `PreventMerging` is gone; transitional guard
+
+The v1 magic key `'_prevent_merging'` (in-band metadata meaning "replace,
+don't merge") was **removed entirely** — no constant, no `Helpers::merge()`,
+nothing strips it from data. So it doesn't silently flow into output as
+ordinary data, `Processor::rejectPreventMerging()` recursively scans every
+dataset (arrays and stdClass) before normalization and reports the key as
+a `CannotMerge` error; the declarative replacement is
+`mergeMode(MergeMode::Replace)`, the NEON `key!:` syntax is DI's job
+(dropping the key from earlier layers before `processMultiple`). DI still
+carries its own parallel `PREVENT_MERGING` constant and merge for `includes`
+handling.
 
 ## One transform pipeline; `assert`/`castTo` are sugar over `transform`
 
@@ -177,14 +226,8 @@ recorded in `dynamics`, there is no single expected type to defer.
 (DI resolves these once runtime parameters are known). An agent must not "fix" this
 by validating dynamics eagerly.
 
-## Merge direction and cast forks (thin)
+## Cast forks and range meanings (thin)
 
-- **`processMultiple` merges left-value-wins:** each later dataset item is the
-  `value` (higher priority) merged over the accumulated `base`, so later configs
-  override earlier ones. Numeric-keyed items append; string-keyed recurse.
-- **`Structure::merge` appends numeric keys only when `otherItems` is set**
-  (`$index = $this->otherItems === null ? null : 0`); `Type::merge` and
-  `Helpers::merge` always append numeric-keyed items.
 - **`castTo` forks by target** (`Helpers::getCastStrategy`): builtin →
   `settype`; backed enum → `from()`, a wrong value reports `TypeMismatch`
   listing the cases (a pure enum throws `InvalidStateException` when the schema
@@ -199,40 +242,59 @@ by validating dynamics eagerly.
 
 ## `Expect::from()` mapping rules
 
-`Expect::from($object)` reflects **constructor parameters if `__construct`
-exists, otherwise properties** — a class with a constructor has its properties
-ignored entirely. Per item: uninitialized property / non-optional parameter →
-`required()`; a `null` default on a type that does not accept null → also
-`required()` (not "default null"); an **object** default recurses into a nested
-`from()`; anything else becomes `default($def)`. The type comes from
-`Helpers::getPropertyType` (native type, then `@var`), falling back to `mixed`.
+`Expect::from()` accepts an instance **or a class name** (since 2.0) and
+reflects **constructor parameters if `__construct` exists, otherwise
+properties** — a class with a constructor has its properties ignored entirely.
+Types come from **native declarations only** (`Nette\Utils\Type::fromReflection`,
+fallback `mixed`); phpDoc `@var` support was removed in 2.0. Per item:
+
+- a non-nullable class-typed item recurses into `from($thatClass)` **even
+  without a default** (an enum-typed item maps to `EnumType` instead);
+- no default (uninitialized property / non-optional parameter) → `required()`;
+- an **object** default that is not an enum case recurses into a nested
+  `from($default)` (instance-based);
+- any other default — including `null` — becomes `default($def)` (the 1.x rule
+  "null default on a non-nullable type → `required()`" is gone).
+
 The result is a `Structure` with `castTo($class)` **stacked after** the
 constructor's built-in `castTo('object')`, so a completed value travels
 array → `stdClass` → instance through the cast fork above.
 
 ## `Type` and its kind-specific subclasses
 
-`Type` is no longer final: `StringType`, `NumberType` and `ArrayType` extend it
-and **add no behavior of their own** in 1.x. They exist so that `Expect::string()`,
-`Expect::int()`, `Expect::listOf()` and `Expect::type('email')` return a class
-that says what kind of value it is (for users, PHPStan and `describe()`), while
-every `instanceof Type`, every type hint and every method called by name from a
-NEON `parametersSchema` keeps working. The classification is done once, in
-`Expect::type()`, from `TypeExpression::parse()`: an expression whose variants are
-all strings (`'email'`, `'?string'`, `'url|uri'`) is a `StringType`, all numbers
-(`'int'`, `'number'`) a `NumberType`, all array-like (`'list'`, `'int[]'`) an
-`ArrayType`; anything else (`'bool'`, `'int|string'`, a class, `'numeric'`) stays a
-plain `Type`. **String formats are the Validators pseudo-types** (`email`, `url`,
-`identifier`, `digit`, ...): `Expect::type('url')` is a `StringType` validated by
-`Validators::isUrl()` exactly as before. The subclasses deprecate the methods that
-make no sense for their kind (`NumberType::pattern()`, `ArrayType::pattern()`,
-`items()` outside arrays) with an `E_USER_DEPRECATED` notice. On a plain `Type`
-they stay silent when the expression is a single kind (`'bool'`, a class); when it
-is a union (`'int|string'`, `'scalar'`), `min()`, `max()`, `pattern()` and `items()`
-raise a deprecation too (`Type::unionDeprecated`): a union takes no options of its
-own, they belong to the variants of `anyOf()`. A union of one kind (`'int|float'`)
-gets the kind's subclass and stays silent. The fluent setters in `Base` and `Type`
-return `static` so the subclass survives chaining.
+`Type` is not final: `StringType`, `NumberType` and `ArrayType` extend it and
+since 2.0 **carry the options of their kind**: `min()`/`max()` on all three,
+`pattern()` on `StringType`, `items()`/`keys` and the deprecated
+`mergeDefaults()` on `ArrayType`. On a plain `Type` those methods **throw
+`DeprecatedException`** saying who has them, closing the notices 1.4 opened.
+The classification is done once, in `Expect::type()`, via `Expect::typeClass()`
+from `TypeExpression::parse()`: an expression whose variants are all strings
+(`'email'`, `'?string'`, `'url|uri'`) is a `StringType`, all numbers a
+`NumberType`, all array-like an `ArrayType`; a **union of different kinds**
+(`'int|string'`, `'scalar'`) becomes an **`AnyOf` of the variants** (built via
+`TypeExpression::format()`), so its message reads "int|string"; `'bool'`, a
+class or `'mixed'` stays a plain `Type`. A union of one kind (`'int|float'`,
+`'int|null'`) gets the kind's subclass with working options, exactly as 1.4
+promised.
+
+**`Type` validates by itself:** `matches()` is the one place that knows every
+`Kind`; `Validators::is()` is asked only about named **string formats**
+(`email`, `url`, `identifier`, ...) and the deprecated legacy names. The
+`complete()` of `Type` is a template the subclasses hook into: `coerce()`
+(ArrayType turns null into `[]` for non-nullable types there), `validate()`
+(subclasses add range/pattern/items on top of the kind check, ArrayType
+completes items in `completeItems()` and drops entries with invalid keys),
+`mergeDefault()` (a default is not a layer; only ArrayType's deprecated
+`mergeDefaults(true)` deep-merges) and `normalizeValue()`/`mergeValues()`.
+
+**The deprecation ladder:** what 1.4 could not deprecate without breaking BC
+is deprecated **by 2.0 with a notice and still works** — a range in the
+expression (`'int:1..5'`, folded into validation by `matches()`), a validator
+name that is not a type (`'numeric'`, checked via `Kind::Other` →
+`Validators::is`), a directly constructed plain `Type` for a kind that has its
+class. 2.1 turns these notices into refusals and drops the Validators
+dependency for everything but string formats (`Type::deprecatedExpressions()`
+is the inventory).
 
 `EnumType` (`Expect::enum()`, and what `Expect::from()` hands out for an
 enum-typed property) is the one subclass that changes behavior, and only by
@@ -268,11 +330,13 @@ to a union of bool, number and string, `'?x'`/`'null|x'` set `nullable`,
 by `class_exists`), and only `numeric`, `numericint`, `none`, `resource` and
 intersections `A&B` become `Kind::Other` with the raw expression under `type`.
 That table is also the migration table for the day the string notation is reduced
-to BC sugar. `Type::describe()` = parse, then **narrow every variant** the
-element's own `min()`/`max()` (intersected with a range from the expression),
-`pattern()` (string variants only) and `items()` (array-like variants only) apply
-to. `null` and `DynamicParameter` are flags, never variants, and `min`/`max` keep
-the type-relative meaning of `validateRange`, so they live on the variants.
+to BC sugar. `Type::describe()` = parse + `describeBase()`; a subclass merges in
+its own options, with `describeRange()` tightening its bounds by a deprecated
+range from the expression (both are checked, so the tighter one holds). `null`
+and `DynamicParameter` are flags, never variants. A tuple (`TupleType`, a
+`Structure` with a list shape, `castTo('array')` and `MergeMode::Replace`
+locked in by its constructor) reports `Kind::Tuple` and exports as
+`prefixItems` with `otherItems` as the rest schema or `items: false`.
 
 `JsonSchema::export()` emits shape only (`description` yes; defaults, casts and
 transforms no), passes on only the string formats JSON Schema knows (`email`,
@@ -293,15 +357,18 @@ export the only supported way out.
 |---|---|
 | Entry points, phase order | `Processor::process`, `processMultiple` |
 | Error accumulation, checker idiom | `Context`, every `Elements/*::complete` |
-| `PreventMerging` handling | `Helpers::merge`, `Type`/`Structure`/`AnyOf` normalize/merge/complete |
+| Merge strategies | `MergeMode`, `Base::mergeWith`, every `Elements/*::merge`, `Type::mergeValues`/`mergeItem` |
+| AnyOf probe, partial mode | `AnyOf::matchesAlternative`, `Context::isPartial` |
+| `_prevent_merging` guard | `Processor::rejectPreventMerging` |
 | Transform/assert/castTo pipeline | `Base` (`transforms`, `doTransform`, `assert`, `castTo`) |
-| Type validation & null/dynamic | `Type::complete`, `Helpers::validateType` |
+| Type validation & null/dynamic | `Type::validate`/`matches`, subclass `validate()` overrides |
 | Structure object output, defaults | `Structure` (`completeDefault`, `validateItems`) |
+| Tuples | `TupleType`, `Kind::Tuple`, `JsonSchema` prefixItems arm |
 | Union selection | `AnyOf::findAlternative` |
 | Casting strategies | `Helpers::getCastStrategy` |
 | DI / integration hook | `Processor::onNewContext`, `createContext` |
 | Error message rendering | `Message::toString`, `Message::*` code constants |
-| Key schemas, `isKey` | `Type::normalize`/`validateItems`, `Context::isKey` |
-| Object-to-schema mapping | `Expect::from`, `Helpers::getPropertyType` |
+| Key schemas, `isKey` | `ArrayType::normalizeValue`/`completeItems`, `Context::isKey` |
+| Object-to-schema mapping | `Expect::from` (native types only) |
 | Kind-specific subclasses of `Type` | `Expect::type`, `StringType`, `NumberType`, `ArrayType`, `EnumType` |
 | Inspection, JSON Schema export | `Elements/*::describe`, `Kind`, `TypeExpression::parse`, `JsonSchema::export` |
