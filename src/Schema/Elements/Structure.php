@@ -15,7 +15,7 @@ use Nette\Schema\Schema;
 use function array_key_exists, is_array, is_object, strval;
 
 
-final class Structure implements Schema
+class Structure implements Schema
 {
 	use Base;
 
@@ -182,10 +182,7 @@ final class Structure implements Schema
 
 	public function complete(mixed $value, Context $context): mixed
 	{
-		if ($value === null) {
-			$value = []; // is unable to distinguish null from array in NEON
-		}
-
+		$value = $this->coerce($value);
 		$this->doDeprecation($context);
 
 		$isOk = $context->createChecker();
@@ -194,6 +191,15 @@ final class Structure implements Schema
 		$isOk() && $this->validateItems($value, $context);
 		$isOk() && $value = $this->doTransform($value, $context);
 		return $isOk() ? $value : null;
+	}
+
+
+	/**
+	 * An empty block in NEON is null, which is the same as writing no key at all, so it means the defaults.
+	 */
+	protected function coerce(mixed $value): mixed
+	{
+		return $value ?? [];
 	}
 
 

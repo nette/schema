@@ -177,4 +177,14 @@ final class Expect
 	{
 		return (new ArrayType('list'))->items($type);
 	}
+
+
+	/**
+	 * Creates a fixed-size array where each position has its own schema; a later layer replaces the tuple wholesale.
+	 * @param  Schema[]  $shape
+	 */
+	public static function tuple(array $shape): Elements\TupleType
+	{
+		return new Elements\TupleType($shape);
+	}
 }

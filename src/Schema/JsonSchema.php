@@ -52,6 +52,11 @@ final class JsonSchema
 			Kind::List, Kind::Iterable => ['type' => 'array', 'items' => self::buildOrAny($item['items'])] + self::range($item, 'minItems', 'maxItems'),
 			Kind::Array => self::buildArray($item),
 			Kind::Structure => self::buildStructure($item),
+			Kind::Tuple => [
+				'type' => 'array',
+				'prefixItems' => array_map(self::build(...), $item['shape']),
+				'items' => $item['otherItems'] ? self::build($item['otherItems']) : false,
+			],
 			Kind::Enum => self::buildEnum($item['values']),
 			Kind::Union => self::buildUnion($item),
 			Kind::Instance, Kind::Other, Kind::Object, Kind::Callable => throw new Nette\NotSupportedException("Type '" . ($item['type'] ?? strtolower($kind->name)) . "' cannot be expressed in JSON Schema."),

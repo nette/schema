@@ -28,6 +28,7 @@ enum Kind
 	case Iterable;
 	case Structure;
 	case Enum;
+	case Tuple;
 	case Union;
 	case Instance;
 	case Object;
