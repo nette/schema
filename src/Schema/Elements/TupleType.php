@@ -8,10 +8,10 @@
 namespace Nette\Schema\Elements;
 
 use Nette;
-use Nette\Schema\Helpers;
 use Nette\Schema\Kind;
+use Nette\Schema\MergeMode;
 use Nette\Schema\Schema;
-use function array_is_list, is_array;
+use function array_is_list;
 
 
 /**
@@ -28,16 +28,16 @@ final class TupleType extends Structure
 
 		parent::__construct($shape);
 		$this->castTo('array');
+		parent::mergeMode(MergeMode::Replace);
 	}
 
 
-	public function merge(mixed $value, mixed $base, Nette\Schema\Context $context): mixed
+	/**
+	 * Not supported for tuples; always throws.
+	 */
+	public function mergeMode(MergeMode $mode): self
 	{
-		if (is_array($value) && isset($value[Helpers::PreventMerging])) {
-			unset($value[Helpers::PreventMerging]);
-		}
-
-		return $value;
+		throw new Nette\InvalidStateException('A tuple always replaces, it cannot merge.');
 	}
 
 

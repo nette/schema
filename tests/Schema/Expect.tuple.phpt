@@ -98,6 +98,12 @@ testException(
 );
 
 
+testException(
+	'a tuple cannot switch to merging',
+	fn() => Expect::tuple([])->mergeMode(Nette\Schema\MergeMode::AppendKeys),
+	Nette\InvalidStateException::class,
+	'A tuple always replaces, it cannot merge.',
+);
 
 
 test('with items', function () {
