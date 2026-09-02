@@ -49,13 +49,13 @@ test('nullable array accepts null', function () {
 });
 
 
-test('not merging', function () {
+test('not merging default value', function () {
 	$schema = Expect::array([
 		'key1' => 'val1',
 		'key2' => 'val2',
 		'val3',
 		'arr' => ['item'],
-	])->mergeDefaults(false);
+	]);
 
 	Assert::same([], (new Processor)->process($schema, []));
 
@@ -66,13 +66,13 @@ test('not merging', function () {
 });
 
 
-test('merging', function () {
-	$schema = Expect::array([
+test('merging default value', function () {
+	$schema = @Expect::array([ // mergeDefaults() is deprecated
 		'key1' => 'val1',
 		'key2' => 'val2',
 		'val3',
 		'arr' => ['item'],
-	]);
+	])->mergeDefaults(true);
 
 	Assert::same([
 		'key1' => 'val1',
@@ -144,12 +144,12 @@ test('merging', function () {
 });
 
 
-test('merging & other items validation', function () {
-	$schema = Expect::array([
+test('merging default value & other items validation', function () {
+	$schema = @Expect::array([ // mergeDefaults() is deprecated
 		'key1' => 'val1',
 		'key2' => 'val2',
 		'val3',
-	])->items('string');
+	])->mergeDefaults(true)->items('string');
 
 	Assert::same([
 		'key1' => 'val1',
@@ -182,7 +182,7 @@ test('merging & other items validation', function () {
 });
 
 
-test('merging & other items validation', function () {
+test('merging layers & other items validation', function () {
 	$schema = Expect::array()->items('string');
 	$context = new Nette\Schema\Context;
 
@@ -218,11 +218,9 @@ test('merging & other items validation', function () {
 
 
 test('items() & scalar', function () {
-	$schema = Expect::array([
-		'a' => 'defval',
-	])->items('string');
+	$schema = Expect::array()->items('string');
 
-	Assert::same(['a' => 'defval'], (new Processor)->process($schema, []));
+	Assert::same([], (new Processor)->process($schema, []));
 
 	checkValidationErrors(function () use ($schema) {
 		(new Processor)->process($schema, [1, 2, 3]);
@@ -246,16 +244,14 @@ test('items() & scalar', function () {
 		(new Processor)->process($schema, ['b' => null]);
 	}, ["The item 'b' expects to be string, null given."]);
 
-	Assert::same(['a' => 'defval', 'b' => 'val'], (new Processor)->process($schema, ['b' => 'val']));
+	Assert::same(['b' => 'val'], (new Processor)->process($schema, ['b' => 'val']));
 });
 
 
 test('items() & structure', function () {
-	$schema = Expect::array([
-		'a' => 'defval',
-	])->items(Expect::structure(['k' => Expect::string()]));
+	$schema = Expect::array([])->items(Expect::structure(['k' => Expect::string()]));
 
-	Assert::same(['a' => 'defval'], (new Processor)->process($schema, []));
+	Assert::same([], (new Processor)->process($schema, []));
 
 	checkValidationErrors(function () use ($schema) {
 		(new Processor)->process($schema, ['a' => 'val']);
@@ -278,7 +274,7 @@ test('items() & structure', function () {
 	}, ["Unexpected item 'b\u{a0}›\u{a0}a', did you mean 'k'?"]);
 
 	Assert::equal(
-		['a' => 'defval', 'b' => (object) ['k' => 'val']],
+		['b' => (object) ['k' => 'val']],
 		(new Processor)->process($schema, ['b' => ['k' => 'val']]),
 	);
 });
