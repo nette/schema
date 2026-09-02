@@ -35,3 +35,19 @@ enum Kind
 	case Callable;
 	case Other;
 }
+
+
+/**
+ * Defines the strategy for merging array values from multiple configuration layers.
+ */
+enum MergeMode
+{
+	/** Replaces the entire value with the one from the later layer. */
+	case Replace;
+
+	/** Merges by keys, numeric keys are overwritten positionally. */
+	case OverwriteKeys;
+
+	/** Merges by keys, new numeric elements are appended. */
+	case AppendKeys;
+}

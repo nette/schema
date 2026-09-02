@@ -29,6 +29,9 @@ trait Base
 	private ?string $deprecated = null;
 	private ?string $description = null;
 
+	/** @var ?\Closure(mixed, mixed): mixed */
+	private ?\Closure $mergeWith = null;
+
 
 	public function default(mixed $value): static
 	{
@@ -51,6 +54,18 @@ trait Base
 	public function before(callable $handler): static
 	{
 		$this->before[] = $handler(...);
+		return $this;
+	}
+
+
+	/**
+	 * Sets a custom strategy combining two layers. Must be a pure combiner; canonicalize layer shape in before() instead.
+	 * Either side may be null, a layer can legally be null.
+	 * @param  callable(mixed, mixed): mixed  $fn
+	 */
+	public function mergeWith(callable $fn): static
+	{
+		$this->mergeWith = $fn(...);
 		return $this;
 	}
 

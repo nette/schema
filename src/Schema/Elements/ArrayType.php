@@ -11,7 +11,6 @@ use Nette;
 use Nette\Schema\Context;
 use Nette\Schema\Helpers;
 use Nette\Schema\Schema;
-use function array_key_exists, is_array;
 
 
 /**
@@ -25,6 +24,7 @@ final class ArrayType extends Type
 	/** @var array{?float, ?float} */
 	private array $range = [null, null];
 	private bool $mergeDefaults = false;
+	private ?Nette\Schema\MergeMode $mergeMode = null;
 
 
 	public function __construct(string $type)
@@ -55,6 +55,16 @@ final class ArrayType extends Type
 	{
 		$this->items = $valueType instanceof Schema ? $valueType : Nette\Schema\Expect::type($valueType);
 		$this->keys = $keyType instanceof Schema || $keyType === null ? $keyType : Nette\Schema\Expect::type($keyType);
+		return $this;
+	}
+
+
+	/**
+	 * Sets how the array is combined when merging multiple configuration layers.
+	 */
+	public function mergeMode(Nette\Schema\MergeMode $mode): static
+	{
+		$this->mergeMode = $mode;
 		return $this;
 	}
 
@@ -111,15 +121,19 @@ final class ArrayType extends Type
 
 	protected function mergeValues(mixed $value, mixed $base, Context $context): mixed
 	{
-		if (is_array($value) && is_array($base) && $this->items) {
-			$index = 0;
+		if ($this->mergeMode === Nette\Schema\MergeMode::Replace) {
+			return $value;
+		}
+
+		if (is_array($value) && is_array($base)) {
+			$index = $this->mergeMode === Nette\Schema\MergeMode::OverwriteKeys ? null : 0;
 			foreach ($value as $key => $val) {
 				if ($key === $index) {
 					$base[] = $val;
 					$index++;
 				} elseif (array_key_exists($key, $base)) {
 					$context->path[] = $key;
-					$base[$key] = $this->items->merge($val, $base[$key], $context);
+					$base[$key] = $this->mergeItem($val, $base[$key], $context);
 					array_pop($context->path);
 				} else {
 					$base[$key] = $val;
@@ -129,7 +143,23 @@ final class ArrayType extends Type
 			return $base;
 		}
 
-		return Helpers::merge($value, $base);
+		return $value === null && is_array($base) ? $base : $value;
+	}
+
+
+	protected function mergeItem(mixed $value, mixed $base, Context $context): mixed
+	{
+		if ($this->items) {
+			return $this->items->merge($value, $base, $context);
+		}
+
+		if (is_array($value) && is_array($base) && $this->mergeMode === null) {
+			$context->addError(
+				'Cannot merge %path%: the schema does not describe array items, use arrayOf() or mergeMode().',
+				Nette\Schema\Message::CannotMerge,
+			);
+		}
+		return $value;
 	}
 
 

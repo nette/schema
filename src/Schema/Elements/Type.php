@@ -16,7 +16,7 @@ use Nette\Schema\Schema;
 use Nette\Schema\TypeExpression;
 use Nette\Utils\Arrays;
 use Nette\Utils\Validators;
-use function count, is_array, is_bool, is_float, is_int, is_object, is_string, strlen;
+use function array_key_exists, count, is_array, is_bool, is_float, is_int, is_object, is_string, strlen;
 
 
 class Type implements Schema
@@ -194,13 +194,50 @@ class Type implements Schema
 			return $value;
 		}
 
+		if ($this->mergeWith) {
+			return ($this->mergeWith)($value, $base);
+		}
+
 		return $this->mergeValues($value, $base, $context);
 	}
 
 
 	protected function mergeValues(mixed $value, mixed $base, Context $context): mixed
 	{
-		return Helpers::merge($value, $base);
+		if (is_array($value) && is_array($base)) {
+			$index = 0;
+			foreach ($value as $key => $val) {
+				if ($key === $index) {
+					$base[] = $val;
+					$index++;
+				} elseif (array_key_exists($key, $base)) {
+					$context->path[] = $key;
+					$base[$key] = $this->mergeItem($val, $base[$key], $context);
+					array_pop($context->path);
+				} else {
+					$base[$key] = $val;
+				}
+			}
+
+			return $base;
+		}
+
+		return $value === null && is_array($base) ? $base : $value;
+	}
+
+
+	/**
+	 * A collision of one key when merging arrays; ArrayType recurses through the items schema.
+	 */
+	protected function mergeItem(mixed $value, mixed $base, Context $context): mixed
+	{
+		if (is_array($value) && is_array($base)) {
+			$context->addError(
+				'Cannot merge %path%: the schema does not describe array items, use arrayOf().',
+				Nette\Schema\Message::CannotMerge,
+			);
+		}
+		return $value;
 	}
 
 
