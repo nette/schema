@@ -10,7 +10,6 @@ namespace Nette\Schema\Elements;
 use Nette;
 use Nette\Schema\Context;
 use Nette\Schema\DynamicParameter;
-use Nette\Schema\Helpers;
 use Nette\Schema\Kind;
 use Nette\Schema\Schema;
 use function in_array, is_array;
@@ -151,11 +150,6 @@ final class AnyOf implements Schema
 
 	public function merge(mixed $value, mixed $base, Context $context): mixed
 	{
-		if (is_array($value) && isset($value[Helpers::PreventMerging])) {
-			unset($value[Helpers::PreventMerging]);
-			return $value;
-		}
-
 		if ($this->mergeWith) {
 			return ($this->mergeWith)($value, $base);
 		}

@@ -18,8 +18,8 @@ use function count, is_string;
  */
 trait Base
 {
+	protected mixed $default = null;
 	private bool $required = false;
-	private mixed $default = null;
 
 	/** @var list<\Closure(mixed): mixed> */
 	private array $before = [];

@@ -137,10 +137,6 @@ class Structure implements Schema
 
 	public function normalize(mixed $value, Context $context): mixed
 	{
-		if ($prevent = (is_array($value) && isset($value[Helpers::PreventMerging]))) {
-			unset($value[Helpers::PreventMerging]);
-		}
-
 		$value = $this->doNormalize($value, $context);
 		if (is_object($value)) {
 			$value = (array) $value;
@@ -155,10 +151,6 @@ class Structure implements Schema
 					array_pop($context->path);
 				}
 			}
-
-			if ($prevent) {
-				$value[Helpers::PreventMerging] = true;
-			}
 		}
 
 		return $value;
@@ -167,11 +159,6 @@ class Structure implements Schema
 
 	public function merge(mixed $value, mixed $base, Context $context): mixed
 	{
-		if (is_array($value) && isset($value[Helpers::PreventMerging])) {
-			unset($value[Helpers::PreventMerging]);
-			$base = null;
-		}
-
 		if ($this->mergeWith) {
 			return ($this->mergeWith)($value, $base);
 		}

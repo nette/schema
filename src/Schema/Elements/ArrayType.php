@@ -210,6 +210,29 @@ final class ArrayType extends Type
 
 	protected function mergeDefault(mixed $value): mixed
 	{
-		return $this->mergeDefaults ? parent::mergeDefault($value) : $value;
+		return $this->mergeDefaults ? self::deepMerge($value, $this->default) : $value;
+	}
+
+
+	/**
+	 * Blind deep merge used only by deprecated mergeDefaults().
+	 */
+	private static function deepMerge(mixed $value, mixed $base): mixed
+	{
+		if (is_array($value) && is_array($base)) {
+			$index = 0;
+			foreach ($value as $key => $val) {
+				if ($key === $index) {
+					$base[] = $val;
+					$index++;
+				} else {
+					$base[$key] = self::deepMerge($val, $base[$key] ?? null);
+				}
+			}
+
+			return $base;
+		}
+
+		return $value === null && is_array($base) ? $base : $value;
 	}
 }
