@@ -1,6 +1,6 @@
 <?php declare(strict_types=1);
 
-use Nette\Schema\Elements\{ArrayType, NumberType, StringType, Type};
+use Nette\Schema\Elements\{AnyOf, ArrayType, NumberType, StringType, Type};
 use Nette\Schema\{Expect, Processor};
 use Tester\Assert;
 
@@ -34,8 +34,8 @@ test('an expression of a single kind gets its dedicated subclass of Type', funct
 	Assert::same(Type::class, Expect::bool()::class);
 	Assert::same(Type::class, Expect::null()::class);
 	Assert::same(Type::class, Expect::mixed()::class);
-	Assert::same(Type::class, Expect::scalar()::class);
-	Assert::same(Type::class, Expect::type('int|string')::class);
+	Assert::type(AnyOf::class, Expect::scalar());
+	Assert::type(AnyOf::class, Expect::type('int|string'));
 	Assert::same(Type::class, Expect::type(DateTime::class)::class);
 	Assert::same(Type::class, @Expect::type('numeric')::class); // @ 'numeric' as a type is deprecated
 
@@ -67,6 +67,15 @@ test('the names of 1.x validate as before', function () {
 	}, ['The item expects to be Nette\Schema\DynamicParameter, 123 given.']);
 });
 
+
+test('a union of kinds keeps the grouping of its variants', function () {
+	$schema = Expect::type('scalar[]|string');
+	Assert::same([123, 'a'], (new Processor)->process($schema, [123, 'a']));
+	Assert::same('x', (new Processor)->process($schema, 'x'));
+	checkValidationErrors(function () use ($schema) {
+		(new Processor)->process($schema, 123);
+	}, ['The item expects to be scalar[]|string, 123 given.']);
+});
 
 
 test('callable is checked by syntax, the target need not exist yet', function () {
@@ -121,13 +130,14 @@ test('methods that make no sense for the kind are deprecated', function () {
 	);
 	Assert::noError(fn() => Expect::array()->mergeDefaults());
 
+	// a union from Expect::type() is an AnyOf without options; a directly constructed union Type keeps the notice
 	Assert::error(
-		fn() => Expect::type('int|string')->pattern('\d+'),
+		fn() => (new Type('int|string'))->pattern('\d+'),
 		E_USER_DEPRECATED,
 		"pattern() on the union 'int|string' is deprecated, give it to the variants of anyOf() instead.",
 	);
-	Assert::error(fn() => Expect::type('array|string')->items('int'), E_USER_DEPRECATED);
-	Assert::error(fn() => Expect::type('int|string')->mergeDefaults(), E_USER_DEPRECATED);
+	Assert::error(fn() => (new Type('array|string'))->items('int'), E_USER_DEPRECATED);
+	Assert::error(fn() => (new Type('int|string'))->mergeDefaults(), E_USER_DEPRECATED);
 	Assert::noError(fn() => Expect::type('email|url')->min(3)); // one kind of value, a StringType
 	Assert::noError(fn() => Expect::type('int|string')->required()->nullable()); // no option of the kind
 });
@@ -140,9 +150,9 @@ test('Validators-coupled expressions are deprecated but still work', function ()
 		"The range in 'int:1..5' is deprecated and 2.1 refuses it, use min() and max().",
 	);
 	Assert::error(
-		fn() => Expect::type('string:..10|int'),
+		fn() => Expect::type('string:..10|int'), // the union builds anyOf(), the notice comes from the variant
 		E_USER_DEPRECATED,
-		"The range in 'string:..10|int' is deprecated and 2.1 refuses it, use min() and max().",
+		"The range in 'string:..10' is deprecated and 2.1 refuses it, use min() and max().",
 	);
 	Assert::error(
 		fn() => Expect::type('numeric'),
@@ -166,7 +176,7 @@ test('Validators-coupled expressions are deprecated but still work', function ()
 		$processor->process(@Expect::type('int:1..5'), 9); // @ the range in a type is deprecated
 	}, ['The item expects to be int in range 1..5, 9 given.']);
 	checkValidationErrors(function () use ($processor) {
-		$processor->process(@Expect::type('string:2|int:1..5'), 'abc'); // @ the range in a type is deprecated
+		$processor->process(@new Type('string:2|int:1..5'), 'abc'); // @ the range in a type is deprecated
 	}, ["The item expects to be string in range 2 or int in range 1..5, 'abc' given."]);
 	Assert::same('42', $processor->process(@Expect::type('numeric'), '42')); // @ 'numeric' as a type is deprecated
 	checkValidationErrors(function () use ($processor) {

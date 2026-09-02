@@ -7,6 +7,7 @@
 
 namespace Nette\Schema;
 
+use Nette;
 use function count;
 
 
@@ -64,7 +65,11 @@ final class TypeExpression
 			} elseif ($part === DynamicParameter::class) {
 				$dynamic = true;
 			} else {
-				array_push($variants, ...self::parseAlternative($part));
+				$alternatives = self::parseAlternative($part);
+				if (count($alternatives) === 1) {
+					$alternatives[0]['source'] = $part; // format() cannot say everything, e.g. the grouping of 'scalar[]'
+				}
+				array_push($variants, ...$alternatives);
 			}
 		}
 
@@ -75,7 +80,7 @@ final class TypeExpression
 
 		$item = match (count($variants)) {
 			0 => ['kind' => $nullable ? Kind::Null : Kind::Any],
-			1 => $variants[0],
+			1 => array_diff_key($variants[0], ['source' => null]),
 			default => ['kind' => Kind::Union, 'variants' => $variants],
 		};
 		return $item + ['nullable' => $nullable && count($variants) > 0, 'dynamic' => $dynamic];
@@ -129,6 +134,42 @@ final class TypeExpression
 			$kind === Kind::Other => [['kind' => $kind, 'type' => $part]],
 			default => [['kind' => $kind]],
 		};
+	}
+
+
+	/**
+	 * Renders a parsed alternative back as an expression; the inverse of parse() for what the language can say.
+	 * @param  array<string, mixed>  $item
+	 */
+	public static function format(array $item): string
+	{
+		$kind = $item['kind'];
+		if (!$kind instanceof Kind) {
+			throw new Nette\InvalidArgumentException("The description must have a Kind under 'kind'.");
+		}
+
+		$res = match ($kind) {
+			Kind::Any => 'mixed',
+			Kind::Null => 'null',
+			Kind::Bool => 'bool',
+			Kind::Int => 'int',
+			Kind::Float => 'float',
+			Kind::Number => 'number',
+			Kind::String => $item['format'] ?? ($item['pattern'] === null ? 'string' : 'pattern:' . $item['pattern']),
+			Kind::Array => 'array',
+			Kind::List => 'list',
+			Kind::Iterable => $item['items'] === null ? 'iterable' : self::format($item['items']) . '[]',
+			Kind::Object => 'object',
+			Kind::Callable => 'callable',
+			Kind::Union => implode('|', array_map(self::format(...), $item['variants'])),
+			Kind::Instance, Kind::Other => $item['type'],
+			default => throw new Nette\InvalidArgumentException("Kind $kind->name has no expression."),
+		};
+		if (($item['min'] ?? null) !== null || ($item['max'] ?? null) !== null) {
+			$res .= ':' . implode('..', [$item['min'], $item['max']]);
+		}
+
+		return ($item['nullable'] ?? false) ? 'null|' . $res : $res;
 	}
 
 
