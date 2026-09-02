@@ -294,7 +294,7 @@ test('arrayOf() & scalar', function () {
 
 	checkValidationErrors(function () use ($schema) {
 		(new Processor)->process($schema, [1, 2, false]);
-	}, ["The item '2' expects to be string or int, false given."]);
+	}, ["The item '2' expects to be string|int, false given."]);
 
 	Assert::same(['key' => 'val'], (new Processor)->process($schema, ['key' => 'val']));
 });

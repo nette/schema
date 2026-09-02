@@ -17,16 +17,16 @@ test('scalar type accepts all scalar values', function () {
 
 	checkValidationErrors(function () use ($schema) {
 		(new Processor)->process($schema, null);
-	}, ['The item expects to be scalar, null given.']);
+	}, ['The item expects to be bool|number|string, null given.']);
 
 	checkValidationErrors(function () use ($schema) {
 		(new Processor)->process($schema, []);
-	}, ['The item expects to be scalar, array given.']);
+	}, ['The item expects to be bool|number|string, array given.']);
 
 	checkValidationErrors(function () use ($schema) {
 		(new Processor)->process($schema, new class implements Nette\Schema\DynamicParameter {
 		});
-	}, ['The item expects to be scalar, dynamic given.']);
+	}, ['The item expects to be bool|number|string, dynamic given.']);
 });
 
 
@@ -62,15 +62,15 @@ test('union type accepts any of specified types', function () {
 
 	checkValidationErrors(function () use ($schema) {
 		(new Processor)->process($schema, 123);
-	}, ['The item expects to be string or bool, 123 given.']);
+	}, ['The item expects to be string|bool, 123 given.']);
 
 	checkValidationErrors(function () use ($schema) {
 		(new Processor)->process($schema, null);
-	}, ['The item expects to be string or bool, null given.']);
+	}, ['The item expects to be string|bool, null given.']);
 
 	checkValidationErrors(function () use ($schema) {
 		(new Processor)->process($schema, []);
-	}, ['The item expects to be string or bool, array given.']);
+	}, ['The item expects to be string|bool, array given.']);
 });
 
 

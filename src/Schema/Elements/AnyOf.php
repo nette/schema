@@ -67,6 +67,41 @@ final class AnyOf implements Schema
 	}
 
 
+	#[\Deprecated('options belong to the variants')]
+	public function min(?float $min): self
+	{
+		throw new Nette\DeprecatedException('min() is not available on anyOf(), give it to the variants.');
+	}
+
+
+	#[\Deprecated('options belong to the variants')]
+	public function max(?float $max): self
+	{
+		throw new Nette\DeprecatedException('max() is not available on anyOf(), give it to the variants.');
+	}
+
+
+	#[\Deprecated('options belong to the variants')]
+	public function pattern(?string $pattern): self
+	{
+		throw new Nette\DeprecatedException('pattern() is not available on anyOf(), give it to the variants.');
+	}
+
+
+	#[\Deprecated('options belong to the variants')]
+	public function items(string|Schema $valueType = 'mixed', string|Schema|null $keyType = null): self
+	{
+		throw new Nette\DeprecatedException('items() is not available on anyOf(), give it to the variants.');
+	}
+
+
+	#[\Deprecated('options belong to the variants')]
+	public function mergeDefaults(bool $state = true): self
+	{
+		throw new Nette\DeprecatedException('mergeDefaults() is not available on anyOf(), give it to the variants.');
+	}
+
+
 	/********************* inspection ****************d*g**/
 
 

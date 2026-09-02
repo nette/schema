@@ -19,15 +19,15 @@ assertType(StringType::class, Expect::string());
 assertType(NumberType::class, Expect::int());
 assertType(Type::class, Expect::bool());
 assertType(NumberType::class, Expect::float());
-assertType(Type::class, Expect::scalar());
+assertType(AnyOf::class, Expect::scalar()); // a union of different kinds
 assertType(Type::class, Expect::null());
 assertType(Type::class, Expect::mixed());
 assertType(ArrayType::class, Expect::list());
 assertType(StringType::class, Expect::email());
 assertType(StringType::class, Expect::unicode());
 
-// Explicit type creation
-assertType(Type::class, Expect::type('string'));
+// Explicit type creation; which kind the expression is stays a runtime matter
+assertType(AnyOf::class . '|' . Type::class, Expect::type('string'));
 assertType(ArrayType::class, Expect::arrayOf('string'));
 assertType(ArrayType::class, Expect::listOf('string'));
 

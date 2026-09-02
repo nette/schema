@@ -21,7 +21,7 @@ use function count, is_object, is_string;
 /**
  * Schema generator.
  *
- * @method static Type scalar($default = null)
+ * @method static AnyOf scalar($default = null)
  * @method static StringType string($default = null)
  * @method static NumberType int($default = null)
  * @method static NumberType float($default = null)
@@ -35,7 +35,7 @@ use function count, is_object, is_string;
 final class Expect
 {
 	/** @param  list<mixed>  $args */
-	public static function __callStatic(string $name, array $args): Type
+	public static function __callStatic(string $name, array $args): Type|AnyOf
 	{
 		$type = self::type($name);
 		if ($args) {
@@ -48,11 +48,20 @@ final class Expect
 
 	/**
 	 * Creates a schema for a type expression (e.g., 'int|string', 'null|float', 'email'); an expression
-	 * of a single kind of value gets its dedicated StringType, NumberType, ArrayType or EnumType.
+	 * of a single kind of value gets its dedicated StringType, NumberType, ArrayType or EnumType,
+	 * a union of different kinds becomes anyOf() of the variants.
 	 */
-	public static function type(string $type): Type
+	public static function type(string $type): Type|AnyOf
 	{
-		$class = self::typeClass(TypeExpression::parse($type));
+		$item = TypeExpression::parse($type);
+		$class = self::typeClass($item);
+		if ($item['kind'] === Kind::Union && $class === Type::class) {
+			$schema = new AnyOf(...array_map(fn(array $variant) => self::type(TypeExpression::format($variant)), $item['variants']));
+			$item['nullable'] && $schema->nullable();
+			$item['dynamic'] && $schema->dynamic();
+			return $schema;
+		}
+
 		return new $class($type);
 	}
 

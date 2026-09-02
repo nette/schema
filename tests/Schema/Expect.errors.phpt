@@ -58,11 +58,11 @@ test('error messages for union types list all alternatives', function () {
 
 	checkValidationErrors(function () use ($schema) {
 		(new Processor)->process($schema, []);
-	}, ['The item expects to be string or int or bool, array given.']);
+	}, ['The item expects to be string|int|bool, array given.']);
 
 	checkValidationErrors(function () use ($schema) {
 		(new Processor)->process($schema, null);
-	}, ['The item expects to be string or int or bool, null given.']);
+	}, ['The item expects to be string|int|bool, null given.']);
 });
 
 
