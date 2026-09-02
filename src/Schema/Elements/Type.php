@@ -14,8 +14,9 @@ use Nette\Schema\Helpers;
 use Nette\Schema\Kind;
 use Nette\Schema\Schema;
 use Nette\Schema\TypeExpression;
+use Nette\Utils\Arrays;
 use Nette\Utils\Validators;
-use function array_key_exists, is_array;
+use function array_key_exists, count, is_array, is_bool, is_float, is_int, is_object, is_string, strlen;
 
 
 class Type implements Schema
@@ -37,6 +38,29 @@ class Type implements Schema
 		$defaults = ['list' => [], 'array' => []];
 		$this->type = $type;
 		$this->default = strpos($type, '[]') ? [] : $defaults[$type] ?? null;
+		$this->deprecatedExpressions();
+	}
+
+
+	/**
+	 * Everything Validators-coupled is deprecated and 2.1 refuses it: a range in the expression,
+	 * a name that is not a type, a directly constructed Type for a kind that has its own class.
+	 */
+	private function deprecatedExpressions(): void
+	{
+		$item = $this->getParsed();
+		foreach ($item['kind'] === Kind::Union ? $item['variants'] : [$item] as $variant) {
+			if (($variant['min'] ?? null) !== null || ($variant['max'] ?? null) !== null) {
+				trigger_error("The range in '$this->type' is deprecated, use min() and max().", E_USER_DEPRECATED);
+			}
+			if ($variant['kind'] === Kind::Other) {
+				trigger_error("'{$variant['type']}' is deprecated as a type; check the value with assert() instead.", E_USER_DEPRECATED);
+			}
+		}
+
+		if (static::class === self::class && ($class = Nette\Schema\Expect::typeClass($item)) !== self::class) {
+			trigger_error("'$this->type' is a $class now, create it via Expect::type().", E_USER_DEPRECATED);
+		}
 	}
 
 
@@ -142,12 +166,24 @@ class Type implements Schema
 
 
 	/**
-	 * The parsed expression; 'kind', 'nullable', 'dynamic' and the keys of the kind.
+	 * The parsed expression: 'kind', 'nullable', 'dynamic' and the keys of the kind.
 	 * @return array<string, mixed>
 	 */
 	protected function getParsed(): array
 	{
 		return TypeExpression::parse($this->type);
+	}
+
+
+	/**
+	 * The expression as messages report it; with the range appended for deferred DI validation.
+	 */
+	protected function getExpression(bool $withRange = false): string
+	{
+		$expr = str_replace(DynamicParameter::class . '|', '', $this->type);
+		return $withRange && $this->range !== [null, null]
+			? $expr . ':' . implode('..', $this->range)
+			: $expr;
 	}
 
 
@@ -245,14 +281,19 @@ class Type implements Schema
 			$merge = false;
 		}
 
-		if ($value === null && is_array($this->default) && !Validators::is(null, $this->type)) {
+		if (
+			$value === null
+			&& is_array($this->default)
+			&& !$this->getParsed()['nullable']
+			&& !self::matches(null, $this->getParsed())
+		) {
 			$value = []; // is unable to distinguish null from array in NEON
 		}
 
 		$this->doDeprecation($context);
 
 		$isOk = $context->createChecker();
-		Helpers::validateType($value, $this->type, $context);
+		$value = $this->validate($value, $context);
 		$isOk() && Helpers::validateRange($value, $this->range, $context, $this->type);
 		$isOk() && $value !== null && $this->pattern !== null && Helpers::validatePattern($value, $this->pattern, $context);
 		$isOk() && is_array($value) && $this->validateItems($value, $context);
@@ -263,10 +304,98 @@ class Type implements Schema
 		}
 
 		if ($value instanceof DynamicParameter && $this->type !== DynamicParameter::class) {
-			$expected = $this->type . ($this->range === [null, null] ? '' : ':' . implode('..', $this->range));
-			$context->dynamics[] = [$value, str_replace(DynamicParameter::class . '|', '', $expected), $context->path];
+			$context->dynamics[] = [$value, $this->getExpression(withRange: true), $context->path];
 		}
 		return $value;
+	}
+
+
+	/**
+	 * Whether the value is exempt from validation: null of a nullable type, a DynamicParameter of a dynamic one.
+	 */
+	private function isExempt(mixed $value): bool
+	{
+		$parsed = $this->getParsed();
+		return ($value === null && $parsed['nullable'])
+			|| ($value instanceof DynamicParameter && $parsed['dynamic']);
+	}
+
+
+	/**
+	 * Reports an error for a value that is not of the declared type and returns it.
+	 */
+	protected function validate(mixed $value, Context $context): mixed
+	{
+		if (!$this->isExempt($value) && !self::matches($value, $this->getParsed())) {
+			$this->addTypeError($value, $context);
+		}
+		return $value;
+	}
+
+
+	/**
+	 * Whether the value is of the kind the parsed expression describes; the one place that knows every kind.
+	 * The deprecated ranges and validator names in the expression are still honored here until they go away.
+	 * @param  array<string, mixed>  $variant
+	 */
+	protected static function matches(mixed $value, array $variant): bool
+	{
+		return match ($variant['kind']) {
+			Kind::Any => true,
+			Kind::Null => $value === null,
+			Kind::Bool => is_bool($value),
+			Kind::Int => is_int($value) && self::inVariantRange($value, $variant),
+			Kind::Float => is_float($value) && self::inVariantRange($value, $variant),
+			Kind::Number => (is_int($value) || is_float($value)) && self::inVariantRange($value, $variant),
+			Kind::String => is_string($value)
+				&& ($variant['format'] === null || Validators::is($value, $variant['format']))
+				&& (($variant['pattern'] ?? null) === null || preg_match("\x01^(?:{$variant['pattern']})$\x01Du", $value) === 1)
+				&& self::inVariantRange($variant['format'] === 'unicode' ? Nette\Utils\Strings::length($value) : strlen($value), $variant),
+			Kind::Array => is_array($value) && self::inVariantRange(count($value), $variant),
+			Kind::List => is_array($value) && Arrays::isList($value) && self::inVariantRange(count($value), $variant),
+			Kind::Iterable => is_iterable($value) && ($variant['items'] === null || self::everyItemMatches($value, $variant['items'])),
+			Kind::Object => is_object($value),
+			Kind::Callable => $value && is_callable($value, syntax_only: true),
+			Kind::Instance => $value instanceof $variant['type'],
+			Kind::Union => Arrays::some($variant['variants'], fn($v) => self::matches($value, $v)),
+			Kind::Other => Validators::is($value, $variant['type']),
+			default => false,
+		};
+	}
+
+
+	/** @param  array<string, mixed>  $variant */
+	private static function inVariantRange(mixed $value, array $variant): bool
+	{
+		return Helpers::isInRange($value, [$variant['min'] ?? null, $variant['max'] ?? null]);
+	}
+
+
+	/**
+	 * @param  iterable<mixed>  $values
+	 * @param  array<string, mixed>  $items
+	 */
+	private static function everyItemMatches(iterable $values, array $items): bool
+	{
+		foreach ($values as $value) {
+			if (!self::matches($value, $items)) {
+				return false;
+			}
+		}
+		return true;
+	}
+
+
+	/**
+	 * Adds the type error in the wording of the expression: 'expects to be null or int'.
+	 */
+	private function addTypeError(mixed $value, Context $context): void
+	{
+		$context->addError(
+			'The %label% %path% expects to be %expected%, %value% given.',
+			Nette\Schema\Message::TypeMismatch,
+			['value' => $value, 'expected' => str_replace(['|', ':'], [' or ', ' in range '], $this->getExpression())],
+		);
 	}
 
 

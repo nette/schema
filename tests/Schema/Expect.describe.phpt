@@ -48,7 +48,7 @@ test('min(), max() and pattern() narrow the type, a range in the expression too'
 	Assert::same(1.0, $d['min']);
 	Assert::same(5.0, $d['max']);
 
-	$d = Expect::type('int:1..10')->min(3)->max(20)->describe();
+	$d = @Expect::type('int:1..10')->min(3)->max(20)->describe(); // range in expression is deprecated
 	Assert::same(3.0, $d['min']);
 	Assert::same(10.0, $d['max']);
 
@@ -94,7 +94,7 @@ test('classes and legacy names', function () {
 	Assert::same(Kind::Instance, $d['kind']);
 	Assert::same(DateTime::class, $d['type']);
 
-	$d = Expect::type('numeric')->describe();
+	$d = @Expect::type('numeric')->describe(); // 'numeric' as a type is deprecated
 	Assert::same(Kind::Other, $d['kind']);
 	Assert::same('numeric', $d['type']);
 });

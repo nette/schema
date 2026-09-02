@@ -73,23 +73,6 @@ final class Helpers
 
 
 	/**
-	 * Adds a TypeMismatch error to the context if the value does not match the expected type.
-	 */
-	public static function validateType(mixed $value, string $expected, Context $context): void
-	{
-		if (!Nette\Utils\Validators::is($value, $expected)) {
-			$expected = str_replace(DynamicParameter::class . '|', '', $expected);
-			$expected = str_replace(['|', ':'], [' or ', ' in range '], $expected);
-			$context->addError(
-				'The %label% %path% expects to be %expected%, %value% given.',
-				Message::TypeMismatch,
-				['value' => $value, 'expected' => $expected],
-			);
-		}
-	}
-
-
-	/**
 	 * Adds a range error to the context if the value (or its length for strings/arrays) is outside the given range.
 	 * @param  array{?float, ?float}  $range
 	 */
@@ -151,7 +134,7 @@ final class Helpers
 	 */
 	public static function getCastStrategy(string $type): \Closure
 	{
-		if (Nette\Utils\Validators::isBuiltinType($type)) {
+		if (in_array(strtolower($type), ['array', 'bool', 'boolean', 'float', 'int', 'integer', 'string', 'object', 'null'], strict: true)) {
 			return static function ($value) use ($type) {
 				settype($value, $type);
 				return $value;

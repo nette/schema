@@ -186,7 +186,14 @@ class Structure implements Schema
 		$this->doDeprecation($context);
 
 		$isOk = $context->createChecker();
-		Helpers::validateType($value, 'array', $context);
+		if (!is_array($value)) {
+			$context->addError(
+				'The %label% %path% expects to be array, %value% given.',
+				Nette\Schema\Message::TypeMismatch,
+				['value' => $value, 'expected' => 'array'],
+			);
+		}
+
 		$isOk() && Helpers::validateRange($value, $this->range, $context);
 		$isOk() && $this->validateItems($value, $context);
 		$isOk() && $value = $this->doTransform($value, $context);

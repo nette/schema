@@ -23,7 +23,7 @@ test('an expression of a single kind gets its dedicated subclass of Type', funct
 	Assert::type(NumberType::class, Expect::int());
 	Assert::type(NumberType::class, Expect::float());
 	Assert::type(NumberType::class, Expect::type('number'));
-	Assert::type(NumberType::class, Expect::type('int:1..5'));
+	Assert::type(NumberType::class, @Expect::type('int:1..5')); // range in expression is deprecated
 	Assert::type(NumberType::class, Expect::type('int|float'));
 	Assert::type(NumberType::class, Expect::type('int|null'));
 	Assert::type(NumberType::class, Expect::type('float|int|null'));
@@ -42,7 +42,7 @@ test('an expression of a single kind gets its dedicated subclass of Type', funct
 	Assert::same(Type::class, Expect::scalar()::class);
 	Assert::same(Type::class, Expect::type('int|string')::class);
 	Assert::same(Type::class, Expect::type(DateTime::class)::class);
-	Assert::same(Type::class, Expect::type('numeric')::class);
+	Assert::same(Type::class, @Expect::type('numeric')::class); // 'numeric' as a type is deprecated
 
 	Assert::type(StringType::class, Expect::arrayOf('string')->describe()['items']);
 	Assert::type(StringType::class, Expect::from(new class {
@@ -60,6 +60,25 @@ test('the subclasses validate exactly as Type does', function () {
 
 	Assert::same(5, (new Processor)->process(Expect::int()->min(1), 5));
 	Assert::same([1, 2], (new Processor)->process(Expect::listOf('int'), [1, 2]));
+});
+
+
+test('callable is checked by syntax, the target need not exist yet', function () {
+	$schema = Expect::type('callable');
+	$processor = new Processor;
+
+	Assert::same('strlen', $processor->process($schema, 'strlen'));
+	Assert::same('Undefined\Klass', $processor->process($schema, 'Undefined\Klass'));
+	Assert::same('Undefined\Klass::method', $processor->process($schema, 'Undefined\Klass::method'));
+	Assert::same(['Undefined\Klass', 'method'], $processor->process($schema, ['Undefined\Klass', 'method']));
+
+	checkValidationErrors(function () use ($processor, $schema) {
+		$processor->process($schema, '');
+	}, ["The item expects to be callable, '' given."]);
+
+	checkValidationErrors(function () use ($processor, $schema) {
+		$processor->process($schema, 123);
+	}, ['The item expects to be callable, 123 given.']);
 });
 
 
@@ -105,4 +124,46 @@ test('methods that make no sense for the kind are deprecated', function () {
 	Assert::error(fn() => Expect::type('int|string')->mergeDefaults(), E_USER_DEPRECATED);
 	Assert::noError(fn() => Expect::type('email|url')->min(3)); // one kind of value, a StringType
 	Assert::noError(fn() => Expect::type('int|string')->required()->nullable()); // no option of the kind
+});
+
+
+test('Validators-coupled expressions are deprecated but still work', function () {
+	Assert::error(
+		fn() => Expect::type('int:1..5'),
+		E_USER_DEPRECATED,
+		"The range in 'int:1..5' is deprecated, use min() and max().",
+	);
+	Assert::error(
+		fn() => Expect::type('string:..10|int'),
+		E_USER_DEPRECATED,
+		"The range in 'string:..10|int' is deprecated, use min() and max().",
+	);
+	Assert::error(
+		fn() => Expect::type('numeric'),
+		E_USER_DEPRECATED,
+		"'numeric' is deprecated as a type; check the value with assert() instead.",
+	);
+	Assert::noError(fn() => Expect::type('pattern:\d+')); // a string format, not a range
+
+	Assert::error(
+		fn() => new Nette\Schema\Elements\Type('string'),
+		E_USER_DEPRECATED,
+		"'string' is a Nette\\Schema\\Elements\\StringType now, create it via Expect::type().",
+	);
+	Assert::noError(fn() => new Nette\Schema\Elements\Type('int|string')); // stays a plain Type
+	Assert::noError(fn() => new Nette\Schema\Elements\Type(DateTime::class));
+
+	// deprecated forms still validate exactly as before
+	$processor = new Nette\Schema\Processor;
+	Assert::same(3, $processor->process(@Expect::type('int:1..5'), 3));
+	checkValidationErrors(function () use ($processor) {
+		$processor->process(@Expect::type('int:1..5'), 9);
+	}, ['The item expects to be int in range 1..5, 9 given.']);
+	checkValidationErrors(function () use ($processor) {
+		$processor->process(@Expect::type('string:2|int:1..5'), 'abc');
+	}, ["The item expects to be string in range 2 or int in range 1..5, 'abc' given."]);
+	Assert::same('42', $processor->process(@Expect::type('numeric'), '42'));
+	checkValidationErrors(function () use ($processor) {
+		$processor->process(@Expect::type('numeric'), 'abc');
+	}, ["The item expects to be numeric, 'abc' given."]);
 });

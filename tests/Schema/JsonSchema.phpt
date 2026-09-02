@@ -170,7 +170,7 @@ test('PHP-only types are refused', function () {
 		"Type 'DateTime' cannot be expressed in JSON Schema.",
 	);
 	Assert::exception(
-		fn() => JsonSchema::export(Expect::type('numeric')),
+		fn() => JsonSchema::export(@Expect::type('numeric')), // 'numeric' as a type is deprecated
 		Nette\NotSupportedException::class,
 		"Type 'numeric' cannot be expressed in JSON Schema.",
 	);
