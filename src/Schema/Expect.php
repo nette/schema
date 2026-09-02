@@ -172,10 +172,16 @@ final class Expect
 
 	/**
 	 * Creates a list schema (sequentially indexed from 0) where every element matches the given type.
+	 * With $wrap, a single value is also accepted and wrapped into a one-item list.
 	 */
-	public static function listOf(string|Schema $type): ArrayType
+	public static function listOf(string|Schema $type, bool $wrap = false): ArrayType
 	{
-		return (new ArrayType('list'))->items($type);
+		$schema = (new ArrayType('list'))->items($type);
+		if ($wrap) {
+			$schema->before(fn($value) => is_array($value) || $value === null ? $value : [$value]);
+		}
+
+		return $schema;
 	}
 
 

@@ -95,3 +95,31 @@ test('listOf() & scalar', function () {
 		(new Processor)->process($schema, ['key' => 'val']);
 	}, ['The item expects to be list, array given.']);
 });
+
+
+test('listOf() with wrap accepts a single value', function () {
+	$schema = Expect::listOf('string', wrap: true);
+
+	Assert::same(['a'], (new Processor)->process($schema, 'a'));
+	Assert::same(['a', 'b'], (new Processor)->process($schema, ['a', 'b']));
+	Assert::same([], (new Processor)->process($schema, []));
+
+	// null says there is no value and stays unwrapped, a falsy scalar is a value
+	Assert::same([], (new Processor)->process($schema, null));
+	Assert::null((new Processor)->process(Expect::listOf('string', wrap: true)->nullable(), null));
+	Assert::same([false], (new Processor)->process(Expect::listOf('bool', wrap: true), false));
+	Assert::same([0], (new Processor)->process(Expect::listOf('int', wrap: true), 0));
+
+	checkValidationErrors(function () use ($schema) {
+		(new Processor)->process($schema, 123);
+	}, ["The item '0' expects to be string, 123 given."]);
+
+	checkValidationErrors(function () use ($schema) {
+		(new Processor)->process($schema, ['key' => 'val']);
+	}, ['The item expects to be list, array given.']);
+
+	Assert::same(
+		['a', 'b', 'c'],
+		(new Processor)->processMultiple($schema, ['a', ['b', 'c']]),
+	);
+});
