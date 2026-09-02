@@ -12,7 +12,7 @@ use Nette\Schema\Context;
 use Nette\Schema\Helpers;
 use Nette\Schema\Kind;
 use Nette\Schema\Schema;
-use function is_array;
+use function in_array, is_array;
 
 
 /**
@@ -133,6 +133,10 @@ final class AnyOf implements Schema
 
 	private function findAlternative(mixed $value, Context $context): mixed
 	{
+		if ($value === null && in_array(null, $this->set, strict: true)) {
+			return null;
+		}
+
 		$expecteds = $innerErrors = [];
 		foreach ($this->set as $item) {
 			if ($item instanceof Schema) {

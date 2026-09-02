@@ -261,3 +261,28 @@ test('normalization', function () {
 	);
 	Assert::same('1', (new Processor)->process($schema, 1));
 });
+
+
+test('an accepted null is not claimed by a variant that would coerce it', function () {
+	$processor = new Processor;
+
+	// a structure, a tuple and an array turn null into an empty value of their own
+	Assert::null($processor->process(Expect::anyOf(Expect::int(), Expect::structure(['a' => Expect::string()]))->nullable(), null));
+	Assert::null($processor->process(Expect::anyOf(Expect::int(), Expect::tuple([Expect::string(), Expect::int()]))->nullable(), null));
+	Assert::null($processor->process(Expect::anyOf(Expect::int(), Expect::arrayOf('string'))->nullable(), null));
+
+	// wherever the null sits in the set
+	Assert::null($processor->process(Expect::anyOf(Expect::structure(['a' => Expect::string()]), null), null));
+	Assert::null($processor->process(Expect::anyOf(null, Expect::structure(['a' => Expect::string()])), null));
+
+	// a null that is not accepted still is an error
+	checkValidationErrors(function () use ($processor) {
+		$processor->process(Expect::anyOf(Expect::int(), Expect::string()), null);
+	}, ['The item expects to be int|string, null given.']);
+
+	// alone, the structure keeps turning null into its defaults
+	Assert::equal(
+		(object) ['a' => null],
+		$processor->process(Expect::structure(['a' => Expect::string()]), null),
+	);
+});
