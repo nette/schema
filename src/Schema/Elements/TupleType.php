@@ -126,7 +126,7 @@ final class TupleType extends Type
 	}
 
 
-	protected function mergeValues(mixed $value, mixed $base): mixed
+	protected function mergeValues(mixed $value, mixed $base, Context $context): mixed
 	{
 		return $value;
 	}

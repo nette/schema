@@ -195,7 +195,7 @@ class Type implements Schema
 	}
 
 
-	public function merge(mixed $value, mixed $base): mixed
+	public function merge(mixed $value, mixed $base, Context $context): mixed
 	{
 		if (is_array($value) && isset($value[Helpers::PreventMerging])) {
 			unset($value[Helpers::PreventMerging]);
@@ -206,11 +206,11 @@ class Type implements Schema
 			return ($this->mergeWith)($value, $base);
 		}
 
-		return $this->mergeValues($value, $base);
+		return $this->mergeValues($value, $base, $context);
 	}
 
 
-	protected function mergeValues(mixed $value, mixed $base): mixed
+	protected function mergeValues(mixed $value, mixed $base, Context $context): mixed
 	{
 		return Helpers::merge($value, $base);
 	}
