@@ -67,6 +67,14 @@ test('lists and arrays', function () {
 		JsonSchema::export(Expect::listOf('int')),
 	);
 	Assert::same(
+		['anyOf' => [['type' => 'integer'], ['type' => 'array', 'items' => ['type' => 'integer']]]],
+		JsonSchema::export(Expect::listOf('int', wrap: true)),
+	);
+	Assert::same( // a single value cannot reach the minimum
+		['type' => 'array', 'items' => ['type' => 'integer'], 'minItems' => 2],
+		JsonSchema::export(Expect::listOf('int', wrap: true)->min(2)),
+	);
+	Assert::same(
 		['type' => 'array', 'items' => ['type' => 'integer']],
 		JsonSchema::export(Expect::type('int[]')),
 	);

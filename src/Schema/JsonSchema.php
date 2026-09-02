@@ -49,8 +49,7 @@ final class JsonSchema
 			Kind::Float, Kind::Number => ['type' => 'number'] + self::range($item, 'minimum', 'maximum'),
 			Kind::String => self::buildString($item),
 			// an iterable of items is narrowed to a JSON array, which PHP accepts too
-			Kind::List, Kind::Iterable => ['type' => 'array', 'items' => self::buildOrAny($item['items'])]
-				+ self::countRange($item, 'minItems', 'maxItems'),
+			Kind::List, Kind::Iterable => self::buildList($item),
 			Kind::Array => self::buildArray($item),
 			Kind::Structure => self::buildStructure($item),
 			Kind::Tuple => self::buildTuple($item),
@@ -124,6 +123,21 @@ final class JsonSchema
 			$res['format'] = $format;
 		}
 		return $res;
+	}
+
+
+	/**
+	 * A list that wraps a single value accepts the item alone as well.
+	 * @param  array<string, mixed>  $item
+	 * @return array<string, mixed>
+	 */
+	private static function buildList(array $item): array
+	{
+		$res = ['type' => 'array', 'items' => self::buildOrAny($item['items'])] + self::countRange($item, 'minItems', 'maxItems');
+		$single = ($item['wrap'] ?? false) && ($item['min'] ?? 0) <= 1 && ($item['max'] ?? 1) >= 1;
+		return $single
+			? ['anyOf' => [self::buildOrAny($item['items']), $res]]
+			: $res;
 	}
 
 

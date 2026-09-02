@@ -7,7 +7,8 @@
 
 namespace Nette\Schema\Elements;
 
-use Nette\Schema\Schema;
+use Nette\Schema\{Context, Schema};
+use function is_array;
 
 
 /**
@@ -15,6 +16,22 @@ use Nette\Schema\Schema;
  */
 final class ArrayType extends Type
 {
+	public function __construct(
+		string $type,
+		/** a single value is accepted and wrapped into a one-item list */
+		private readonly bool $wrap = false,
+	) {
+		parent::__construct($type);
+	}
+
+
+	public function doNormalize(mixed $value, Context $context): mixed
+	{
+		$value = parent::doNormalize($value, $context);
+		return $this->wrap && !is_array($value) && $value !== null ? [$value] : $value;
+	}
+
+
 	/**
 	 * Sets the schema of items and optionally of keys.
 	 */
@@ -29,5 +46,11 @@ final class ArrayType extends Type
 	{
 		trigger_error(__METHOD__ . '() is deprecated, an array has no pattern.', E_USER_DEPRECATED);
 		return parent::pattern($pattern);
+	}
+
+
+	public function describe(): array
+	{
+		return parent::describe() + ['wrap' => $this->wrap];
 	}
 }
