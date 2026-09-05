@@ -213,44 +213,58 @@ final class Structure implements Schema
 		}
 
 		$isOk() && Helpers::validateRange($value, $this->range, $context);
-		$isOk() && $this->validateItems($value, $context);
+		$isOk() && $value = $this->completeItems($value, $context);
 		$isOk() && $value = $this->doTransform($value, $context);
 		return $isOk() ? $value : null;
 	}
 
 
-	/** @param  array<mixed>  $value */
-	private function validateItems(array &$value, Context $context): void
+	/**
+	 * Reports the unknown items, completes the present ones and fills in the defaults of the missing ones.
+	 * @param  array<mixed>  $value
+	 * @return array<mixed>
+	 */
+	private function completeItems(array $value, Context $context): array
 	{
+		$this->validateUnknownItems($value, $context);
 		$items = $this->items;
-		if ($extraKeys = array_keys(array_diff_key($value, $items))) {
-			if ($this->otherItems) {
-				$items += array_fill_keys($extraKeys, $this->otherItems);
-			} else {
-				$keys = array_map(strval(...), array_keys($items));
-				foreach ($extraKeys as $key) {
-					$hint = Nette\Utils\Helpers::getSuggestion($keys, (string) $key);
-					$context->addError(
-						'Unexpected item %path%' . ($hint ? ", did you mean '%hint%'?" : '.'),
-						Nette\Schema\Message::UnexpectedItem,
-						['hint' => $hint],
-					)->path[] = $key;
-				}
-			}
+		if ($this->otherItems) {
+			$items += array_fill_keys(array_keys(array_diff_key($value, $items)), $this->otherItems);
 		}
 
-		foreach ($items as $itemKey => $itemVal) {
+		foreach ($items as $itemKey => $itemSchema) {
 			$context->path[] = $itemKey;
 			if (array_key_exists($itemKey, $value)) {
-				$value[$itemKey] = $itemVal->complete($value[$itemKey], $context);
+				$value[$itemKey] = $itemSchema->complete($value[$itemKey], $context);
 			} else {
-				$default = $itemVal->completeDefault($context); // checks required item
+				$default = $itemSchema->completeDefault($context); // checks required item
 				if (!$context->skipDefaults && !$this->skipDefaults) {
 					$value[$itemKey] = $default;
 				}
 			}
 
 			array_pop($context->path);
+		}
+
+		return $value;
+	}
+
+
+	/** @param  array<mixed>  $value */
+	private function validateUnknownItems(array $value, Context $context): void
+	{
+		if ($this->otherItems) {
+			return;
+		}
+
+		$keys = array_map(strval(...), array_keys($this->items));
+		foreach (array_keys(array_diff_key($value, $this->items)) as $key) {
+			$hint = Nette\Utils\Helpers::getSuggestion($keys, (string) $key);
+			$context->addError(
+				'Unexpected item %path%' . ($hint ? ", did you mean '%hint%'?" : '.'),
+				Nette\Schema\Message::UnexpectedItem,
+				['hint' => $hint],
+			)->path[] = $key;
 		}
 	}
 
