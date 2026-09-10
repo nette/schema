@@ -179,6 +179,12 @@ final class Structure implements Schema
 
 	public function complete(mixed $value, Context $context): mixed
 	{
+		// the marker travels with the value through normalize() and merge() consumes it; the layer that has
+		// nothing under it keeps it, and it is not an item of the shape
+		if (is_array($value)) {
+			unset($value[Helpers::PreventMerging]);
+		}
+
 		if ($value === null && $context->keepNullAt !== $context->path) {
 			$value = []; // is unable to distinguish null from array in NEON
 		}
