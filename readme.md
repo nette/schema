@@ -126,13 +126,15 @@ Expect::array($default = [])
 Expect::list($default = [])
 ```
 
-And also all types [supported by the Validators class](https://doc.nette.org/validators#toc-expected-types), for example `Expect::type('scalar')` or shorthand `Expect::scalar()`. Also class or interface names, e.g., `Expect::type('AddressEntity')`.
+And also `Expect::type('scalar')` or shorthand `Expect::scalar()`, string formats such as `Expect::type('email')` or `'url'`, and class or interface names, e.g., `Expect::type('AddressEntity')`.
 
 Union syntax can also be used:
 
 ```php
 Expect::type('bool|string|array')
 ```
+
+A union of different kinds of values is the same as [anyOf()](#enumeration-anyof) of its parts (since version 2.0), so options such as `min()` belong to the parts.
 
 The default value is always `null` with the exception of `array` and `list`, where it is an empty array. (A list is an array indexed by a sequence of numeric keys starting from zero, i.e. a non-associative array).
 
@@ -185,7 +187,7 @@ The parameter can also be a schema, so we can write:
 Expect::arrayOf(Expect::bool())
 ```
 
-The default value is an empty array. If you specify a default value and call `mergeDefaults()`, it will be merged with the passed data.
+The default value is an empty array. A default is used when the item is missing (or empty in NEON); since version 2.0 it is not merged into an array that was passed.
 
 
 Enumeration: anyOf()
@@ -456,7 +458,7 @@ Using `pattern()`, you can specify a regular expression that the **entire** inpu
 Expect::string()->pattern('\d{9}');
 ```
 
-A pattern belongs to strings, just like `items()` belongs to arrays. Attach either of them to an element of a different kind and Schema raises a deprecation notice instead of silently ignoring the constraint (since version 1.4).
+A pattern belongs to strings, just like `items()` belongs to arrays. Attach either of them to an element of a different kind and Schema throws `Nette\DeprecatedException` instead of silently ignoring the constraint (version 1.4 raised a deprecation notice).
 
 
 Custom Assertions: assert()
@@ -639,6 +641,8 @@ $schema = Expect::from(new class {
 });
 ```
 
+Instead of an object, you can pass the class name, `Expect::from(Config::class)` (since version 2.0). A property whose type is another class (not nullable) becomes a nested structure generated from that class.
+
 Because the information obtained from the class definition may not be sufficient, you can supplement the elements with your own schema using the second parameter:
 
 ```php
@@ -669,7 +673,7 @@ $config = $processor->processMultiple($schema, [$defaults, $userConfig]);
 
 The `host` item keeps its default value because the user did not set it, while `port` and `logging` are overwritten by the later dataset. Values stored under string keys are merged this way; the items of a list (`listOf()`, `arrayOf()`) are appended one after another instead of being overwritten.
 
-Arrays and structures can set their strategy with `mergeMode()` (since version 1.4):
+Merging follows the schema (since version 2.0). When two datasets collide on an item holding an array and the schema does not say what the array contains (`Expect::mixed()`, `Expect::array()`), Schema does not guess how deep to merge and reports the error "Cannot merge …". Either describe the items with `arrayOf()`, `listOf()` or `structure()`, or set the strategy with `mergeMode()`, which arrays and structures have (since version 1.4):
 
 ```php
 use Nette\Schema\MergeMode;
@@ -677,7 +681,7 @@ use Nette\Schema\MergeMode;
 Expect::arrayOf('string')->mergeMode(MergeMode::Replace); // the later array replaces the earlier one
 ```
 
-`MergeMode::AppendKeys` merges by keys and appends list items, `OverwriteKeys` merges by keys and overwrites list items by position, and `Replace` keeps only the later value. Without `mergeMode()`, an array whose items are not described is merged deeply. For anything else, `mergeWith()` takes your own function combining the later value with the earlier one:
+`MergeMode::AppendKeys` merges by keys and appends list items (the default of arrays), `OverwriteKeys` merges by keys and overwrites list items by position (the default of structures without `otherItems()`), and `Replace` keeps only the later value. For anything else, `mergeWith()` takes your own function combining the later value with the earlier one:
 
 ```php
 Expect::bool()->mergeWith(fn($value, $base) => $value || $base); // once enabled, stays enabled
@@ -743,10 +747,10 @@ You can get a long way with `assert()`, `transform()` and `before()`, so you rar
 ```php
 interface Schema
 {
-	function normalize(mixed $value, Context $context);
-	function merge(mixed $value, mixed $base);
-	function complete(mixed $value, Context $context);
-	function completeDefault(Context $context);
+	function normalize(mixed $value, Context $context): mixed;
+	function merge(mixed $value, mixed $base, Context $context): mixed;
+	function complete(mixed $value, Context $context): mixed;
+	function completeDefault(Context $context): mixed;
 }
 ```
 
@@ -767,7 +771,7 @@ class ByteSizeSchema implements Schema
 		return is_int($value) ? "$value B" : $value; // unify both notations
 	}
 
-	public function merge(mixed $value, mixed $base): mixed
+	public function merge(mixed $value, mixed $base, Context $context): mixed
 	{
 		return $value ?? $base; // the later value wins
 	}
