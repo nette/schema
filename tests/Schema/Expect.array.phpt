@@ -320,6 +320,17 @@ test('arrayOf() & keys II.', function () {
 });
 
 
+test('a key turned into a non-key value is an error', function () {
+	checkValidationErrors(function () {
+		(new Processor)->process(Expect::arrayOf('int', Expect::string()->transform(fn() => [])), ['a' => 1]);
+	}, ["The key of item 'a' expects to be int|string, array given."]);
+
+	checkValidationErrors(function () {
+		(new Processor)->process(Expect::arrayOf('int', Expect::string()->before(fn() => [])), ['a' => 1]);
+	}, ["The key of item 'a' expects to be int|string, array given."]);
+});
+
+
 test('type[]', function () {
 	$schema = Expect::type('int[]');
 
