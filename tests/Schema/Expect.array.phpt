@@ -320,6 +320,13 @@ test('arrayOf() & keys II.', function () {
 });
 
 
+test('a warning about a key is labeled as a key', function () {
+	$processor = new Processor;
+	$processor->process(Expect::arrayOf('int', Expect::string()->deprecated('The %label% %path% is deprecated.')), ['a' => 1]);
+	Assert::same(["The key of item 'a' is deprecated."], $processor->getWarnings());
+});
+
+
 test('a key turned into a non-key value is an error', function () {
 	checkValidationErrors(function () {
 		(new Processor)->process(Expect::arrayOf('int', Expect::string()->transform(fn() => [])), ['a' => 1]);
