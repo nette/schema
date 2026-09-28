@@ -174,7 +174,10 @@ final class Helpers
 	 */
 	public static function validatePattern(string $value, string $pattern, Context $context): void
 	{
-		if (!preg_match("\x01^(?:$pattern)$\x01Du", $value)) {
+		$res = @preg_match("\x01^(?:$pattern)$\x01Du", $value); // @ - an invalid pattern is thrown below
+		if ($res === false && preg_last_error() === PREG_INTERNAL_ERROR) {
+			throw new Nette\InvalidStateException("Invalid pattern '$pattern': " . Nette\Utils\Helpers::getLastError());
+		} elseif (!$res) {
 			$context->addError(
 				"The %label% %path% expects to match pattern '%pattern%', %value% given.",
 				Message::PatternMismatch,
