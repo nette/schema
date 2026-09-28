@@ -7,9 +7,9 @@
 
 namespace Nette\Schema\Elements;
 
-use Nette\Schema\{Context, DynamicParameter, Helpers, Schema};
+use Nette\Schema\{Context, DynamicParameter, Helpers, Message, Schema};
 use Nette\Utils\Validators;
-use function array_key_exists, is_array;
+use function array_key_exists, is_array, is_int, is_string;
 
 
 final class Type implements Schema
@@ -120,6 +120,17 @@ final class Type implements Schema
 				$key = $this->itemsKey
 					? $this->itemsKey->normalize($key, $context)
 					: $key;
+				if (!is_int($key) && !is_string($key)) {
+					$context->addError(
+						'The %label% %path% expects to be int|string, %value% given.',
+						Message::TypeMismatch,
+						['value' => $key, 'expected' => 'int|string'],
+					);
+					$context->isKey = false;
+					array_pop($context->path);
+					continue;
+				}
+
 				$context->isKey = false;
 				$res[$key] = $this->itemsValue->normalize($val, $context);
 				array_pop($context->path);
@@ -209,6 +220,14 @@ final class Type implements Schema
 			$context->isKey = true;
 			$isKeyOk = $context->createChecker();
 			$key = $this->itemsKey ? $this->itemsKey->complete($key, $context) : $key;
+			if ($isKeyOk() && !is_int($key) && !is_string($key)) {
+				$context->addError(
+					'The %label% %path% expects to be int|string, %value% given.',
+					Message::TypeMismatch,
+					['value' => $key, 'expected' => 'int|string'],
+				);
+			}
+
 			$context->isKey = false;
 			$keyOk = $isKeyOk();
 			$val = $itemsValue->complete($val, $context);
