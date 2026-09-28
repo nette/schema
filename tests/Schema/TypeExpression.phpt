@@ -71,31 +71,31 @@ test('unions and composite names', function () {
 
 test('ranges from the expression', function () {
 	$d = TypeExpression::parse('int:1..5');
-	Assert::same(1.0, $d['min']);
-	Assert::same(5.0, $d['max']);
+	Assert::same(1, $d['min']);
+	Assert::same(5, $d['max']);
 
 	$d = TypeExpression::parse('string:..5');
 	Assert::null($d['min']);
-	Assert::same(5.0, $d['max']);
+	Assert::same(5, $d['max']);
 
 	$d = TypeExpression::parse('array:1..');
-	Assert::same(1.0, $d['min']);
+	Assert::same(1, $d['min']);
 	Assert::null($d['max']);
 
 	$d = TypeExpression::parse('array:1');
-	Assert::same(1.0, $d['min']);
-	Assert::same(1.0, $d['max']);
+	Assert::same(1, $d['min']);
+	Assert::same(1, $d['max']);
 
 	$d = TypeExpression::parse('int:1..5|string:3');
-	Assert::same(1.0, $d['variants'][0]['min']);
-	Assert::same(3.0, $d['variants'][1]['min']);
+	Assert::same(1, $d['variants'][0]['min']);
+	Assert::same(3, $d['variants'][1]['min']);
 });
 
 
 test('string flavors', function () {
 	$d = TypeExpression::parse('unicode:2..4');
 	Assert::same(Kind::String, $d['kind']);
-	Assert::same(2.0, $d['min']);
+	Assert::same(2, $d['min']);
 
 	$d = TypeExpression::parse('email');
 	Assert::same(Kind::String, $d['kind']);
@@ -135,7 +135,7 @@ test('string formats', function () {
 	}
 
 	Assert::null(TypeExpression::parse('string')['format']);
-	Assert::same(3.0, TypeExpression::parse('url:3..')['min']);
+	Assert::same(3, TypeExpression::parse('url:3..')['min']);
 });
 
 

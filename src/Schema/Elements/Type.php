@@ -21,7 +21,7 @@ class Type implements Schema
 	private ?Schema $itemsValue = null;
 	private ?Schema $itemsKey = null;
 
-	/** @var array{?float, ?float} */
+	/** @var array{int|float|null, int|float|null} */
 	private array $range = [null, null];
 	private ?string $pattern = null;
 	private bool $merge = true;
@@ -66,7 +66,7 @@ class Type implements Schema
 	}
 
 
-	public function min(?float $min): static
+	public function min(int|float|null $min): static
 	{
 		$this->unionDeprecated('min');
 		$this->range[0] = $min;
@@ -74,7 +74,7 @@ class Type implements Schema
 	}
 
 
-	public function max(?float $max): static
+	public function max(int|float|null $max): static
 	{
 		$this->unionDeprecated('max');
 		$this->range[1] = $max;

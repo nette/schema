@@ -128,14 +128,23 @@ final class TypeExpression
 
 	/**
 	 * Bounds written as 'min..max', '..max', 'min..' or an exact 'value'.
-	 * @return array{?float, ?float}
+	 * @return array{int|float|null, int|float|null}
 	 */
 	private static function parseRange(string $range): array
 	{
 		$bounds = explode('..', $range) + [1 => $range];
 		return [
-			$bounds[0] === '' ? null : (float) $bounds[0],
-			$bounds[1] === '' ? null : (float) $bounds[1],
+			$bounds[0] === '' ? null : self::parseBound($bounds[0]),
+			$bounds[1] === '' ? null : self::parseBound($bounds[1]),
 		];
+	}
+
+
+	/**
+	 * An integer bound stays an integer, a float would lose the precision of large ones.
+	 */
+	private static function parseBound(string $bound): int|float
+	{
+		return is_numeric($bound) ? $bound + 0 : (float) $bound;
 	}
 }

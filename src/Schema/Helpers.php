@@ -130,7 +130,7 @@ final class Helpers
 
 	/**
 	 * Adds a range error to the context if the value (or its length for strings/arrays) is outside the given range.
-	 * @param  array{?float, ?float}  $range
+	 * @param  array{int|float|null, int|float|null}  $range
 	 */
 	public static function validateRange(mixed $value, array $range, Context $context, string $types = ''): void
 	{
@@ -160,7 +160,7 @@ final class Helpers
 
 	/**
 	 * Checks whether a value falls within the given [min, max] range (null means no bound).
-	 * @param  array{?float, ?float}  $range
+	 * @param  array{int|float|null, int|float|null}  $range
 	 */
 	public static function isInRange(mixed $value, array $range): bool
 	{

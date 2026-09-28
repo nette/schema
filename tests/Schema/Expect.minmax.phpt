@@ -118,3 +118,17 @@ test('structure', function () {
 		(new Processor)->process($schema, [1, 2, 3, 4]);
 	}, ['The length of item expects to be in range 1..3, 4 items given.']);
 });
+
+
+test('integer bounds keep their precision', function () {
+	$schema = Expect::int()->min(9_007_199_254_740_993);
+	Assert::same(9_007_199_254_740_993, (new Processor)->process($schema, 9_007_199_254_740_993));
+	checkValidationErrors(function () use ($schema) {
+		(new Processor)->process($schema, 9_007_199_254_740_992);
+	}, ['The item expects to be in range 9007199254740993.., 9007199254740992 given.']);
+
+	Assert::same(9_007_199_254_740_993, (new Processor)->process(Expect::type('int:9007199254740993..'), 9_007_199_254_740_993));
+	checkValidationErrors(function () {
+		(new Processor)->process(Expect::type('int:9007199254740993..'), 9_007_199_254_740_992);
+	}, ['The item expects to be int in range 9007199254740993.., 9007199254740992 given.']);
+});

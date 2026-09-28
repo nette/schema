@@ -286,7 +286,7 @@ final class JsonSchema
 	 */
 	private static function range(array $item, string $minKey, string $maxKey): array
 	{
-		$number = fn(?float $value) => $value === null ? null : ($value == (int) $value ? (int) $value : $value); // intentionally ==, a whole float is exported as int
+		$number = fn(int|float|null $value) => $value === null ? null : ($value == (int) $value ? (int) $value : $value); // intentionally ==, a whole float is exported as int
 		return array_filter([$minKey => $number($item['min']), $maxKey => $number($item['max'])], fn($v) => $v !== null);
 	}
 }

@@ -45,16 +45,16 @@ test('nullable and dynamic are flags, not variants', function () {
 
 test('min(), max() and pattern() narrow the type, a range in the expression too', function () {
 	$d = Expect::int()->min(1)->max(5)->describe();
-	Assert::same(1.0, $d['min']);
-	Assert::same(5.0, $d['max']);
+	Assert::same(1, $d['min']);
+	Assert::same(5, $d['max']);
 
 	$d = Expect::type('int:1..10')->min(3)->max(20)->describe();
-	Assert::same(3.0, $d['min']);
-	Assert::same(10.0, $d['max']);
+	Assert::same(3, $d['min']);
+	Assert::same(10, $d['max']);
 
 	$d = @Expect::type('int|string')->min(3)->pattern('\d+')->describe(); // @ options on a union are deprecated
-	Assert::same(3.0, $d['variants'][0]['min']);
-	Assert::same(3.0, $d['variants'][1]['min']);
+	Assert::same(3, $d['variants'][0]['min']);
+	Assert::same(3, $d['variants'][1]['min']);
 	Assert::null($d['variants'][0]['pattern'] ?? null);
 	Assert::same('\d+', $d['variants'][1]['pattern']);
 
@@ -75,13 +75,13 @@ test('collections report their children as schemas', function () {
 
 	$d = Expect::listOf(Expect::int()->min(1))->max(3)->describe();
 	Assert::same(Kind::List, $d['kind']);
-	Assert::same(1.0, $d['items']->describe()['min']);
-	Assert::same(3.0, $d['max']);
+	Assert::same(1, $d['items']->describe()['min']);
+	Assert::same(3, $d['max']);
 
 	$d = Expect::type('int[]')->max(3)->describe();
 	Assert::same(Kind::Iterable, $d['kind']);
 	Assert::same(Kind::Int, $d['items']['kind']); // from the expression, not a schema
-	Assert::same(3.0, $d['max']);
+	Assert::same(3, $d['max']);
 
 	$d = @Expect::type('array|string')->items('int')->describe(); // @ options on a union are deprecated
 	Assert::type(Elements\Type::class, $d['variants'][0]['items']);

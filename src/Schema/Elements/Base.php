@@ -184,7 +184,7 @@ trait Base
 
 	/**
 	 * @deprecated use Nette\Schema\Helpers::validateRange()
-	 * @param  array{?float, ?float}  $range
+	 * @param  array{int|float|null, int|float|null}  $range
 	 */
 	private static function doValidateRange(mixed $value, array $range, Context $context, string $types = ''): bool
 	{
