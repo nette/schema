@@ -81,7 +81,9 @@ final class Expect
 
 		foreach ($props as $prop) {
 			$name = $prop->getName();
-			if (!isset($items[$name])) {
+			if ($prop instanceof \ReflectionParameter && $prop->isVariadic()) {
+				throw new Nette\InvalidArgumentException("Variadic parameter \$$name of {$ro->getName()}::__construct() is not supported by Expect::from().");
+			} elseif (!isset($items[$name])) {
 				$type = Helpers::getPropertyType($prop) ?? 'mixed';
 				$item = new Type($type);
 				if ($prop instanceof \ReflectionProperty ? $prop->isInitialized($object) : $prop->isOptional()) {
