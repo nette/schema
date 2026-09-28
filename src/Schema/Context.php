@@ -43,6 +43,7 @@ final class Context
 	/** @param  array<string, mixed>  $variables */
 	public function addWarning(string $message, string $code, array $variables = []): Message
 	{
+		$variables['isKey'] = $this->isKey;
 		return $this->warnings[] = new Message($message, $code, $this->path, $variables);
 	}
 
