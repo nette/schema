@@ -71,7 +71,7 @@ final class Structure implements Schema
 
 
 	/**
-	 * When enabled, properties whose value equals the default are omitted from the output.
+	 * When enabled, missing properties are not filled with their default values.
 	 */
 	public function skipDefaults(bool $state = true): self
 	{

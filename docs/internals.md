@@ -142,8 +142,10 @@ first variant that completes with **no errors** wins, and only then are its
 merged back — a dynamic parameter nested inside an `anyOf` variant silently loses
 its deferred validation. Scalar variants are matched with strict `===`.
 
-Two consequences: **order matters**, and **side effects (including transforms) of
-losing variants are discarded** with their dolly context. On total failure, inner
+Two consequences: **order matters**, and the **errors, warnings and dynamics of
+losing variants are discarded** with their dolly context. Side effects of their
+callbacks (a transform, a constructor called by `castTo()`) are not: they have
+already happened and nothing undoes them. On total failure, inner
 errors (different path) are surfaced if any exist; otherwise a single aggregated
 "expects to be A|B|C" error is produced.
 
