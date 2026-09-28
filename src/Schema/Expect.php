@@ -77,7 +77,7 @@ final class Expect
 		$ro = new \ReflectionObject($object);
 		$props = $ro->hasMethod('__construct')
 			? $ro->getMethod('__construct')->getParameters()
-			: $ro->getProperties();
+			: array_filter($ro->getProperties(\ReflectionProperty::IS_PUBLIC), fn($prop) => !$prop->isStatic());
 
 		foreach ($props as $prop) {
 			$name = $prop->getName();

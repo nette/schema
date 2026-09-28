@@ -100,6 +100,20 @@ Assert::with(Structure::class, function () { // nested object
 });
 
 
+class PrivateStateDto
+{
+	public static int $instances = 0;
+	public int $a = 1;
+	protected int $counter = 0;
+	private array $cache = [];
+}
+
+$dto = (new Processor)->process(Expect::from(new PrivateStateDto), ['a' => 2]);
+Assert::type(PrivateStateDto::class, $dto);
+Assert::same(2, $dto->a);
+Assert::same(['a'], array_keys(Expect::from(new PrivateStateDto)->getShape()));
+
+
 class VariadicDto
 {
 	public function __construct(string ...$args)
