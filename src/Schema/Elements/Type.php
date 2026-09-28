@@ -33,6 +33,16 @@ class Type implements Schema
 	) {
 		$defaults = ['list' => [], 'array' => []];
 		$this->default = strpos($type, '[]') ? [] : $defaults[$type] ?? null;
+
+		foreach (explode('|', $type) as $part) {
+			if (str_starts_with($part, '?') && str_ends_with($part, '[]')) {
+				$item = substr($part, 1, -2);
+				trigger_error(
+					"'$part' is an array of nullable items, but 2.0 reads it as a nullable array; write Expect::arrayOf(Expect::type('$item')->nullable()) to keep the meaning.",
+					E_USER_DEPRECATED,
+				);
+			}
+		}
 	}
 
 

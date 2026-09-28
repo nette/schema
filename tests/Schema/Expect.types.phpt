@@ -58,6 +58,17 @@ test('the subclasses validate exactly as Type does', function () {
 });
 
 
+test('?type[] is deprecated, 2.0 changes its meaning', function () {
+	Assert::error(
+		fn() => Expect::type('?int[]'),
+		E_USER_DEPRECATED,
+		"'?int[]' is an array of nullable items, but 2.0 reads it as a nullable array; write Expect::arrayOf(Expect::type('int')->nullable()) to keep the meaning.",
+	);
+	Assert::same([null, 1], (new Processor)->process(@Expect::type('?int[]'), [null, 1])); // @ deprecated
+	Assert::noError(fn() => Expect::type('int[]|null'));
+});
+
+
 test('methods that make no sense for the kind are deprecated', function () {
 	Assert::error(
 		fn() => Expect::int()->pattern('\d+'),
