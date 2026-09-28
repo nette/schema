@@ -98,3 +98,17 @@ Assert::with(Structure::class, function () { // nested object
 		])->castTo($obj->inner::class),
 	], $schema->items);
 });
+
+
+class VariadicDto
+{
+	public function __construct(string ...$args)
+	{
+	}
+}
+
+Assert::exception(
+	fn() => Expect::from(new VariadicDto),
+	Nette\InvalidArgumentException::class,
+	'Variadic parameter $args of VariadicDto::__construct() is not supported by Expect::from().',
+);
