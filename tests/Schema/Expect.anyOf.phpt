@@ -170,6 +170,20 @@ test('deprecated item', function () {
 });
 
 
+test('deprecated anyOf', function () {
+	$schema = Expect::structure([
+		'a' => Expect::anyOf('one', 'two')->deprecated(),
+	]);
+
+	$processor = new Processor;
+	$processor->process($schema, ['a' => 'one']);
+	Assert::same(["The item 'a' is deprecated."], $processor->getWarnings());
+
+	$processor->process($schema, []);
+	Assert::same([], $processor->getWarnings());
+});
+
+
 test('nullable anyOf', function () {
 	$schema = Expect::anyOf(Expect::string(), true)->nullable();
 

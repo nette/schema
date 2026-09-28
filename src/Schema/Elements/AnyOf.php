@@ -123,6 +123,7 @@ final class AnyOf implements Schema
 
 	public function complete(mixed $value, Context $context): mixed
 	{
+		$this->doDeprecation($context);
 		$isOk = $context->createChecker();
 		$value = $this->findAlternative($value, $context);
 		$isOk() && $value = $this->doTransform($value, $context);
