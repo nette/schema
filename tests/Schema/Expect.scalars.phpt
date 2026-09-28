@@ -83,3 +83,13 @@ test('nullable type accepts null value', function () {
 
 	Assert::same(null, (new Processor)->process($schema, null));
 });
+
+
+test('default passed as a named argument', function () {
+	$schema = Expect::structure([
+		'a' => Expect::string(default: 'abc'),
+		'b' => Expect::int(default: 10),
+		'c' => Expect::string(default: null),
+	])->castTo('array');
+	Assert::same(['a' => 'abc', 'b' => 10, 'c' => null], (new Processor)->process($schema, []));
+});

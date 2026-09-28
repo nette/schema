@@ -9,7 +9,7 @@ namespace Nette\Schema;
 
 use Nette;
 use Nette\Schema\Elements\{AnyOf, Structure, Type};
-use function is_object;
+use function array_key_exists, is_object;
 
 
 /**
@@ -28,12 +28,12 @@ use function is_object;
  */
 final class Expect
 {
-	/** @param  list<mixed>  $args */
+	/** @param  array<int|string, mixed>  $args */
 	public static function __callStatic(string $name, array $args): Type
 	{
 		$type = new Type($name);
 		if ($args) {
-			$type->default($args[0]);
+			$type->default(array_key_exists('default', $args) ? $args['default'] : $args[0]);
 		}
 
 		return $type;
