@@ -189,11 +189,16 @@ final class Helpers
 
 	/**
 	 * Returns a closure that casts a value to the given type (built-in, backed enum, class with constructor, or plain class).
+	 * A null stays null for an enum or a class, and for a built-in type only when written as ?type.
 	 * @return \Closure(mixed, Context): mixed
 	 */
 	public static function getCastStrategy(string $type): \Closure
 	{
-		if (Nette\Utils\Validators::isBuiltinType($type)) {
+		if (str_starts_with($type, '?')) {
+			$cast = self::getCastStrategy(substr($type, 1));
+			return static fn($value, Context $context) => $value === null ? null : $cast($value, $context);
+
+		} elseif (Nette\Utils\Validators::isBuiltinType($type)) {
 			return static function ($value) use ($type) {
 				settype($value, $type);
 				return $value;
@@ -201,6 +206,10 @@ final class Helpers
 
 		} elseif (is_subclass_of($type, \BackedEnum::class)) {
 			return static function ($value, Context $context) use ($type) {
+				if ($value === null) {
+					return null;
+				}
+
 				try {
 					return $type::from($value);
 				} catch (\TypeError|\ValueError) {
@@ -227,6 +236,10 @@ final class Helpers
 			: static fn($value) => Nette\Utils\Arrays::toObject((array) $value, new $type);
 
 		return static function ($value) use ($factory, $type) {
+			if ($value === null) {
+				return null;
+			}
+
 			try {
 				return $factory($value);
 			} catch (\Error $e) {

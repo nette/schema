@@ -55,7 +55,7 @@ trait Base
 
 
 	/**
-	 * Casts the validated value to a built-in type or instantiates the given class.
+	 * Casts the validated value to a built-in type or instantiates the given class; a null stays null for a class or ?type.
 	 */
 	public function castTo(string $type): static
 	{

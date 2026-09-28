@@ -122,6 +122,26 @@ test('backed enum', function () {
 });
 
 
+test('null', function () {
+	$processor = new Processor;
+
+	// a built-in type casts null as PHP does, ?type keeps it
+	Assert::same('', $processor->process(Expect::string()->nullable()->castTo('string'), null));
+	Assert::same([], $processor->process(Expect::mixed()->castTo('array'), null));
+	Assert::null($processor->process(Expect::string()->nullable()->castTo('?string'), null));
+	Assert::same('10', $processor->process(Expect::int()->nullable()->castTo('?string'), 10));
+
+	// there is no cast of null to a class or an enum, so it stays null, with or without ?
+	Assert::null($processor->process(Expect::string()->nullable()->castTo(DateTime::class), null));
+	Assert::null($processor->process(Expect::array()->nullable()->castTo(Foo1::class), null));
+	Assert::null($processor->process(Expect::array()->nullable()->castTo(Foo2::class), null));
+	Assert::null($processor->process(Expect::string()->nullable()->castTo(CastSuit::class), null));
+	Assert::null($processor->process(Expect::string()->nullable()->castTo('?' . CastSuit::class), null));
+	Assert::same(CastSuit::Hearts, $processor->process(Expect::string()->nullable()->castTo('?' . CastSuit::class), 'hearts'));
+	Assert::equal(new DateTime('2021-01-01'), $processor->process(Expect::string()->castTo('?DateTime'), '2021-01-01'));
+});
+
+
 testException(
 	'pure enum cannot be a cast target',
 	fn() => Expect::string()->castTo(CastPure::class),

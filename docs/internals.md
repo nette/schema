@@ -93,7 +93,9 @@ parallel `PREVENT_MERGING` constant.)
 stages. `before` runs in `normalize` (pre-validation) and has a **single slot**:
 a second `before()` call silently replaces the first. Everything else
 appends to a single `$transforms` list (`Base`): `castTo` is
-`transform(getCastStrategy(...))`, `assert` is a `transform` that reports an error
+`transform(getCastStrategy(...))` (a null follows PHP casts for a built-in type
+unless written `?type`, and stays null for a class or an enum, as PHP has no such
+cast), `assert` is a `transform` that reports an error
 and returns null on failure. They therefore execute in **declaration order** in
 one `doTransform` pass, after type/range/pattern validation. Reordering
 `->assert()->castTo()` vs `->castTo()->assert()` changes what each sees.
