@@ -85,7 +85,7 @@ This is the package's sharpest trap: a piece of control state travelling through
 the payload, replicated across five sites. Any new `Schema` element must reproduce
 the strip-and-honor dance or merging silently misbehaves. (There is a standing
 idea to replace it with a declarative `MergeMode::Replace`; DI carries its own
-parallel `PREVENT_MERGING` constant. See `docs/local/ideas/odstranit-prevent-merging.md`.)
+parallel `PREVENT_MERGING` constant.)
 
 ## One transform pipeline; `assert`/`castTo` are sugar over `transform`
 
@@ -142,8 +142,10 @@ first variant that completes with **no errors** wins, and only then are its
 merged back — a dynamic parameter nested inside an `anyOf` variant silently loses
 its deferred validation. Scalar variants are matched with strict `===`.
 
-Two consequences: **order matters**, and **side effects (including transforms) of
-losing variants are discarded** with their dolly context. On total failure, inner
+Two consequences: **order matters**, and the **errors, warnings and dynamics of
+losing variants are discarded** with their dolly context. Side effects of their
+callbacks (a transform, a constructor called by `castTo()`) are not: they have
+already happened and nothing undoes them. On total failure, inner
 errors (different path) are surfaced if any exist; otherwise a single aggregated
 "expects to be A|B|C" error is produced.
 

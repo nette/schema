@@ -22,7 +22,7 @@ final class Processor
 
 
 	/**
-	 * When enabled, properties with default values are omitted from the output.
+	 * When enabled, missing properties are not filled with their default values.
 	 */
 	public function skipDefaults(bool $value = true): void
 	{
