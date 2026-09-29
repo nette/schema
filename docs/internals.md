@@ -85,7 +85,7 @@ This is the package's sharpest trap: a piece of control state travelling through
 the payload, replicated across five sites. Any new `Schema` element must reproduce
 the strip-and-honor dance or merging silently misbehaves. (There is a standing
 idea to replace it with a declarative `MergeMode::Replace`; DI carries its own
-parallel `PREVENT_MERGING` constant. See `docs/local/ideas/odstranit-prevent-merging.md`.)
+parallel `PREVENT_MERGING` constant.)
 
 ## One transform pipeline; `assert`/`castTo` are sugar over `transform`
 
