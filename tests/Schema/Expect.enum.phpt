@@ -1,7 +1,6 @@
 <?php declare(strict_types=1);
 
-use Nette\Schema\Expect;
-use Nette\Schema\Processor;
+use Nette\Schema\{Expect, Processor};
 use Tester\Assert;
 
 require __DIR__ . '/../bootstrap.php';

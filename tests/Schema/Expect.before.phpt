@@ -1,7 +1,6 @@
 <?php declare(strict_types=1);
 
-use Nette\Schema\Context;
-use Nette\Schema\Expect;
+use Nette\Schema\{Context, Expect};
 use Tester\Assert;
 
 

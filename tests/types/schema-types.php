@@ -4,9 +4,7 @@
  * PHPStan type tests.
  */
 
-use Nette\Schema\Elements\AnyOf;
-use Nette\Schema\Elements\Structure;
-use Nette\Schema\Elements\Type;
+use Nette\Schema\Elements\{AnyOf, Structure, Type};
 use Nette\Schema\Expect;
 use function PHPStan\Testing\assertType;
 

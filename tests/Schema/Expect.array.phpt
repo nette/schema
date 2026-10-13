@@ -1,8 +1,6 @@
 <?php declare(strict_types=1);
 
-use Nette\Schema\Expect;
-use Nette\Schema\Helpers;
-use Nette\Schema\Processor;
+use Nette\Schema\{Expect, Helpers, Processor};
 use Tester\Assert;
 
 
