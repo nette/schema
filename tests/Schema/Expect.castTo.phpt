@@ -3,7 +3,6 @@
 use Nette\Schema\{Expect, Processor};
 use Tester\Assert;
 
-
 require __DIR__ . '/../bootstrap.php';
 
 
@@ -38,14 +37,10 @@ test('simple object', function () {
 test('object with constructor', function () {
 	class Foo2
 	{
-		private int $a;
-		private int $b;
-
-
-		public function __construct(int $a, int $b)
-		{
-			$this->b = $b;
-			$this->a = $a;
+		public function __construct(
+			private readonly int $a,
+			private readonly int $b,
+		) {
 		}
 	}
 

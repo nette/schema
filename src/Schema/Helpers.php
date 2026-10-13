@@ -200,11 +200,14 @@ final class Helpers
 			return static function ($value, Context $context) use ($type) {
 				try {
 					return $type::from($value);
-				} catch (\TypeError | \ValueError) {
+				} catch (\TypeError|\ValueError) {
 					$context->addError(
 						'The %label% %path% expects to be %expected%, %value% given.',
 						Message::TypeMismatch,
-						['value' => $value, 'expected' => implode('|', array_map(fn(\BackedEnum $case) => self::formatValue($case->value), $type::cases()))],
+						[
+							'value' => $value,
+							'expected' => implode('|', array_map(fn(\BackedEnum $case) => self::formatValue($case->value), $type::cases())),
+						],
 					);
 					return null;
 				}

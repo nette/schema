@@ -4,7 +4,6 @@ use Nette\Schema\Elements\Structure;
 use Nette\Schema\{Expect, Processor};
 use Tester\Assert;
 
-
 require __DIR__ . '/../bootstrap.php';
 
 
@@ -36,8 +35,8 @@ Assert::with(Structure::class, function () {
 Assert::with(Structure::class, function () { // constructor injection
 	$schema = Expect::from($obj = new class ('') {
 		public function __construct(
-			public ?string $user,
-			public ?string $password = null,
+			public readonly ?string $user,
+			public readonly ?string $password = null,
 		) {
 		}
 	});

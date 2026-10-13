@@ -3,14 +3,13 @@
 use Nette\Schema\{Context, Expect};
 use Tester\Assert;
 
-
 require __DIR__ . '/../bootstrap.php';
 
 
 class DynamicParameter implements Nette\Schema\DynamicParameter
 {
 	public function __construct(
-		private string $value,
+		private readonly string $value,
 	) {
 	}
 }

@@ -3,7 +3,6 @@
 use Nette\Schema\{Expect, Processor};
 use Tester\Assert;
 
-
 require __DIR__ . '/../bootstrap.php';
 
 
@@ -73,7 +72,9 @@ test('scalar items', function () {
 	]);
 
 	Assert::equal(
-		(object) ['a' => null, 'b' => null, 'c' => null, 'd' => null, 'e' => null, 'f' => null, 'g' => 'abc', 'h' => 123, 'i' => 123, 'j' => null],
+		(object) [
+			'a' => null, 'b' => null, 'c' => null, 'd' => null, 'e' => null, 'f' => null, 'g' => 'abc', 'h' => 123, 'i' => 123, 'j' => null,
+		],
 		(new Processor)->process($schema, []),
 	);
 });
