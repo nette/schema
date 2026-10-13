@@ -1,0 +1,30 @@
+use:
+	- nette
+	- modernizations
+
+typeAnalysis: phpstan
+
+paths:
+	- src
+	- tests
+
+excludePaths:
+	- tests/**/fixtures*
+
+fileExtensions:
+	- php
+	- phpt
+
+imports: {grouping: {class: grouped}}
+
+overrides:
+	-
+		paths: [src]
+		nameResolution: certain
+		use:
+			- compilerOptimizations
+			- deprecations
+
+	- # the strings are the type descriptions the test expects, not class names
+		paths: [tests/Schema/Helpers.getPropertyType.phpt]
+		literals: {classNameInString: keep}
