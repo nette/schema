@@ -8,9 +8,7 @@
 namespace Nette\Schema\Elements;
 
 use Nette;
-use Nette\Schema\Context;
-use Nette\Schema\Helpers;
-use Nette\Schema\Schema;
+use Nette\Schema\{Context, Helpers, Schema};
 use function is_array;
 
 

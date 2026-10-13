@@ -7,10 +7,7 @@
 
 namespace Nette\Schema\Elements;
 
-use Nette\Schema\Context;
-use Nette\Schema\DynamicParameter;
-use Nette\Schema\Helpers;
-use Nette\Schema\Schema;
+use Nette\Schema\{Context, DynamicParameter, Helpers, Schema};
 use Nette\Utils\Validators;
 use function array_key_exists, is_array;
 

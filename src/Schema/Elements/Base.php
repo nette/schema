@@ -8,8 +8,7 @@
 namespace Nette\Schema\Elements;
 
 use Nette;
-use Nette\Schema\Context;
-use Nette\Schema\Helpers;
+use Nette\Schema\{Context, Helpers};
 use function count, is_string;
 
 

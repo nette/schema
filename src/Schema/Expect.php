@@ -8,9 +8,7 @@
 namespace Nette\Schema;
 
 use Nette;
-use Nette\Schema\Elements\AnyOf;
-use Nette\Schema\Elements\Structure;
-use Nette\Schema\Elements\Type;
+use Nette\Schema\Elements\{AnyOf, Structure, Type};
 use function is_object;
 
 
