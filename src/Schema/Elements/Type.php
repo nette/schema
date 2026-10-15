@@ -16,7 +16,6 @@ final class Type implements Schema
 {
 	use Base;
 
-	private string $type;
 	private ?Schema $itemsValue = null;
 	private ?Schema $itemsKey = null;
 
@@ -26,10 +25,10 @@ final class Type implements Schema
 	private bool $merge = true;
 
 
-	public function __construct(string $type)
-	{
+	public function __construct(
+		private string $type,
+	) {
 		$defaults = ['list' => [], 'array' => []];
-		$this->type = $type;
 		$this->default = strpos($type, '[]') ? [] : $defaults[$type] ?? null;
 	}
 

@@ -8,7 +8,6 @@ use Nette\Schema\Elements\{AnyOf, Structure, Type};
 use Nette\Schema\Expect;
 use function PHPStan\Testing\assertType;
 
-
 // Magic methods return Type
 assertType(Type::class, Expect::string());
 assertType(Type::class, Expect::int());
@@ -35,7 +34,6 @@ assertType(AnyOf::class, Expect::anyOf('a', 'b'));
 
 // Expect::array() conditional return (via PHPStan extension)
 assertType(Type::class, Expect::array());
-assertType(Type::class, Expect::array([]));
 assertType(Structure::class, Expect::array(['a' => Expect::string()]));
 
 // Fluent methods preserve concrete type

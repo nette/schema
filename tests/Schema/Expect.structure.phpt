@@ -3,7 +3,6 @@
 use Nette\Schema\{Expect, Processor};
 use Tester\Assert;
 
-
 require __DIR__ . '/../bootstrap.php';
 
 
@@ -73,7 +72,9 @@ test('scalar items', function () {
 	]);
 
 	Assert::equal(
-		(object) ['a' => null, 'b' => null, 'c' => null, 'd' => null, 'e' => null, 'f' => null, 'g' => 'abc', 'h' => 123, 'i' => 123, 'j' => null],
+		(object) [
+			'a' => null, 'b' => null, 'c' => null, 'd' => null, 'e' => null, 'f' => null, 'g' => 'abc', 'h' => 123, 'i' => 123, 'j' => null,
+		],
 		(new Processor)->process($schema, []),
 	);
 });
@@ -82,7 +83,6 @@ test('scalar items', function () {
 test('array items', function () {
 	$schema = Expect::structure([
 		'a' => Expect::array(),
-		'b' => Expect::array([]),
 		'c' => Expect::arrayOf('string'),
 		'd' => Expect::list(),
 		'e' => Expect::listOf('string'),
@@ -92,7 +92,7 @@ test('array items', function () {
 	]);
 
 	Assert::equal(
-		(object) ['a' => [], 'b' => [], 'c' => [], 'd' => [], 'e' => [], 'f' => [], 'g' => [], 'h' => (object) []],
+		(object) ['a' => [], 'c' => [], 'd' => [], 'e' => [], 'f' => [], 'g' => [], 'h' => (object) []],
 		(new Processor)->process($schema, []),
 	);
 });

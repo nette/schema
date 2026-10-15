@@ -103,8 +103,8 @@ final class AnyOf implements Schema
 				$dolly->path = $context->path;
 				$res = $item->complete($item->normalize($value, $dolly), $dolly);
 				if (!$dolly->errors) {
-					$context->warnings = array_merge($context->warnings, $dolly->warnings);
-					$context->dynamics = array_merge($context->dynamics, $dolly->dynamics);
+					$context->warnings = [...$context->warnings, ...$dolly->warnings];
+					$context->dynamics = [...$context->dynamics, ...$dolly->dynamics];
 					return $res;
 				}
 
@@ -125,7 +125,7 @@ final class AnyOf implements Schema
 		}
 
 		if ($innerErrors) {
-			$context->errors = array_merge($context->errors, $innerErrors);
+			$context->errors = [...$context->errors, ...$innerErrors];
 		} else {
 			$context->addError(
 				'The %label% %path% expects to be %expected%, %value% given.',

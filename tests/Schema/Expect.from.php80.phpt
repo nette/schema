@@ -4,7 +4,6 @@ use Nette\Schema\Elements\Structure;
 use Nette\Schema\{Expect, Processor};
 use Tester\Assert;
 
-
 require __DIR__ . '/../bootstrap.php';
 
 

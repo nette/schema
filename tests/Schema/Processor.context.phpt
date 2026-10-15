@@ -3,7 +3,6 @@
 use Nette\Schema\{Context, Expect, Processor};
 use Tester\Assert;
 
-
 require __DIR__ . '/../bootstrap.php';
 
 

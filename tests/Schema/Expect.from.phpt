@@ -4,7 +4,6 @@ use Nette\Schema\Elements\Structure;
 use Nette\Schema\{Expect, Processor};
 use Tester\Assert;
 
-
 require __DIR__ . '/../bootstrap.php';
 
 
@@ -96,6 +95,6 @@ Assert::with(Structure::class, function () { // nested object
 	Assert::equal([
 		'inner' => Expect::structure([
 			'name' => Expect::string()->required(),
-		])->castTo(get_class($obj->inner)),
+		])->castTo($obj->inner::class),
 	], $schema->items);
 });

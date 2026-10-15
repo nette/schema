@@ -87,7 +87,7 @@ final class Structure implements Schema
 	public function extend(array|self $shape): self
 	{
 		$shape = $shape instanceof self ? $shape->items : $shape;
-		return new self(array_merge($this->items, $shape));
+		return new self([...$this->items, ...$shape]);
 	}
 
 
