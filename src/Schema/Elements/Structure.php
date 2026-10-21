@@ -8,7 +8,7 @@
 namespace Nette\Schema\Elements;
 
 use Nette;
-use Nette\Schema\{Context, Helpers, Kind, Schema};
+use Nette\Schema\{Context, Helpers, Kind, MergeMode, Schema};
 use function array_key_exists, is_array, is_object;
 
 
@@ -25,6 +25,7 @@ final class Structure implements Schema
 	/** @var array{?int, ?int} */
 	private array $range = [null, null];
 	private bool $skipDefaults = false;
+	private ?MergeMode $mergeMode = null;
 
 
 	/** @param Schema[]  $shape */
@@ -76,6 +77,16 @@ final class Structure implements Schema
 	public function skipDefaults(bool $state = true): self
 	{
 		$this->skipDefaults = $state;
+		return $this;
+	}
+
+
+	/**
+	 * Sets how the structure is combined when merging multiple configuration layers.
+	 */
+	public function mergeMode(MergeMode $mode): self
+	{
+		$this->mergeMode = $mode;
 		return $this;
 	}
 
@@ -154,11 +165,20 @@ final class Structure implements Schema
 	{
 		if (is_array($value) && isset($value[Helpers::PreventMerging])) {
 			unset($value[Helpers::PreventMerging]);
-			$base = null;
+			return $value;
+		}
+
+		if ($this->mergeWith) {
+			return ($this->mergeWith)($value, $base);
+		}
+
+		$mode = $this->mergeMode ?? ($this->otherItems === null ? MergeMode::OverwriteKeys : MergeMode::AppendKeys);
+		if ($mode === MergeMode::Replace) {
+			return $value;
 		}
 
 		if (is_array($value) && is_array($base)) {
-			$index = $this->otherItems === null ? null : 0;
+			$index = $mode === MergeMode::OverwriteKeys ? null : 0;
 			foreach ($value as $key => $val) {
 				if ($key === $index) {
 					$base[] = $val;

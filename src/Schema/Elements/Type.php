@@ -8,7 +8,7 @@
 namespace Nette\Schema\Elements;
 
 use Nette;
-use Nette\Schema\{Context, DynamicParameter, Helpers, Kind, Message, Schema, TypeExpression};
+use Nette\Schema\{Context, DynamicParameter, Helpers, Kind, MergeMode, Message, Schema, TypeExpression};
 use Nette\Utils\Validators;
 use function array_key_exists, is_array, is_int, is_string;
 use const INF;
@@ -25,6 +25,7 @@ class Type implements Schema
 	private array $range = [null, null];
 	private ?string $pattern = null;
 	private bool $merge = true;
+	private ?MergeMode $mergeMode = null;
 
 
 	public function __construct(
@@ -52,6 +53,14 @@ class Type implements Schema
 	{
 		$this->unionDeprecated('mergeDefaults');
 		$this->merge = $state;
+		return $this;
+	}
+
+
+	/** @internal */
+	protected function mergeMode(MergeMode $mode): static
+	{
+		$this->mergeMode = $mode;
 		return $this;
 	}
 
@@ -241,14 +250,32 @@ class Type implements Schema
 			return $value;
 		}
 
-		if (is_array($value) && is_array($base) && $this->itemsValue) {
-			$index = 0;
+		if ($this->mergeWith) {
+			return ($this->mergeWith)($value, $base);
+		}
+
+		return $this->mergeValues($value, $base);
+	}
+
+
+	/**
+	 * Without a mode, an array without described items merges deeply.
+	 * @internal
+	 */
+	protected function mergeValues(mixed $value, mixed $base): mixed
+	{
+		if ($this->mergeMode === MergeMode::Replace) {
+			return $value;
+		}
+
+		if (is_array($value) && is_array($base) && ($this->itemsValue || $this->mergeMode)) {
+			$index = $this->mergeMode === MergeMode::OverwriteKeys ? null : 0;
 			foreach ($value as $key => $val) {
 				if ($key === $index) {
 					$base[] = $val;
 					$index++;
 				} else {
-					$base[$key] = array_key_exists($key, $base)
+					$base[$key] = array_key_exists($key, $base) && $this->itemsValue
 						? $this->itemsValue->merge($val, $base[$key])
 						: $val;
 				}

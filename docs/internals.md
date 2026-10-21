@@ -77,9 +77,8 @@ it** — and they do so in subtly different ways:
 - `Type::normalize` strips it, then **re-adds** it after recursing into items (so
   it survives normalization).
 - `Type::complete` strips it and forces `$merge = false` (default not merged in).
-- `Type::merge` / `AnyOf::merge` / `Helpers::merge` strip it and return the value
-  as-is (no merge).
-- `Structure::merge` strips it and sets `$base = null` (full replace).
+- `Type::merge` / `Structure::merge` / `AnyOf::merge` / `Helpers::merge` strip it
+  and return the value as-is (full replace), before `mergeWith()` or a mode.
 
 This is the package's sharpest trap: a piece of control state travelling through
 the payload, replicated across five sites. Any new `Schema` element must reproduce
@@ -170,8 +169,13 @@ by validating dynamics eagerly.
   `value` (higher priority) merged over the accumulated `base`, so later configs
   override earlier ones. Numeric-keyed items append; string-keyed recurse.
 - **`Structure::merge` appends numeric keys only when `otherItems` is set**
-  (`$index = $this->otherItems === null ? null : 0`); `Type::merge` and
+  (`MergeMode::AppendKeys`, else `OverwriteKeys`); `Type::merge` and
   `Helpers::merge` always append numeric-keyed items.
+- **`mergeMode()` and `mergeWith()` are opt-in.** `mergeMode()` (public on
+  `ArrayType` and `Structure`, protected in `Type`) replaces the derived mode;
+  an explicit mode merges an array without described items by keys only, where
+  `Type::mergeValues()` otherwise falls back to the deep `Helpers::merge`.
+  `mergeWith()` (`Base`) wins over any mode; only the merging marker comes first.
 - **`castTo` forks by target** (`Helpers::getCastStrategy`): builtin →
   `settype`; class **with** constructor → named args from the array/stdClass
   (a scalar is passed as a single argument); anything else → property assignment

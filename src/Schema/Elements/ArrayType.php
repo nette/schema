@@ -7,7 +7,7 @@
 
 namespace Nette\Schema\Elements;
 
-use Nette\Schema\{Context, Schema};
+use Nette\Schema\{Context, MergeMode, Schema};
 use function is_array;
 
 
@@ -38,6 +38,15 @@ final class ArrayType extends Type
 	public function items(string|Schema $valueType = 'mixed', string|Schema|null $keyType = null): static
 	{
 		return parent::items($valueType, $keyType);
+	}
+
+
+	/**
+	 * Sets how the array is combined when merging multiple configuration layers.
+	 */
+	public function mergeMode(MergeMode $mode): static
+	{
+		return parent::mergeMode($mode);
 	}
 
 

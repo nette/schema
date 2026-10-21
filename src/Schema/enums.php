@@ -35,3 +35,14 @@ enum Kind
 	case Callable;
 	case Other;
 }
+
+
+/**
+ * Defines the strategy for merging array values from multiple configuration layers.
+ */
+enum MergeMode
+{
+	case Replace;
+	case OverwriteKeys;
+	case AppendKeys;
+}

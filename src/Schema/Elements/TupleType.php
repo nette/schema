@@ -81,7 +81,7 @@ final class TupleType extends Type
 	}
 
 
-	public function merge(mixed $value, mixed $base): mixed
+	protected function mergeValues(mixed $value, mixed $base): mixed
 	{
 		return $value;
 	}

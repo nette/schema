@@ -117,6 +117,10 @@ final class AnyOf implements Schema
 			return $value;
 		}
 
+		if ($this->mergeWith) {
+			return ($this->mergeWith)($value, $base);
+		}
+
 		return Helpers::merge($value, $base);
 	}
 
