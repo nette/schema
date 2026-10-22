@@ -17,9 +17,9 @@
 	"require-dev": {
 		"nette/tester": "^2.6",
 		"tracy/tracy": "^2.8",
-		"phpstan/phpstan": "^2.1.39@stable",
+		"phpstan/phpstan": "^2.3@stable",
 		"phpstan/extension-installer": "^1.4@stable",
-		"nette/phpstan-rules": "^1.0"
+		"nette/phpstan-rules": "^1.0.7"
 	},
 	"autoload": {
 		"classmap": ["src/"],
