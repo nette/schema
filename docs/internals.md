@@ -206,14 +206,26 @@ by validating dynamics eagerly.
 - **`processMultiple` merges left-value-wins:** each later dataset item is the
   `value` (higher priority) merged over the accumulated `base`, so later configs
   override earlier ones. Numeric-keyed items append; string-keyed recurse.
-- **`Structure::merge` appends numeric keys only when `otherItems` is set**
-  (`MergeMode::AppendKeys`, else `OverwriteKeys`); `Type::merge` and
-  `Helpers::merge` always append numeric-keyed items.
-- **`mergeMode()` and `mergeWith()` are opt-in.** `mergeMode()` (public on
-  `ArrayType` and `Structure`, protected in `Type`) replaces the derived mode;
-  an explicit mode merges an array without described items by keys only, where
-  `Type::mergeValues()` otherwise falls back to the deep `Helpers::merge`.
-  `mergeWith()` (`Base`) wins over any mode; only the merging marker comes first.
+- **Every element resolves its strategy in the same order:** the merging
+  marker first, then `mergeWith()`, then a `MergeMode` where the element has
+  one; `AnyOf` has none and falls back to the deep `Helpers::merge`.
+  `mergeWith()` (`Base`) takes a **pure combiner** `fn($value, $base): mixed`; it
+  runs only *between* layers (n−1 times, the sole layer of a single-layer dataset
+  never passes through it), so it must combine, never canonicalize shape — that
+  belongs to `before()`, which runs per layer. Legitimate for scalars too (bool
+  OR, max, concatenation).
+- **`MergeMode` is derived unless `mergeMode()` sets it** (public on
+  `ArrayType` and `Structure`, protected in `Type`): `Replace` returns `$value`
+  wholesale, `OverwriteKeys` merges by keys with numeric keys overwritten
+  positionally, `AppendKeys` additionally appends new numeric elements.
+  `Structure` derives `AppendKeys` with `otherItems`, else `OverwriteKeys`, and
+  recurses through `items[key] ?? otherItems`; an `ArrayType` with an items
+  schema derives `AppendKeys` and recurses through it. An array whose items
+  are not described and whose mode is not set falls back to the deep
+  `Helpers::merge`; an explicit mode merges it by keys only.
+- **Null rule:** a `null` layer loses to an array and beats a scalar in
+  `Helpers::merge` (NEON `key:` means "no opinion" against arrays), while
+  `Structure::merge` lets it lose to anything (`$value ?? $base`).
 - **`castTo` forks by target** (`Helpers::getCastStrategy`): builtin →
   `settype`; backed enum → `from()`, a wrong value reports `TypeMismatch`
   listing the cases (a pure enum throws `InvalidStateException` when the schema
