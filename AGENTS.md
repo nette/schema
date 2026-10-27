@@ -24,7 +24,7 @@ is extended at release time from the git history.
 **Nette Schema** validates and normalizes data structures (config files, API
 inputs) through a fluent `Expect::` builder and a `Processor`.
 
-- **PHP Version**: 8.1 - 8.6
+- **PHP Version**: 8.3 - 8.6
 - **Package**: `nette/schema` (dep: `nette/utils`)
 
 ## Essential Commands
