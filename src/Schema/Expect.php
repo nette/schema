@@ -140,7 +140,7 @@ final class Expect
 			}
 		}
 
-		return (new Structure($items))->castTo($ro->getName());
+		return new Structure($items)->castTo($ro->getName());
 	}
 
 
@@ -153,8 +153,8 @@ final class Expect
 	{
 		$shape ??= [];
 		return Nette\Utils\Arrays::first($shape) instanceof Schema
-			? (new Structure($shape))->castTo('array')
-			: (new ArrayType('array'))->default($shape);
+			? new Structure($shape)->castTo('array')
+			: new ArrayType('array')->default($shape);
 	}
 
 
@@ -163,7 +163,7 @@ final class Expect
 	 */
 	public static function arrayOf(string|Schema $valueType, string|Schema|null $keyType = null): ArrayType
 	{
-		return (new ArrayType('array'))->items($valueType, $keyType);
+		return new ArrayType('array')->items($valueType, $keyType);
 	}
 
 
@@ -173,7 +173,7 @@ final class Expect
 	 */
 	public static function listOf(string|Schema $type, bool $wrap = false): ArrayType
 	{
-		return (new ArrayType('list', $wrap))->items($type);
+		return new ArrayType('list', $wrap)->items($type);
 	}
 
 
