@@ -160,6 +160,17 @@ test('an unknown name is a class name, a legacy validator is Other', function ()
 });
 
 
+test('a name that is not a type is refused', function () {
+	foreach (['array<int>', 'list<int>', 'array{a: int}', 'int[', ''] as $type) {
+		Assert::exception(
+			fn() => TypeExpression::parse($type),
+			Nette\InvalidArgumentException::class,
+			"Invalid type '$type'.",
+		);
+	}
+});
+
+
 test('intersection types are Other', function () {
 	$d = TypeExpression::parse('Countable&Traversable');
 	Assert::same(Kind::Other, $d['kind']);
