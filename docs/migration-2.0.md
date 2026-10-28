@@ -76,6 +76,9 @@ both 1.x and 2.0 can keep calling it; 2.1 deprecates it.
 - `Expect::from()` reads **native property types only** (phpDoc `@var` support
   removed) and accepts a class name in addition to an instance; a `null`
   default on a non-nullable type is now `default(null)`, not `required()`.
+- `castTo()` reports a value the target class refuses with an exception
+  (`DateTime` given `'nonsense'`) as a validation error with the reason; the
+  exception used to escape `Processor::process()`.
 - *Silent:* `Expect::from()` maps a property typed with a class to a nested
   structure, so a missing uninitialized property is created from the defaults
   of that class; 1.x reported it as a missing item.

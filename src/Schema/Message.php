@@ -15,7 +15,7 @@ use function array_key_exists;
  */
 final class Message
 {
-	/** variables: {value: mixed, expected: string} */
+	/** variables: {value: mixed, expected: string, reason?: string} */
 	public const TypeMismatch = 'schema.typeMismatch';
 
 	/** variables: {value: mixed, expected: string} */
