@@ -300,6 +300,20 @@ The result is a `Structure` with `castTo($class)` **stacked after** the
 constructor's built-in `castTo('object')`, so a completed value travels
 array → `stdClass` → instance through the cast fork above.
 
+## Recursive schemas: the schema graph has cycles
+
+`Expect::recursive()` hands its factory an `@internal` `Elements\Reference` standing
+for the schema the factory returns; the reference delegates all four operations to
+that target and has no options of its own. **Any code walking child schemas must
+stop at a `Reference`**, or it loops forever: `JsonSchema` emits `$ref` for it (`#`
+for the root, otherwise the target is named, and when its building finishes the
+result moves to `$defs` and leaves a `$ref` in its place; one export is one instance
+holding the names), and its `isRequired()` reads only the
+target's `required` flag, never its shape. A required direct self-reference can
+never end; `Reference::completeDefault()` detects the re-entry and throws
+`InvalidStateException`, the recursion has to pass through `anyOf(null, $self)` or
+an array.
+
 ## `Type` and its kind-specific subclasses
 
 `Type` is not final: `StringType`, `NumberType`, `ArrayType` and `TupleType`
@@ -412,5 +426,6 @@ export the only supported way out.
 | Error message rendering | `Message::toString`, `Message::*` code constants |
 | Key schemas, `isKey` | `ArrayType::normalizeValue`/`completeItems`, `Context::isKey` |
 | Object-to-schema mapping | `Expect::from` (native types only) |
+| Recursive schemas | `Expect::recursive`, `Elements\Reference`, `JsonSchema::getReference` |
 | Kind-specific subclasses of `Type` | `Expect::type`, `StringType`, `NumberType`, `ArrayType`, `EnumType` |
 | Inspection, JSON Schema export | `Elements/*::describe`, `Kind`, `TypeExpression::parse`, `JsonSchema::export` |

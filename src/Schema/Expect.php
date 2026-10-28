@@ -237,4 +237,19 @@ final class Expect
 	{
 		return new Elements\TupleType($shape);
 	}
+
+
+	/**
+	 * Creates a schema that contains itself, e.g. a tree; the factory gets the schema it builds as $self.
+	 * @template T of Schema
+	 * @param  \Closure(Schema): T  $factory
+	 * @return T
+	 */
+	public static function recursive(\Closure $factory): Schema
+	{
+		$self = new Elements\Reference;
+		$schema = $factory($self);
+		$self->setTarget($schema);
+		return $schema;
+	}
 }
