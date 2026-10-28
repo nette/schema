@@ -356,6 +356,15 @@ value still reads "expects to be Suit". An enum class in `Expect::type()` keeps
 meaning plain `instanceof`, as for any other class. `Expect::from()` treats an
 enum default as a value, not as an object to recurse into.
 
+`DateTimeType` (`Expect::dateTime()`, `Expect::date()`) works the same way: its
+`coerce()` turns a `DateTimeInterface` or a string in strict ISO 8601 (or the given
+format, read with `!` and refused on any parser warning, so February 30 does not
+overflow) into `DateTimeImmutable`, and the `instanceof DateTimeImmutable` check of
+`Type` refuses what stayed a string; `formatExpected()` names it "date (Y-m-d)" in
+the message, because the format may contain `:`. **Unlike every other element it
+converts its `default()`**, as well as `min()`/`max()`, when the schema is built,
+so a missing item yields the same class as a supplied one.
+
 ## Inspection: `describe()`, `TypeExpression` (`@internal`) and the JSON Schema export
 
 `Type`, `Structure` and `AnyOf` report what they accept as a **plain array**:

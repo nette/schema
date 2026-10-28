@@ -87,7 +87,9 @@ composer phpstan
 - **`Expect::type()` classifies the type expression once** (`TypeExpression::parse()`)
   into `StringType`/`NumberType`/`ArrayType`, an `AnyOf` for a union of different
   kinds, or a plain `Type` (an `EnumType` comes only from `Expect::enum()` and
-  `Expect::from()`). Since 2.0 `Type` validates by itself
+  `Expect::from()`, a `DateTimeType` only from `Expect::dateTime()` and
+  `Expect::date()`, which unlike any other element converts its `default()`).
+  Since 2.0 `Type` validates by itself
   (`matches()`); `Validators::is()` serves only string formats and the
   deprecated legacy notation (expression ranges, `numeric` & co.), which works
   with a notice until 2.1 refuses it. `describe()`, `Kind` and `TypeExpression`

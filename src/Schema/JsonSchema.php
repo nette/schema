@@ -69,6 +69,8 @@ final class JsonSchema
 			Kind::Int => ['type' => 'integer'] + self::range($item, 'minimum', 'maximum'),
 			Kind::Float, Kind::Number => ['type' => 'number'] + self::range($item, 'minimum', 'maximum'),
 			Kind::String => self::buildString($item),
+			// a custom format is checked by PHP alone, like assert()
+			Kind::DateTime => ['type' => 'string'] + ($item['format'] === null ? ['format' => $item['date'] ? 'date' : 'date-time'] : []),
 			// an iterable of items is narrowed to a JSON array, which PHP accepts too
 			Kind::List, Kind::Iterable => $this->buildList($item),
 			Kind::Array => $this->buildArray($item),

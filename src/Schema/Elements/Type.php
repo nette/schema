@@ -351,8 +351,17 @@ class Type implements Schema
 		$context->addError(
 			'The %label% %path% expects to be %expected%, %value% given.',
 			Nette\Schema\Message::TypeMismatch,
-			['value' => $value, 'expected' => str_replace(['|', ':'], [' or ', ' in range '], $this->getExpression())],
+			['value' => $value, 'expected' => $this->formatExpected()],
 		);
+	}
+
+
+	/**
+	 * The expected type in words for the type error.
+	 */
+	protected function formatExpected(): string
+	{
+		return str_replace(['|', ':'], [' or ', ' in range '], $this->getExpression());
 	}
 
 
