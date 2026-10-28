@@ -1,6 +1,6 @@
 <?php declare(strict_types=1);
 
-use Nette\Schema\{Expect, JsonSchema};
+use Nette\Schema\{Expect, JsonSchema, Schema};
 use Tester\Assert;
 
 require __DIR__ . '/../bootstrap.php';
@@ -302,4 +302,106 @@ test('the output is a valid JSON Schema document', function () {
 
 test('enum of non-scalar values has no type', function () {
 	Assert::same(['enum' => [[1, 2], 'x']], JsonSchema::export(Expect::anyOf([1, 2], 'x')));
+});
+
+
+test('recursive schema refers to the root', function () {
+	$schema = Expect::recursive(fn(Schema $self) => Expect::structure([
+		'title' => Expect::string(),
+		'items' => Expect::arrayOf($self),
+		'parent' => Expect::anyOf(null, $self),
+	]));
+
+	Assert::same(
+		[
+			'type' => 'object',
+			'properties' => [
+				'title' => ['type' => 'string'],
+				'items' => ['type' => 'object', 'additionalProperties' => ['$ref' => '#']],
+				'parent' => ['anyOf' => [['$ref' => '#'], ['type' => 'null']]],
+			],
+			'required' => [],
+			'additionalProperties' => false,
+		],
+		JsonSchema::export($schema),
+	);
+});
+
+
+test('nested recursive schemas are defined in $defs', function () {
+	$schema = Expect::structure([
+		'menu' => Expect::recursive(fn(Schema $page) => Expect::structure([
+			'children' => Expect::listOf($page),
+			'sections' => Expect::listOf(Expect::recursive(fn(Schema $section) => Expect::structure([
+				'pages' => Expect::listOf($page),
+				'sections' => Expect::listOf($section),
+			]))),
+		])),
+	]);
+
+	Assert::same(
+		[
+			'type' => 'object',
+			'properties' => ['menu' => ['$ref' => '#/$defs/recursive1']],
+			'required' => [],
+			'additionalProperties' => false,
+			'$defs' => [
+				'recursive2' => [
+					'type' => 'object',
+					'properties' => [
+						'pages' => ['type' => 'array', 'items' => ['$ref' => '#/$defs/recursive1']],
+						'sections' => ['type' => 'array', 'items' => ['$ref' => '#/$defs/recursive2']],
+					],
+					'required' => [],
+					'additionalProperties' => false,
+				],
+				'recursive1' => [
+					'type' => 'object',
+					'properties' => [
+						'children' => ['type' => 'array', 'items' => ['$ref' => '#/$defs/recursive1']],
+						'sections' => ['type' => 'array', 'items' => ['$ref' => '#/$defs/recursive2']],
+					],
+					'required' => [],
+					'additionalProperties' => false,
+				],
+			],
+		],
+		JsonSchema::export($schema),
+	);
+});
+
+
+test('a recursive schema used twice is defined once', function () {
+	$tree = Expect::recursive(fn(Schema $self) => Expect::structure([
+		'items' => Expect::listOf($self),
+	]));
+
+	Assert::same(
+		[
+			'type' => 'object',
+			'properties' => [
+				'main' => ['$ref' => '#/$defs/recursive1'],
+				'footer' => ['$ref' => '#/$defs/recursive1'],
+			],
+			'required' => [],
+			'additionalProperties' => false,
+			'$defs' => [
+				'recursive1' => [
+					'type' => 'object',
+					'properties' => ['items' => ['type' => 'array', 'items' => ['$ref' => '#/$defs/recursive1']]],
+					'required' => [],
+					'additionalProperties' => false,
+				],
+			],
+		],
+		JsonSchema::export(Expect::structure(['main' => $tree, 'footer' => $tree])),
+	);
+});
+
+
+test('required reference to itself is required', function () {
+	$schema = Expect::recursive(fn(Schema $self) => Expect::structure([
+		'parent' => $self,
+	]));
+	Assert::same(['parent'], JsonSchema::export($schema)['required']);
 });

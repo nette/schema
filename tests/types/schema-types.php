@@ -5,7 +5,7 @@
  */
 
 use Nette\Schema\Elements\{AnyOf, ArrayType, EnumType, NumberType, StringType, Structure, TupleType, Type};
-use Nette\Schema\{Expect, MergeMode};
+use Nette\Schema\{Expect, MergeMode, Schema};
 use function PHPStan\Testing\assertType;
 
 
@@ -45,6 +45,7 @@ assertType(ArrayType::class, Expect::listOf('string'));
 assertType(ArrayType::class, Expect::listOf('string', wrap: true));
 assertType(EnumType::class, Expect::enum(Suit::class));
 assertType(TupleType::class, Expect::tuple([Expect::string(), Expect::int()]));
+assertType(Structure::class, Expect::recursive(fn(Schema $self) => Expect::structure(['items' => Expect::listOf($self)])));
 
 // Structure creation
 assertType(Structure::class, Expect::structure(['a' => Expect::string()]));
