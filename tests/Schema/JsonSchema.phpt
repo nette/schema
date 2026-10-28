@@ -300,6 +300,14 @@ test('the output is a valid JSON Schema document', function () {
 });
 
 
+test('date and time', function () {
+	Assert::same(['type' => 'string', 'format' => 'date-time'], JsonSchema::export(Expect::dateTime()->min('2021-01-01')));
+	Assert::same(['type' => 'string', 'format' => 'date'], JsonSchema::export(Expect::date()));
+	Assert::same(['type' => ['string', 'null'], 'format' => 'date'], JsonSchema::export(Expect::date()->nullable()));
+	Assert::same(['type' => 'string'], JsonSchema::export(Expect::date('d.m.Y'))); // checked by PHP alone
+});
+
+
 test('enum of non-scalar values has no type', function () {
 	Assert::same(['enum' => [[1, 2], 'x']], JsonSchema::export(Expect::anyOf([1, 2], 'x')));
 });

@@ -8,7 +8,7 @@
 namespace Nette\Schema;
 
 use Nette;
-use Nette\Schema\Elements\{AnyOf, ArrayType, EnumType, NumberType, StringType, Structure, Type};
+use Nette\Schema\Elements\{AnyOf, ArrayType, DateTimeType, EnumType, NumberType, StringType, Structure, Type};
 use function array_key_exists, count, is_object;
 
 
@@ -95,6 +95,24 @@ final class Expect
 	public static function enum(string $enum): EnumType
 	{
 		return new EnumType($enum);
+	}
+
+
+	/**
+	 * Creates a schema for a date with time in ISO 8601 or the given format; yields DateTimeImmutable.
+	 */
+	public static function dateTime(?string $format = null): DateTimeType
+	{
+		return new DateTimeType(format: $format);
+	}
+
+
+	/**
+	 * Creates a schema for a date without time, Y-m-d or the given format; yields DateTimeImmutable at midnight.
+	 */
+	public static function date(?string $format = null): DateTimeType
+	{
+		return new DateTimeType(date: true, format: $format);
 	}
 
 

@@ -23,6 +23,7 @@ enum Kind
 	/** int or float */
 	case Number;
 	case String;
+	case DateTime;
 	case Array;
 	case List;
 	case Iterable;

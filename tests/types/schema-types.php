@@ -4,7 +4,7 @@
  * PHPStan type tests.
  */
 
-use Nette\Schema\Elements\{AnyOf, ArrayType, EnumType, NumberType, StringType, Structure, TupleType, Type};
+use Nette\Schema\Elements\{AnyOf, ArrayType, DateTimeType, EnumType, NumberType, StringType, Structure, TupleType, Type};
 use Nette\Schema\{Expect, MergeMode, Schema};
 use function PHPStan\Testing\assertType;
 
@@ -44,6 +44,8 @@ assertType(ArrayType::class, Expect::arrayOf('string'));
 assertType(ArrayType::class, Expect::listOf('string'));
 assertType(ArrayType::class, Expect::listOf('string', wrap: true));
 assertType(EnumType::class, Expect::enum(Suit::class));
+assertType(DateTimeType::class, Expect::dateTime());
+assertType(DateTimeType::class, Expect::date('d.m.Y')->min('2021-01-01'));
 assertType(TupleType::class, Expect::tuple([Expect::string(), Expect::int()]));
 assertType(Structure::class, Expect::recursive(fn(Schema $self) => Expect::structure(['items' => Expect::listOf($self)])));
 

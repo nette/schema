@@ -91,6 +91,9 @@ both 1.x and 2.0 can keep calling it; 2.1 deprecates it.
 
 - `Message::CannotMerge`, the code of a failed merge.
 - `default()` on a tuple, which 1.4 refused.
+- `Expect::dateTime()` and `Expect::date()`, a `DateTimeImmutable` from a
+  string in ISO 8601 or a given format, with `min()` and `max()`; the JSON
+  Schema export says `format: date-time` or `date`.
 - `Expect::recursive(fn(Schema $self) => ...)`, a schema that contains itself
   (a tree); the JSON Schema export refers to it with `$ref`.
 
