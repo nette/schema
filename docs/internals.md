@@ -365,7 +365,8 @@ to a union of bool, number and string, `'?x'`/`'null|x'` set `nullable`,
 `DynamicParameter` sets `dynamic`, the string pseudo-types of Validators (`email`,
 `url`, `identifier`, `digit`, ...) are `Kind::String` with the name under `format`,
 **an unknown name is a class name** (`Kind::Instance`, decided by exclusion, never
-by `class_exists`), and only `numeric`, `numericint`, `none`, `resource` and
+by `class_exists`; a name that is not a valid type declaration, such as
+`array<int>`, throws), and only `numeric`, `numericint`, `none`, `resource` and
 intersections `A&B` become `Kind::Other` with the raw expression under `type`.
 That table is also the migration table for the day the string notation is reduced
 to BC sugar. `Type::describe()` = parse + `describeBase()`; a subclass adds its

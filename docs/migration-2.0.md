@@ -26,6 +26,10 @@ warning are marked *silent*. This guide lists every BC break and its remedy.
   (`numeric`, `numericint`, `resource`, `none` → use `assert()`), and direct
   construction of a plain `Type` for an expression that has its subclass
   (→ use `Expect::type()`). String formats such as `email` or `url` stay.
+- **A name that is not a type throws.** `'array<int>'`, `'list<int>'` or
+  `'array{a: int}'` throw `InvalidArgumentException` when the schema is built;
+  1.x took them for a class name, so the schema refused every value. Use
+  `Expect::arrayOf()`, `Expect::listOf()` or `Expect::structure()`.
 
 ## Merging of configuration layers (processMultiple)
 

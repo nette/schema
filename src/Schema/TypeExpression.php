@@ -130,7 +130,9 @@ final class TypeExpression
 			$kind === Kind::String => [$string(format: $name === 'string' ? null : $name)],
 			$kind === Kind::Int, $kind === Kind::Float, $kind === Kind::Number => [$number($kind)],
 			$kind === Kind::Array, $kind === Kind::List, $kind === Kind::Iterable => [$collection($kind)],
-			$kind === Kind::Instance => [['kind' => $kind, 'type' => $name]],
+			$kind === Kind::Instance => Nette\Utils\Validators::isTypeDeclaration($name)
+				? [['kind' => $kind, 'type' => $name]]
+				: throw new Nette\InvalidArgumentException("Invalid type '$part'."),
 			$kind === Kind::Other => [['kind' => $kind, 'type' => $part]],
 			default => [['kind' => $kind]],
 		};
