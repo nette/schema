@@ -85,6 +85,32 @@ test('DateTime', function () {
 		new DateTime('2021-01-01'),
 		(new Processor)->process($schema, '2021-01-01'),
 	);
+
+	Assert::exception(
+		fn() => (new Processor)->process($schema, 'nonsense'),
+		Nette\Schema\ValidationException::class,
+		'The item cannot be cast to DateTime: %a%',
+	);
+});
+
+
+test('a value refused by the constructor is a validation error', function () {
+	class Money
+	{
+		public function __construct(
+			public int $amount,
+		) {
+			if ($amount < 0) {
+				throw new InvalidArgumentException('Amount must not be negative.');
+			}
+		}
+	}
+
+	$schema = Expect::structure(['amount' => Expect::int()])->castTo(Money::class);
+	checkValidationErrors(
+		fn() => (new Processor)->process($schema, ['amount' => -5]),
+		['The item cannot be cast to Money: Amount must not be negative.'],
+	);
 });
 
 

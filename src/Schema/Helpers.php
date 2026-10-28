@@ -163,7 +163,7 @@ final class Helpers
 				: new $type($value)
 			: static fn($value) => Nette\Utils\Arrays::toObject((array) $value, new $type);
 
-		return static function ($value) use ($factory, $type) {
+		return static function ($value, Context $context) use ($factory, $type) {
 			if ($value === null) {
 				return null;
 			}
@@ -172,6 +172,13 @@ final class Helpers
 				return $factory($value);
 			} catch (\Error $e) {
 				throw new Nette\InvalidStateException("Unable to cast value to $type: " . $e->getMessage(), 0, $e);
+			} catch (\Throwable $e) { // the class refused the value
+				$context->addError(
+					'The %label% %path% cannot be cast to %expected%: %reason%',
+					Message::TypeMismatch,
+					['value' => $value, 'expected' => $type, 'reason' => $e->getMessage()],
+				);
+				return null;
 			}
 		};
 	}

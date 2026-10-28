@@ -271,8 +271,10 @@ by validating dynamics eagerly.
   listing the cases (a pure enum throws `InvalidStateException` when the schema
   is built); class **with** constructor → named args from the array/stdClass
   (a scalar is passed as a single argument); anything else → property assignment
-  via `Arrays::toObject((array) $value, new $type)`. A failing instantiation is
-  rethrown as `InvalidStateException` naming the target class. This fork is the
+  via `Arrays::toObject((array) $value, new $type)`. An `Error` of the
+  instantiation (a schema not matching the class) is rethrown as
+  `InvalidStateException` naming the target class, an exception (the class
+  refused the value) reports `TypeMismatch`. This fork is the
   mechanism behind both `castTo(Class::class)` and Structure's object output.
 - **`min`/`max` mean different things by type** (`validateRange`): item count for
   arrays, character length (`unicode` type) or byte length (otherwise) for
