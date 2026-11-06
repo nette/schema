@@ -174,10 +174,7 @@ trait Base
 	private function doDeprecation(Context $context): void
 	{
 		if ($this->deprecated !== null) {
-			$context->addWarning(
-				$this->deprecated,
-				Nette\Schema\Message::Deprecated,
-			);
+			$context->addWarning($this->deprecated, Nette\Schema\Message::Deprecated);
 		}
 	}
 

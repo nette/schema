@@ -73,7 +73,7 @@ final class TypeExpression
 			1 => $variants[0],
 			default => ['kind' => Kind::Union, 'variants' => $variants],
 		};
-		return $item + ['nullable' => $nullable && count($variants) > 0, 'dynamic' => $dynamic];
+		return $item + ['nullable' => $nullable && $variants !== [], 'dynamic' => $dynamic];
 	}
 
 
